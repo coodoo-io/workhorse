@@ -1,5 +1,6 @@
 package io.coodoo.workhorse.jobengine.control.job;
 
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -16,8 +17,8 @@ import io.coodoo.workhorse.jobengine.entity.JobExecution;
  * Deletes old Job Executions database entries, which are not needed anymore.
  * 
  * Every Job can configure his own clean up days count by setting JobConfig.
- *
  */
+@RequestScoped
 @SystemJob
 @JobConfig(name = "Job Execution Cleanup", description = "Deletes old job executions from the database")
 @JobScheduleConfig(minute = "17", hour = "4")

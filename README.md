@@ -7,8 +7,8 @@
 ## Table of Contents
 
 - [Background](#background)
-- [Install](#install)
 - [Usage](#usage)
+- [Install](#install)
 - [Configuration](#configuration)
 - [Changelog](#changelog)
 - [Maintainers](#maintainers)
@@ -19,18 +19,21 @@
 ## Background
 
 
+## Usage
+
+
 ## Install
 
 1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.0.0%7Cjar)):
-
-```xml
-<dependency>
-    <groupId>io.coodoo</groupId>
-    <artifactId>workhorse</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-
+   
+   ```xml
+   <dependency>
+       <groupId>io.coodoo</groupId>
+       <artifactId>workhorse</artifactId>
+       <version>1.0.0</version>
+   </dependency>
+   ```
+   
 2. Create the database tables (This is a MySQL example).
          
    ```sql
@@ -124,11 +127,6 @@
     }
     ```
     *This is necessary to avoid trouble when it comes to different persistence contexts.*
-
-
-
-
-## Usage
 
 
 ## Configuration

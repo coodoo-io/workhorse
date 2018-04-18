@@ -44,7 +44,7 @@ public abstract class JobWorker {
      * The job engine will call this method with a {@link JobExecution} object. Get your {@link JobExecutionParameters} object out of it and start doing
      * whatever you want.
      * </p>
-     * <code> MyJobParameters p = (MyJobParameters) jobExecution.getParameters(); <code>
+     * <code> MyJobParameters p = (MyJobParameters) jobExecution.getParameters(); </code>
      * 
      * @param jobExecution job execution object, containing parameters and meta information
      */
@@ -62,11 +62,10 @@ public abstract class JobWorker {
     }
 
     /**
-     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, JobWorkerOptions)}</i><br>
+     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters)}</i><br>
      * <br>
      * This creates a parameterless {@link JobExecution} object that gets added to the job engine with default options.
      * 
-     * @param parameters needed parameters to do the job
      * @return job execution ID
      */
     public Long createJobExecution() {
@@ -74,7 +73,7 @@ public abstract class JobWorker {
     }
 
     /**
-     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, JobWorkerOptions)}</i><br>
+     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, Boolean, LocalDateTime)}</i><br>
      * <br>
      * This creates a {@link JobExecution} object that gets added to the job engine with default options.
      * 
@@ -92,7 +91,8 @@ public abstract class JobWorker {
      * This creates a {@link JobExecution} object that gets added to the job engine to be executed as soon as possible.
      * 
      * @param parameters needed parameters to do the job
-     * @param options to give that execution special treatment
+     * @param priority priority queuing
+     * @param maturity specified time for the execution
      * @return job execution ID
      */
     public Long createJobExecution(JobExecutionParameters parameters, Boolean priority, LocalDateTime maturity) {
@@ -106,7 +106,9 @@ public abstract class JobWorker {
      * This creates a {@link JobExecution} object that gets added to the job engine to be executed as soon as possible.
      * 
      * @param parameters needed parameters to do the job
-     * @param options to give that execution special treatment
+     * @param priority priority queuing
+     * @param delayValue time to wait
+     * @param delayUnit what kind of time to wait
      * @return job execution ID
      */
     public Long createJobExecution(JobExecutionParameters parameters, Boolean priority, Long delayValue, ChronoUnit delayUnit) {
@@ -114,7 +116,7 @@ public abstract class JobWorker {
     }
 
     /**
-     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, JobWorkerOptions)}</i><br>
+     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, Boolean, LocalDateTime)}</i><br>
      * <br>
      * This creates a {@link JobExecution} object that gets added to the priority queue of the job engine to be treated first class.
      * 
@@ -126,7 +128,7 @@ public abstract class JobWorker {
     }
 
     /**
-     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, JobWorkerOptions)}</i><br>
+     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, Boolean, Long, ChronoUnit)}</i><br>
      * <br>
      * This creates a {@link JobExecution} object that gets added to the job engine after the given delay.
      * 
@@ -140,7 +142,7 @@ public abstract class JobWorker {
     }
 
     /**
-     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, JobWorkerOptions)}</i><br>
+     * <i>Convenience method to {@link #createJobExecution(JobExecutionParameters, Boolean, LocalDateTime)}</i><br>
      * <br>
      * This creates a {@link JobExecution} object that gets added to the job engine at a specified time.
      * 
@@ -178,8 +180,7 @@ public abstract class JobWorker {
      * bring all its chained friends.
      * 
      * @param parametersList list of needed parameters to do the job in the order of the execution chain
-     * @param delayValue time to wait
-     * @param delayUnit what kind of time to wait
+     * @param maturity specified time for the execution
      * @return chain ID
      */
     public Long createPlannedChainedJobExecutions(List<JobExecutionParameters> parametersList, LocalDateTime maturity) {
