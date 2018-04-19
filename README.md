@@ -1,4 +1,4 @@
-[logo]: https://github.com/coodoo-io/coodoo-audit/tree/master/src/main/resources/workhorse.png "Workhorse: Java EE Job Engine for background jobs and business critical tasks"
+[logo]: https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/workhorse.png "Workhorse: Java EE Job Engine for background jobs and business critical tasks"
 
 # Workhorse ![alt text][logo]
 
@@ -146,7 +146,7 @@ Doesn't work? That is because you have to start the jobEngine using the method `
    
 2. Create the database tables and add the JPA entities to your persistence.xml
    
-   You can find SQL snippets to create the tables [here](https://github.com/coodoo-io/coodoo-audit/tree/master/src/main/resources/sql). If you need the insert statements for another SQL database just use this [converter](http://www.sqlines.com/online).
+   You can find SQL snippets to create the tables [here](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql). If you need the insert statements for another SQL database just use this [converter](http://www.sqlines.com/online).
    
    ```xml
     <class>io.coodoo.workhorse.jobengine.entity.Job</class>
