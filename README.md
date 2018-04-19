@@ -1,4 +1,4 @@
-[logo]: https://github.com/coodoo-io/workhorse/raw/master/workhorse.png "Workhorse: Java EE Job Engine for background jobs and business critical tasks"
+[logo]: https://github.com/coodoo-io/coodoo-audit/tree/master/src/main/resources/workhorse.png "Workhorse: Java EE Job Engine for background jobs and business critical tasks"
 
 # Workhorse ![alt text][logo]
 
@@ -6,25 +6,135 @@
 
 ## Table of Contents
 
-- [Background](#background)
-- [Usage](#usage)
+- [Who is this Workhorse?](#who-is-this-workhorse)
+- [Getting started](#getting-started)
 - [Install](#install)
-- [Configuration](#configuration)
 - [Changelog](#changelog)
 - [Maintainers](#maintainers)
 - [Contribute](#contribute)
 - [License](#license)
 
 
-## Background
+## Who is this Workhorse?
 
+The coodoo Workhorse is Java EE job engine for mostly all kind of tasks and background jobs as it is a combination of task scheduler and an event system. It can help you to send out thousands of e-mails or perform long running imports.
 
-## Usage
+Just fire jobs on demand when ever from where ever in your code and Workhorse will take care of it. You can also define an interval or specific time the job has to be started by using the cron syntax. There are also many options like prioritizing, delaying, chaining, multithreading, uniquifying, retrying the jobs. 
+
+## Getting started
+
+Lets create a backup job. Therefore you need to extend the `JobWorker` class that provides you the `doWork` method. This method is where the magic happens! You also have to add the `@JobConfig` annotation to provide basic configurations.
+
+```java
+@JobConfig(name = "Backup", description = "Better backup!")
+public class BackupJob extends JobWorker {
+
+    private final Logger log = LoggerFactory.getLogger(BackupJob.class);
+
+    @Override
+    public void doWork(JobExecution jobExecution) {
+
+        log.info("Performing some fine backup!");
+    }
+}
+```
+
+Now we are able to inject this backup job to a service and trigger a job execution. After calling `createJobExecution` the job gets pushed into the job queue and the job engine will take care from this point.
+
+```java
+    @Inject
+    BackupJob backupJob;
+
+    public void performBackup() {
+
+        backupJob.createJobExecution();
+    }
+```
+
+Lets add some parameters to this job! Therefore we need a POJO with the wanted attributes and implement the `JobExecutionParameters` interface.
+
+```java
+public class BackupJobParameters implements JobExecutionParameters {
+
+    private String evironment;
+    private boolean replaceOldBackup;
+    // getters, setters, ...
+}
+```
+
+The service can pass the parameters object to the `createJobExecution` method.
+
+```java
+    @Inject
+    BackupJob backupJob;
+
+    public void performBackup() {
+    
+        BackupJobParameters parameters = new BackupJobParameters();
+        parameters.setEvironment("STAGE-2");
+        parameters.setReplaceOldBackup(false);
+
+        backupJob.createJobExecution(parameters);
+    }
+```
+
+You can access the parameters in the `doWork` method like this.
+
+```java
+    @Override
+    public void doWork(JobExecution jobExecution) {
+
+        BackupJobParameters params = (BackupJobParameters) jobExecution.getParameters();
+
+        log.info("Performing some fine backup on {} environment! Replace old backup: {}", params.getEvironment(), params.isReplaceOldBackup());
+    }
+```
+
+Everybody knows backups should be made on a regular basis, so lets tell this job to run every night half past three by adding `@JobScheduleConfig` annotation. In this case we overwrite the method `scheduledJobExecutionCreation()` witch triggers the job to add some parameters.
+
+```java
+@JobScheduleConfig(hour = "3", minute = "30")
+@JobConfig(name = "Backup", description = "Better backup!")
+public class BackupJob extends JobWorker {
+
+    private final Logger log = LoggerFactory.getLogger(BackupJob.class);
+
+    @Override
+    public void scheduledJobExecutionCreation() {
+
+        BackupJobParameters parameters = new BackupJobParameters();
+        parameters.setEvironment("STAGE-2");
+        parameters.setReplaceOldBackup(false);
+
+        createJobExecution(parameters);
+    }
+
+    @Override
+    public void doWork(JobExecution jobExecution) {
+
+        BackupJobParameters params = (BackupJobParameters) jobExecution.getParameters();
+
+        log.info("Performing some fine backup on {} environment! Replace old backup: {}", params.getEvironment(), params.isReplaceOldBackup());
+    }
+}
+```
+
+Doesn't work? That is because you have to start the jobEngine using the method `start()` of the `JobEngineService` somewhere in your application. It takes the job queue polling interval in seconds as a parameter and there is also a `stop()` method to halt the job engine.
+
+```java
+    @Inject
+    JobEngineService jobEngineService;
+
+    public void start() {
+
+        jobEngineService.start(5);
+    }
+```
 
 
 ## Install
 
-1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.0.0%7Cjar)):
+1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.0.0%7Cjar))
    
    ```xml
    <dependency>
@@ -34,83 +144,16 @@
    </dependency>
    ```
    
-2. Create the database tables (This is a MySQL example).
-         
-   ```sql
-    CREATE TABLE jobengine_job (
-      id bigint(20) NOT NULL AUTO_INCREMENT,
-      name varchar(128) NOT NULL,
-      description varchar(2028) DEFAULT NULL,
-      worker_class_name varchar(512) NOT NULL,
-      type varchar(32) NOT NULL DEFAULT 'ADHOC',
-      status varchar(32) NOT NULL DEFAULT 'ACTIVE',
-      threads int(4) NOT NULL DEFAULT '1',
-      fail_retries int(4) NOT NULL DEFAULT '0',
-      retry_delay int(11) unsigned NOT NULL DEFAULT '4000',
-      unique_in_queue bit(1) NOT NULL DEFAULT b'1',
-      days_until_clean_up int(4) NOT NULL DEFAULT '30',
-      created_at datetime NOT NULL,
-      updated_at datetime DEFAULT NULL,
-      version int(11) NOT NULL DEFAULT '0',
-      PRIMARY KEY (id),
-      UNIQUE KEY worker_class_name (worker_class_name)
-    );
-
-    CREATE TABLE jobengine_execution (
-      id bigint(20) NOT NULL AUTO_INCREMENT,
-      job_id bigint(20) NOT NULL,
-      status varchar(32) NOT NULL DEFAULT 'QUEUED',
-      started_at datetime DEFAULT NULL,
-      ended_at datetime DEFAULT NULL,
-      priority bit(1) NOT NULL DEFAULT b'0',
-      maturity datetime DEFAULT NULL,
-      chain_id bigint(20) DEFAULT NULL,
-      chain_previous_execution_id bigint(20) DEFAULT NULL,
-      duration bigint(20) DEFAULT NULL,
-      parameters text,
-      fail_retry int(4) NOT NULL DEFAULT '0',
-      fail_retry_execution_id bigint(20) DEFAULT NULL,
-      created_at datetime NOT NULL,
-      updated_at datetime DEFAULT NULL,
-      fail_message varchar(4096) DEFAULT NULL,
-      fail_stacktrace text,
-      PRIMARY KEY (id),
-      KEY fk_jobengine_job_execution_job_idx (job_id),
-      KEY idx_jobengine_job_execution_jobid_status (job_id,status),
-      KEY fk_jobengine_job_execution_jobid_status (job_id,status),
-      KEY idx_jobengine_job_execution_poller (job_id,status,maturity,chain_previous_execution_id),
-      KEY idx_jobengine_job_execution_status (status),
-      CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-    );
-
-    CREATE TABLE jobengine_schedule (
-      id bigint(20) NOT NULL AUTO_INCREMENT,
-      job_id bigint(20) NOT NULL,
-      second varchar(128) NOT NULL DEFAULT '0',
-      minute varchar(128) NOT NULL DEFAULT '0',
-      hour varchar(128) NOT NULL DEFAULT '0',
-      day_of_week varchar(128) NOT NULL DEFAULT '*',
-      day_of_month varchar(128) NOT NULL DEFAULT '*',
-      month varchar(128) NOT NULL DEFAULT '*',
-      year varchar(128) NOT NULL DEFAULT '*',
-      created_at datetime NOT NULL,
-      updated_at datetime DEFAULT NULL,
-      version int(11) NOT NULL DEFAULT '0',
-      PRIMARY KEY (id),
-      UNIQUE KEY job_id (job_id),
-      KEY fk_jobengine_schedule_job_idx (job_id),
-      CONSTRAINT fk_jobengine_schedule_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-    );
-   ```
-                 
-3. Add the JPA entities to your persistence.xml:
-
+2. Create the database tables and add the JPA entities to your persistence.xml
+   
+   You can find SQL snippets to create the tables [here](https://github.com/coodoo-io/coodoo-audit/tree/master/src/main/resources/sql). If you need the insert statements for another SQL database just use this [converter](http://www.sqlines.com/online).
+   
    ```xml
     <class>io.coodoo.workhorse.jobengine.entity.Job</class>
     <class>io.coodoo.workhorse.jobengine.entity.JobExecution</class>
     <class>io.coodoo.workhorse.jobengine.entity.JobSchedule</class>
    ```
-4. To provide the EntityManager you have to implement a `@AuditEntityManager` CDI producer.
+3. To provide the EntityManager you have to implement a `@JobEngineEntityManagerProducer` CDI producer.
 
    ```java
     @Stateless
@@ -127,9 +170,6 @@
     }
     ```
     *This is necessary to avoid trouble when it comes to different persistence contexts.*
-
-
-## Configuration
 
 
 ## Changelog
