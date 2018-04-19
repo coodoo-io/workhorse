@@ -1,4 +1,4 @@
-[logo]: https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/workhorse.png "Workhorse: Java EE Job Engine for background jobs and business critical tasks"
+[logo]: https://raw.githubusercontent.com/coodoo-io/workhorse/master/src/main/resources/workhorse.png "Workhorse: Java EE Job Engine for background jobs and business critical tasks"
 
 # Workhorse ![alt text][logo]
 
