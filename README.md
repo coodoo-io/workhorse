@@ -31,7 +31,7 @@ public class BackupJob extends JobWorker {
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
 
     @Override
-    public void doWork(JobExecution jobExecution) {
+    public void doWork() {
 
         log.info("Performing some fine backup!");
     }
@@ -81,11 +81,12 @@ You can access the parameters in the `doWork` method like this.
 
 ```java
     @Override
-    public void doWork(JobExecution jobExecution) {
+    public void doWork() {
 
-        BackupJobParameters params = (BackupJobParameters) jobExecution.getParameters();
+        BackupJobParameters parameters = getParameters();
 
-        log.info("Performing some fine backup on {} environment! Replace old backup: {}", params.getEvironment(), params.isReplaceOldBackup());
+        log.info("Performing some fine backup on {} environment! Replace old backup: {}",
+            parameters.getEvironment(), parameters.isReplaceOldBackup());
     }
 ```
 
@@ -109,11 +110,12 @@ public class BackupJob extends JobWorker {
     }
 
     @Override
-    public void doWork(JobExecution jobExecution) {
+    public void doWork() {
 
-        BackupJobParameters params = (BackupJobParameters) jobExecution.getParameters();
+        BackupJobParameters parameters = getParameters();
 
-        log.info("Performing some fine backup on {} environment! Replace old backup: {}", params.getEvironment(), params.isReplaceOldBackup());
+        log.info("Performing some fine backup on {} environment! Replace old backup: {}",
+            parameters.getEvironment(), parameters.isReplaceOldBackup());
     }
 }
 ```
@@ -133,13 +135,13 @@ Doesn't work? That is because you have to start the jobEngine using the method `
 
 ## Install
 
-1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.0.1%7Cjar))
+1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.1.0%7Cjar))
    
    ```xml
    <dependency>
        <groupId>io.coodoo</groupId>
        <artifactId>workhorse</artifactId>
-       <version>1.0.1</version>
+       <version>1.1.0</version>
    </dependency>
    ```
    

@@ -23,6 +23,8 @@ public abstract class JobWorker {
 
     private Job job;
 
+    private JobExecution jobExecution;
+
     /**
      * Gets the Job from the database
      * 
@@ -38,14 +40,32 @@ public abstract class JobWorker {
     /**
      * <i>This is where the magic happens!</i>
      * <p>
-     * The job engine will call this method with a {@link JobExecution} object. Get your {@link JobExecutionParameters} object out of it and start doing
-     * whatever you want.
+     * The job engine will call this method, so this is where you can do whatever you want.
      * </p>
-     * <code> MyJobParameters p = (MyJobParameters) jobExecution.getParameters(); </code>
+     * <p>
+     * If you added {@link JobExecutionParameters} to this Job, you can get it using {@link #getParameters()}.
+     * </p>
+     */
+    public abstract void doWork();
+
+    /**
+     * The job engine will uses this method as the entrance point to prepare an execute the {@link #doWork()} method.
      * 
      * @param jobExecution job execution object, containing parameters and meta information
      */
-    public abstract void doWork(JobExecution jobExecution);
+    public void doWork(JobExecution jobExecution) {
+        this.jobExecution = jobExecution;
+        doWork();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T getParameters() {
+
+        if (jobExecution != null && jobExecution.getParameters() != null) {
+            return (T) jobExecution.getParameters();
+        }
+        return null;
+    }
 
     /**
      * This method will (mainly) be called by the schedule timer in order to check if there is stuff to do.<br>

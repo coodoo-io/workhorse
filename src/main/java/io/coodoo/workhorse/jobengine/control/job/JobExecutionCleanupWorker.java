@@ -11,7 +11,6 @@ import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
-import io.coodoo.workhorse.jobengine.entity.JobExecution;
 
 /**
  * Deletes old Job Executions database entries, which are not needed anymore.
@@ -34,9 +33,9 @@ public class JobExecutionCleanupWorker extends JobWorker {
     }
 
     @Override
-    public void doWork(JobExecution jobExecution) {
+    public void doWork() {
 
-        JobExecutionCleanupParameter parameters = (JobExecutionCleanupParameter) jobExecution.getParameters();
+        JobExecutionCleanupParameter parameters = getParameters();
 
         int deletedJobExecutions = jobEngineController.deleteOlderJobExecutions(parameters.jobId, parameters.minDaysOld);
 
