@@ -67,11 +67,33 @@ public class JobEngineController {
             Job job = jobEngineService.getJobByClassName(workerClass.getName());
 
             if (job == null) {
+                job = new Job();
 
-                JobConfig jobConfig = workerClass.getAnnotation(JobConfig.class);
-                JobType jobType = availableWorker.getValue();
-
-                job = new Job(workerClass, jobType, jobConfig);
+                if (workerClass.isAnnotationPresent(JobConfig.class)) {
+                    // Use initial worker informations from annotation if available
+                    JobConfig jobConfig = workerClass.getAnnotation(JobConfig.class);
+                    job.setName(jobConfig.name().isEmpty() ? workerClass.getSimpleName() : jobConfig.name());
+                    job.setDescription(jobConfig.description().isEmpty() ? null : jobConfig.description());
+                    job.setWorkerClassName(workerClass.getName());
+                    job.setType(availableWorker.getValue());
+                    job.setStatus(jobConfig.status());
+                    job.setThreads(jobConfig.threads());
+                    job.setFailRetries(jobConfig.failRetries());
+                    job.setRetryDelay(jobConfig.retryDelay());
+                    job.setDaysUntilCleanUp(jobConfig.daysUntilCleanUp());
+                    job.setUniqueInQueue(jobConfig.uniqueInQueue());
+                } else {
+                    // Use initial default worker informations
+                    job.setName(workerClass.getSimpleName());
+                    job.setWorkerClassName(workerClass.getName());
+                    job.setType(availableWorker.getValue());
+                    job.setStatus(JobStatus.ACTIVE);
+                    job.setThreads(JobConfig.JOB_CONFIG_THREADS);
+                    job.setFailRetries(JobConfig.JOB_CONFIG_FAIL_RETRIES);
+                    job.setRetryDelay(JobConfig.JOB_CONFIG_RETRY_DELAY);
+                    job.setDaysUntilCleanUp(JobConfig.JOB_CONFIG_DAYS_UNTIL_CLEANUP);
+                    job.setUniqueInQueue(JobConfig.JOB_CONFIG_UNIQUE_IN_QUEUE);
+                }
                 entityManager.persist(job);
 
                 log.info("Set up job {} for JobWorker {}", job.getName(), workerClass.getSimpleName());
@@ -149,8 +171,8 @@ public class JobEngineController {
      */
     public void deleteOlderJobExecutions() {
         for (Job job : Job.getAll(entityManager)) {
-            if (job.getDaysUntilCLeanUp() > 0) {
-                jobExecutionCleanupWorker.createJobExecution(new JobExecutionCleanupParameter(job.getId(), job.getName(), job.getDaysUntilCLeanUp()));
+            if (job.getDaysUntilCleanUp() > 0) {
+                jobExecutionCleanupWorker.createJobExecution(new JobExecutionCleanupParameter(job.getId(), job.getName(), job.getDaysUntilCleanUp()));
             }
         }
     }

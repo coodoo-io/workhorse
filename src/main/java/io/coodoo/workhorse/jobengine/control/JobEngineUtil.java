@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.coodoo.workhorse.jobengine.boundary.JobExecutionParameters;
 import io.coodoo.workhorse.jobengine.boundary.JobWorker;
-import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.entity.JobType;
@@ -52,9 +51,6 @@ public final class JobEngineUtil {
 
             Class<?> workerClass = workerBean.getBeanClass();
 
-            if (!workerClass.isAnnotationPresent(JobConfig.class)) {
-                log.error("@JobConfig annotation is missing on {}!", workerClass);
-            }
             if (workerClass.isAnnotationPresent(SystemJob.class)) {
                 workers.put(workerClass, JobType.SYSTEM);
             } else if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {

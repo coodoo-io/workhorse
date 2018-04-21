@@ -23,10 +23,9 @@ Just fire jobs on demand when ever from where ever in your code and Workhorse wi
 
 ## Getting started
 
-Lets create a backup job. Therefore you need to extend the `JobWorker` class that provides you the `doWork` method. This method is where the magic happens! You also have to add the `@JobConfig` annotation to provide basic configurations.
+Lets create a backup job. Therefore you just need to extend the `JobWorker` class that provides you the `doWork` method. And this method is where the magic happens!
 
 ```java
-@JobConfig(name = "Backup", description = "Better backup!")
 public class BackupJob extends JobWorker {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
@@ -134,13 +133,13 @@ Doesn't work? That is because you have to start the jobEngine using the method `
 
 ## Install
 
-1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.0.0%7Cjar))
+1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.0.1%7Cjar))
    
    ```xml
    <dependency>
        <groupId>io.coodoo</groupId>
        <artifactId>workhorse</artifactId>
-       <version>1.0.0</version>
+       <version>1.0.1</version>
    </dependency>
    ```
    

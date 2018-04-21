@@ -13,9 +13,6 @@ import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 
 /**
  * Base worker class to define the creation and execution of jobs.
- * <p>
- * <strong> The implementation class needs to be a component, so remember to annotate it with e.g. @Stateless! </strong>
- * </p>
  * 
  * @author coodoo GmbH (coodoo.io)
  */

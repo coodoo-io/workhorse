@@ -12,7 +12,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
 
 @SuppressWarnings("serial")
@@ -51,26 +50,10 @@ public class Job extends RevisionDatesOccEntity {
     private int retryDelay;
 
     @Column(name = "days_until_clean_up")
-    private int daysUntilCLeanUp;
+    private int daysUntilCleanUp;
 
     @Column(name = "unique_in_queue")
     private boolean uniqueInQueue;
-
-    Job() {}
-
-    public Job(Class<?> workerClass, JobType type, JobConfig jobConfig) {
-        super();
-        this.name = jobConfig.name();
-        this.description = jobConfig.description();
-        this.workerClassName = workerClass.getName();
-        this.type = type;
-        this.status = jobConfig.status();
-        this.threads = jobConfig.threads();
-        this.failRetries = jobConfig.failRetries();
-        this.retryDelay = jobConfig.retryDelay();
-        this.daysUntilCLeanUp = jobConfig.daysUntilCLeanUp();
-        this.uniqueInQueue = jobConfig.uniqueInQueue();
-    }
 
     public String getName() {
         return name;
@@ -136,12 +119,12 @@ public class Job extends RevisionDatesOccEntity {
         this.retryDelay = retryDelay;
     }
 
-    public int getDaysUntilCLeanUp() {
-        return daysUntilCLeanUp;
+    public int getDaysUntilCleanUp() {
+        return daysUntilCleanUp;
     }
 
-    public void setDaysUntilCLeanUp(int daysUntilCLeanUp) {
-        this.daysUntilCLeanUp = daysUntilCLeanUp;
+    public void setDaysUntilCleanUp(int daysUntilCleanUp) {
+        this.daysUntilCleanUp = daysUntilCleanUp;
     }
 
     public boolean isUniqueInQueue() {
@@ -155,7 +138,7 @@ public class Job extends RevisionDatesOccEntity {
     @Override
     public String toString() {
         return "Job [name=" + name + ", description=" + description + ", workerClassName=" + workerClassName + ", type=" + type + ", status=" + status
-                        + ", threads=" + threads + ", failRetries=" + failRetries + ", retryDelay=" + retryDelay + ", daysUntilCLeanUp=" + daysUntilCLeanUp
+                        + ", threads=" + threads + ", failRetries=" + failRetries + ", retryDelay=" + retryDelay + ", daysUntilCleanUp=" + daysUntilCleanUp
                         + ", uniqueInQueue=" + uniqueInQueue + "]";
     }
 
