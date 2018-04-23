@@ -21,11 +21,12 @@ public abstract class JobWorker {
     @Inject
     protected JobEngineService jobEngineService;
 
+    @Inject
+    JobExecutionLogger jobExecutionLogger;
+
     private Job job;
 
     private JobExecution jobExecution;
-
-    private StringBuffer logBuffer;
 
     /**
      * Gets the Job from the database
@@ -61,8 +62,7 @@ public abstract class JobWorker {
     public void doWork(JobExecution jobExecution) throws Exception {
 
         this.jobExecution = jobExecution;
-        this.logBuffer = jobExecution.getLog() == null ? new StringBuffer() : new StringBuffer(jobExecution.getLog());
-
+        jobExecutionLogger.setLog(jobExecution.getLog());
         doWork();
     }
 
@@ -75,31 +75,19 @@ public abstract class JobWorker {
         return null;
     }
 
-    protected void log(String message) {
-        log(message, true);
+    protected void logLineWithTimestamp(String message) {
+        jobExecutionLogger.lineWithTimestamp(message);
     }
 
-    protected void log(String message, boolean timestamp) {
-
-        if (logBuffer.length() > 0) {
-            logBuffer.append(System.lineSeparator());
-        }
-        if (timestamp) {
-            logBuffer.append("[");
-            logBuffer.append(JobEngineUtil.timestamp().toLocalTime());
-            logBuffer.append("] ");
-        }
-        logBuffer.append(message);
+    protected void logLine(String message) {
+        jobExecutionLogger.line(message);
     }
 
     /**
      * @return the log text of the current active job execution or <code>null</code> if there isn't any
      */
     public String getJobExecutionLog() {
-        if (logBuffer != null && logBuffer.length() > 0) {
-            return logBuffer.toString();
-        }
-        return null;
+        return jobExecutionLogger.getLog();
     }
 
     /**
