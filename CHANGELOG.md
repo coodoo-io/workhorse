@@ -13,12 +13,17 @@
 ### Features
 
 * Annotation `@JobConfig` in now optional
+* Simple logging on job execution level
+  * Add log entries in the `doWork()` method of `JobWorker` using `logLine(message)` or `logLineWithTimestamp(message)`
+  * Where even in the code, inject and use `JobExecutionLogger` for logging, provided that you are in the context of `doWork()`
 
 ### BREAKING CHANGES
 
 * Changes in `JobWorker`
   * Method `doWork()` doesn’t need the `JobExecution` object anymore.
   * It isn’t necessary to cast the JobExecutionParameters object, just use `getParameters()`
+* Changes in the database schema
+  * Table `jobengine_execution` got a new column `log`
 
 
 <a name="1.0.0"></a>
