@@ -29,12 +29,13 @@ CREATE TABLE workhorse_execution (
   chain_previous_execution_id bigint DEFAULT NULL,
   duration bigint DEFAULT NULL,
   parameters varchar(max),
+  log varchar(max) varchar(max),
   fail_retry int NOT NULL DEFAULT '0',
   fail_retry_execution_id bigint DEFAULT NULL,
-  created_at datetime2(0) NOT NULL,
-  updated_at datetime2(0) DEFAULT NULL,
   fail_message varchar(4096) DEFAULT NULL,
   fail_stacktrace varchar(max),
+  created_at datetime2(0) NOT NULL,
+  updated_at datetime2(0) DEFAULT NULL,
   PRIMARY KEY (id),
   CONSTRAINT fk_workhorse_job_execution_job FOREIGN KEY (job_id) REFERENCES workhorse_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );

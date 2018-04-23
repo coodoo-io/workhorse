@@ -183,7 +183,7 @@ public class JobEngineController {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public synchronized JobExecution handleFailedExecution(Job job, Long jobExecutionId, Exception exception, Long duration) {
+    public synchronized JobExecution handleFailedExecution(Job job, Long jobExecutionId, Exception exception, Long duration, String jobExecutionLog) {
 
         JobExecution failedExecution = entityManager.find(JobExecution.class, jobExecutionId);
         JobExecution retryExecution = null;
@@ -216,6 +216,7 @@ public class JobEngineController {
         failedExecution.setStatus(JobExecutionStatus.FAILED);
         failedExecution.setEndedAt(JobEngineUtil.timestamp());
         failedExecution.setDuration(duration);
+        failedExecution.setLog(jobExecutionLog);
         failedExecution.setFailMessage(exception.getMessage());
         failedExecution.setFailStacktrace(JobEngineUtil.stacktraceToString(exception));
 
@@ -223,22 +224,15 @@ public class JobEngineController {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public synchronized void setJobExecutionStatus(Long jobExecutionId, JobExecutionStatus jobExecutionStatus, Long duration) {
+    public synchronized void setJobExecutionRunning(Long jobExecutionId) {
 
-        final LocalDateTime now = JobEngineUtil.timestamp();
-        switch (jobExecutionStatus) {
-            case RUNNING:
-                JobExecution.updateStarted(entityManager, now, jobExecutionId);
-                break;
-            case FINISHED:
-            case FAILED:
-                JobExecution.updateEnded(entityManager, jobExecutionStatus, now, duration, jobExecutionId);
-                break;
-            case ABORTED:
-            case QUEUED:
-                JobExecution.updateStatus(entityManager, jobExecutionStatus, now, jobExecutionId);
-                break;
-        }
+        JobExecution.updateStatusRunning(entityManager, JobEngineUtil.timestamp(), jobExecutionId);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public synchronized void setJobExecutionFinished(Long jobExecutionId, Long duration, String jobExecutionLog) {
+
+        JobExecution.updateStatusFinished(entityManager, JobEngineUtil.timestamp(), duration, jobExecutionLog, jobExecutionId);
     }
 
     public synchronized JobExecution getNextInChain(Long chainId, Long currentJobExecutionId) {

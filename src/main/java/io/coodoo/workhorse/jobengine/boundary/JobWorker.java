@@ -25,6 +25,8 @@ public abstract class JobWorker {
 
     private JobExecution jobExecution;
 
+    private StringBuffer logBuffer;
+
     /**
      * Gets the Job from the database
      * 
@@ -45,16 +47,22 @@ public abstract class JobWorker {
      * <p>
      * If you added {@link JobExecutionParameters} to this Job, you can get it using {@link #getParameters()}.
      * </p>
+     * 
+     * @throws Exception in case the job execution fails
      */
-    public abstract void doWork();
+    public abstract void doWork() throws Exception;
 
     /**
      * The job engine will uses this method as the entrance point to prepare an execute the {@link #doWork()} method.
      * 
      * @param jobExecution job execution object, containing parameters and meta information
+     * @throws Exception in case the job execution fails
      */
-    public void doWork(JobExecution jobExecution) {
+    public void doWork(JobExecution jobExecution) throws Exception {
+
         this.jobExecution = jobExecution;
+        this.logBuffer = jobExecution.getLog() == null ? new StringBuffer() : new StringBuffer(jobExecution.getLog());
+
         doWork();
     }
 
@@ -63,6 +71,33 @@ public abstract class JobWorker {
 
         if (jobExecution != null && jobExecution.getParameters() != null) {
             return (T) jobExecution.getParameters();
+        }
+        return null;
+    }
+
+    protected void log(String message) {
+        log(message, true);
+    }
+
+    protected void log(String message, boolean timestamp) {
+
+        if (logBuffer.length() > 0) {
+            logBuffer.append(System.lineSeparator());
+        }
+        if (timestamp) {
+            logBuffer.append("[");
+            logBuffer.append(JobEngineUtil.timestamp().toLocalTime());
+            logBuffer.append("] ");
+        }
+        logBuffer.append(message);
+    }
+
+    /**
+     * @return the log text of the current active job execution or <code>null</code> if there isn't any
+     */
+    public String getJobExecutionLog() {
+        if (logBuffer != null && logBuffer.length() > 0) {
+            return logBuffer.toString();
         }
         return null;
     }

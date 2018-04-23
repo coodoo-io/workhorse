@@ -34,7 +34,6 @@ import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.control.event.AllJobsDoneEvent;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
-import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
 @SuppressWarnings("serial")
@@ -233,13 +232,14 @@ public class JobEngine implements Serializable {
 
                             try {
 
-                                jobEngineController.setJobExecutionStatus(jobExecutionId, JobExecutionStatus.RUNNING, null);
+                                jobEngineController.setJobExecutionRunning(jobExecutionId);
 
                                 /* THIS IS WHERE THE MAGIC HAPPENS! */
                                 jobWorker.doWork(jobExecution);
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
-                                jobEngineController.setJobExecutionStatus(jobExecutionId, JobExecutionStatus.FINISHED, duration);
+                                String jobExecutionLog = jobWorker.getJobExecutionLog();
+                                jobEngineController.setJobExecutionFinished(jobExecutionId, duration, jobExecutionLog);
 
                                 runningJobExecutions.get(jobId).remove(jobExecution);
 
@@ -263,7 +263,8 @@ public class JobEngine implements Serializable {
                                 runningJobExecutions.get(jobId).remove(jobExecution);
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
-                                jobExecution = jobEngineController.handleFailedExecution(job, jobExecutionId, exception, duration);
+                                String jobExecutionLog = jobWorker.getJobExecutionLog();
+                                jobExecution = jobEngineController.handleFailedExecution(job, jobExecutionId, exception, duration, jobExecutionLog);
 
                                 if (jobExecution == null) {
                                     break jobExecutionLoop; // no retry

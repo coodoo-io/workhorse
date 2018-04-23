@@ -10,8 +10,8 @@ CREATE TABLE workhorse_job (
   retry_delay number(10) DEFAULT '4000' check (retry_delay > 0) NOT NULL,
   unique_in_queue raw(1) DEFAULT b NOT NULL '1',
   days_until_clean_up number(10) DEFAULT '30' NOT NULL,
-  created_at timestamp(0) NOT NULL,
-  updated_at timestamp(0) DEFAULT NULL,
+  created_at datetime2(0) NOT NULL,
+  updated_at datetime2(0) DEFAULT NULL,
   version number(10) DEFAULT '0' NOT NULL,
   PRIMARY KEY (id),
   CONSTRAINT worker_class_name UNIQUE (worker_class_name)
@@ -32,23 +32,15 @@ CREATE TABLE workhorse_execution (
   id number(19) NOT NULL,
   job_id number(19) NOT NULL,
   status varchar2(32) DEFAULT 'QUEUED' NOT NULL,
-  started_at timestamp(0) DEFAULT NULL,
-  ended_at timestamp(0) DEFAULT NULL,
+  started_at datetime2(0) DEFAULT NULL,
+  ended_at datetime2(0) DEFAULT NULL,
   priority raw(1) DEFAULT b NOT NULL '0',
-  maturity timestamp(0) DEFAULT NULL,
+  maturity datetime2(0) DEFAULT NULL,
   chain_id number(19) DEFAULT NULL,
   chain_previous_execution_id number(19) DEFAULT NULL,
   duration number(19) DEFAULT NULL,
-  parameters clob,
-  fail_retry number(10) DEFAULT '0' NOT NULL,
-  fail_retry_execution_id number(19) DEFAULT NULL,
-  created_at timestamp(0) NOT NULL,
-  updated_at timestamp(0) DEFAULT NULL,
-  fail_message varchar2(4096) DEFAULT NULL,
-  fail_stacktrace clob,
-  PRIMARY KEY (id),
-  CONSTRAINT fk_workhorse_job_execution_job FOREIGN KEY (job_id) REFERENCES workhorse_job (id)
-);
+  parameters varchar(max),
+  log clob varchar(max);
 
 -- Generate ID using sequence and trigger
 CREATE SEQUENCE workhorse_execution_seq START WITH 1 INCREMENT BY 1;
@@ -59,7 +51,16 @@ CREATE OR REPLACE TRIGGER workhorse_execution_seq_tr
 BEGIN
  SELECT workhorse_execution_seq.NEXTVAL INTO :NEW.id FROM DUAL;
 END;
-/
+/,
+  fail_retry int NOT NULL DEFAULT '0',
+  fail_retry_execution_id bigint DEFAULT NULL,
+  fail_message varchar(4096) DEFAULT NULL,
+  fail_stacktrace varchar(max),
+  created_at datetime2(0) NOT NULL,
+  updated_at datetime2(0) DEFAULT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_workhorse_job_execution_job FOREIGN KEY (job_id) REFERENCES workhorse_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
 
 CREATE INDEX fk_workhorse_job_execution_job_idx ON workhorse_execution (job_id);
 CREATE INDEX idx_workhorse_job_execution_jobid_status ON workhorse_execution (job_id,status);
@@ -77,8 +78,8 @@ CREATE TABLE workhorse_schedule (
   day_of_month varchar2(128) DEFAULT '*' NOT NULL,
   month varchar2(128) DEFAULT '*' NOT NULL,
   year varchar2(128) DEFAULT '*' NOT NULL,
-  created_at timestamp(0) NOT NULL,
-  updated_at timestamp(0) DEFAULT NULL,
+  created_at datetime2(0) NOT NULL,
+  updated_at datetime2(0) DEFAULT NULL,
   version number(10) DEFAULT '0' NOT NULL,
   PRIMARY KEY (id),
   CONSTRAINT job_id UNIQUE (job_id),
