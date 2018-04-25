@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.control.event.AllJobsDoneEvent;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
@@ -175,7 +174,7 @@ public class JobEngine implements Serializable {
                 final Long jobId = job.getId();
                 try {
 
-                    final JobWorker jobWorker = jobEngineController.getJobWorker(job);
+                    final BaseJobWorker jobWorker = jobEngineController.getJobWorker(job);
 
                     while (true) {
                         activeJob = null;
@@ -272,7 +271,7 @@ public class JobEngine implements Serializable {
                                 jobExecutionId = jobExecution.getId();
 
                                 log.info("{}. Error '{}' - next try in {} seconds", jobExecution.getFailRetry(), exception.getMessage(),
-                                                job.getRetryDelay() * 1000);
+                                                job.getRetryDelay() / 1000);
 
                                 // enforce delay before retry
                                 Thread.sleep(job.getRetryDelay());

@@ -14,7 +14,6 @@ import javax.persistence.Query;
 import javax.persistence.Table;
 
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
-import io.coodoo.workhorse.jobengine.boundary.JobExecutionParameters;
 import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 
 /**
@@ -58,9 +57,9 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 
                 // Analytic
                 @NamedQuery(name = "JobExecution.getFirstCreatedByJobIdAndParamters",
-                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parametersJson is NULL OR j.parametersJson = :parametersJson) ORDER BY j.createdAt ASC"),
+                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parameters IS NULL OR j.parameters = :parameters) ORDER BY j.createdAt ASC"),
                 @NamedQuery(name = "JobExecution.countQueudByJobIdAndParamters",
-                                query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' and (j.parametersJson IS NULL or j.parametersJson = :parametersJson)"),
+                                query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' and (j.parameters IS NULL or j.parameters = :parameters)"),
                 @NamedQuery(name = "JobExecution.countByJobIdAndStatus",
                                 query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = :status")
 
@@ -109,7 +108,7 @@ public class JobExecution extends RevisionDatesEntity {
     private Long chainPreviousExecutionId;
 
     @Column(name = "parameters")
-    private String parametersJson;
+    private String parameters;
 
     @Column(name = "log")
     private String log;
@@ -204,12 +203,12 @@ public class JobExecution extends RevisionDatesEntity {
         this.chainPreviousExecutionId = chainPreviousExecutionId;
     }
 
-    public String getParametersJson() {
-        return parametersJson;
+    public String getParameters() {
+        return parameters;
     }
 
-    public void setParametersJson(String parametersJson) {
-        this.parametersJson = parametersJson;
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
     }
 
     public String getLog() {
@@ -218,14 +217,6 @@ public class JobExecution extends RevisionDatesEntity {
 
     public void setLog(String log) {
         this.log = log;
-    }
-
-    public JobExecutionParameters getParameters() {
-        return JobEngineUtil.jsonToJobExecutionParameters(parametersJson);
-    }
-
-    public void setParameters(JobExecutionParameters parameters) {
-        this.parametersJson = JobEngineUtil.jobExecutionParametersToJson(parameters);
     }
 
     public int getFailRetry() {
@@ -264,7 +255,7 @@ public class JobExecution extends RevisionDatesEntity {
     public String toString() {
         return "JobExecution [jobId=" + jobId + ", status=" + status + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration=" + duration
                         + ", priority=" + priority + ", maturity=" + maturity + ", chainId=" + chainId + ", chainPreviousExecutionId="
-                        + chainPreviousExecutionId + ", parametersJson=" + parametersJson + ", failRetry=" + failRetry + ", failRetryExecutionId="
+                        + chainPreviousExecutionId + ", parameters=" + parameters + ", failRetry=" + failRetry + ", failRetryExecutionId="
                         + failRetryExecutionId + ", failMessage=" + failMessage + ", failStacktrace=" + failStacktrace + "]";
     }
 
@@ -365,48 +356,6 @@ public class JobExecution extends RevisionDatesEntity {
     }
 
     /**
-     * Executes the query 'JobExecution.getFirstCreatedByJobIdAndParamters' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param parametersJson the parametersJson
-     * @return the result
-     */
-    public static JobExecution getFirstCreatedByJobIdAndParamters(EntityManager entityManager, Long jobId, String parametersJson) {
-        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParamters");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("parametersJson", parametersJson);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (JobExecution) results.get(0);
-    }
-
-    /**
-     * Executes the query 'JobExecution.countQueudByJobIdAndParamters' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param parametersJson the parametersJson
-     * @return the result
-     */
-    public static Long countQueudByJobIdAndParamters(EntityManager entityManager, Long jobId, String parametersJson) {
-        Query query = entityManager.createNamedQuery("JobExecution.countQueudByJobIdAndParamters");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("parametersJson", parametersJson);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (Long) results.get(0);
-    }
-
-    /**
      * Executes the query 'JobExecution.countByJobIdAndStatus' returning one/the first object or null if nothing has been found.
      *
      * @param entityManager the entityManager
@@ -495,6 +444,48 @@ public class JobExecution extends RevisionDatesEntity {
         query = query.setParameter("log", log);
         query = query.setParameter("jobExecutionId", jobExecutionId);
         return query.executeUpdate();
+    }
+
+    /**
+     * Executes the query 'JobExecution.getFirstCreatedByJobIdAndParamters' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @param parameters the parameters
+     * @return the result
+     */
+    public static JobExecution getFirstCreatedByJobIdAndParamters(EntityManager entityManager, Long jobId, String parameters) {
+        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParamters");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("parameters", parameters);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (JobExecution) results.get(0);
+    }
+
+    /**
+     * Executes the query 'JobExecution.countQueudByJobIdAndParamters' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @param parameters the parameters
+     * @return the result
+     */
+    public static Long countQueudByJobIdAndParamters(EntityManager entityManager, Long jobId, String parameters) {
+        Query query = entityManager.createNamedQuery("JobExecution.countQueudByJobIdAndParamters");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("parameters", parameters);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (Long) results.get(0);
     }
 
 }

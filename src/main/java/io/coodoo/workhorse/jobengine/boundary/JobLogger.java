@@ -5,7 +5,7 @@ import javax.enterprise.context.RequestScoped;
 import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 
 @RequestScoped
-public class JobExecutionLogger {
+public class JobLogger {
 
     private StringBuffer logBuffer;
 

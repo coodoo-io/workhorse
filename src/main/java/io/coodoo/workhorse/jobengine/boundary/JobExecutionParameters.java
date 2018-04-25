@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  * 
  * @author coodoo GmbH (coodoo.io)
  */
+@Deprecated
 @JsonTypeInfo(use = Id.CLASS, include = As.PROPERTY, property = JobExecutionParameters.PARAMETERS_CLASS_JSON_KEY)
 public interface JobExecutionParameters {
 

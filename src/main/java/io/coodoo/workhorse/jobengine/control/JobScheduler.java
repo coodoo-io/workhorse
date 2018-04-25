@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobSchedule;
 import io.coodoo.workhorse.jobengine.entity.JobType;
@@ -76,7 +75,7 @@ public class JobScheduler {
         Job job = (Job) currentTimer.getInfo();
         try {
 
-            JobWorker jobWorker = jobEngineController.getJobWorker(job);
+            BaseJobWorker jobWorker = jobEngineController.getJobWorker(job);
             jobWorker.scheduledJobExecutionCreation();
 
         } catch (Exception e) {

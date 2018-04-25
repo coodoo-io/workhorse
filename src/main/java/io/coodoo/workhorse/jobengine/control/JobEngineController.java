@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
@@ -149,11 +148,11 @@ public class JobEngineController {
         }
     }
 
-    public JobWorker getJobWorker(Job job) throws Exception {
+    public BaseJobWorker getJobWorker(Job job) throws Exception {
         try {
 
             Class<?> workerClass = Class.forName(job.getWorkerClassName());
-            return (JobWorker) CDI.current().select(workerClass).get();
+            return (BaseJobWorker) CDI.current().select(workerClass).get();
 
         } catch (Exception exception) {
 
@@ -199,7 +198,7 @@ public class JobEngineController {
             retryExecution.setMaturity(failedExecution.getMaturity());
             retryExecution.setChainId(failedExecution.getChainId());
             retryExecution.setChainPreviousExecutionId(failedExecution.getChainPreviousExecutionId());
-            retryExecution.setParametersJson(failedExecution.getParametersJson());
+            retryExecution.setParameters(failedExecution.getParameters());
 
             // increase failure number
             retryExecution.setFailRetry(failedExecution.getFailRetry() + 1);

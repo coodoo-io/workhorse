@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.coodoo.workhorse.jobengine.boundary.JobExecutionParameters;
-import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.entity.JobType;
@@ -35,7 +34,9 @@ public final class JobEngineUtil {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
+    @Deprecated
     private static final String PARAMETERS_CLASS_REGEX = "\"" + JobExecutionParameters.PARAMETERS_CLASS_JSON_KEY + "\"\\s*:\\s*\"(\\w+(.\\w+)*)\"";
+    @Deprecated
     private static final Pattern PARAMETERS_CLASS_PATTERN = Pattern.compile(PARAMETERS_CLASS_REGEX);
 
     public static final ZoneId ZONE_UTC = ZoneId.of("UTC");
@@ -47,7 +48,7 @@ public final class JobEngineUtil {
 
         Map<Class<?>, JobType> workers = new HashMap<>();
 
-        for (Bean<?> workerBean : CDI.current().getBeanManager().getBeans(JobWorker.class, new AnnotationLiteral<Any>() {})) {
+        for (Bean<?> workerBean : CDI.current().getBeanManager().getBeans(BaseJobWorker.class, new AnnotationLiteral<Any>() {})) {
 
             Class<?> workerClass = workerBean.getBeanClass();
 
@@ -66,6 +67,7 @@ public final class JobEngineUtil {
         return LocalDateTime.now(ZONE_UTC);
     }
 
+    @Deprecated
     public static JobExecutionParameters jsonToJobExecutionParameters(String parametersJson) {
         if (parametersJson == null || parametersJson.isEmpty()) {
             return null;
@@ -85,12 +87,35 @@ public final class JobEngineUtil {
         }
     }
 
+    @Deprecated
     public static String jobExecutionParametersToJson(JobExecutionParameters parameters) {
         if (parameters == null) {
             return null;
         }
         try {
             return objectMapper.writeValueAsString(parameters);
+        } catch (IOException e) {
+            throw new RuntimeException("Parameter object could not be mapped to json", e);
+        }
+    }
+
+    public static <T> T jsonToParameters(String parametersJson, Class<T> parametersClass) {
+        if (parametersJson == null || parametersJson.isEmpty()) {
+            return null;
+        }
+        try {
+            return (T) objectMapper.readValue(parametersJson, parametersClass);
+        } catch (IOException e) {
+            throw new RuntimeException("JSON Parameter could not be mapped to an object", e);
+        }
+    }
+
+    public static String parametersToJson(Object parametersObject) {
+        if (parametersObject == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(parametersObject);
         } catch (IOException e) {
             throw new RuntimeException("Parameter object could not be mapped to json", e);
         }

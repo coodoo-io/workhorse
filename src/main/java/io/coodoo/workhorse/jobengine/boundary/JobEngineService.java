@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
 import io.coodoo.workhorse.jobengine.entity.Job;
@@ -137,23 +136,16 @@ public class JobEngineService {
         return JobExecution.getChain(entityManager, chainId);
     }
 
-    public JobExecution createJobExecution(Long jobId, JobExecutionParameters parameters, Boolean priority, LocalDateTime maturity, Long chainId,
-                    Long previousJobExecutionId, boolean uniqueInQueue) {
-        return createJobExecution(jobId, JobEngineUtil.jobExecutionParametersToJson(parameters), priority, maturity, chainId, previousJobExecutionId,
-                        uniqueInQueue);
+    public JobExecution createJobExecution(Long jobId, String parameter, Boolean priority, LocalDateTime maturity, Long chainId, Long previousJobExecutionId,
+                    boolean uniqueInQueue) {
 
-    }
-
-    public JobExecution createJobExecution(Long jobId, String parameterJson, Boolean priority, LocalDateTime maturity, Long chainId,
-                    Long previousJobExecutionId, boolean uniqueInQueue) {
-
-        if (parameterJson != null && parameterJson.isEmpty()) {
-            parameterJson = null;
+        if (parameter != null && parameter.isEmpty()) {
+            parameter = null;
         }
 
         if (uniqueInQueue) {
             // Prüfen ob es beretis eine Job Excecution mit diesn Parametern existiert und im Status QUEUED ist. Wenn ja diese zurückgeben.
-            JobExecution equalQueuedJobExcecution = JobExecution.getFirstCreatedByJobIdAndParamters(entityManager, jobId, parameterJson);
+            JobExecution equalQueuedJobExcecution = JobExecution.getFirstCreatedByJobIdAndParamters(entityManager, jobId, parameter);
             if (equalQueuedJobExcecution != null) {
                 return equalQueuedJobExcecution;
             }
@@ -162,7 +154,7 @@ public class JobEngineService {
         JobExecution jobExecution = new JobExecution();
         jobExecution.setJobId(jobId);
         jobExecution.setStatus(JobExecutionStatus.QUEUED);
-        jobExecution.setParametersJson(parameterJson);
+        jobExecution.setParameters(parameter);
         jobExecution.setFailRetry(0);
         jobExecution.setPriority(priority != null ? priority : false);
         jobExecution.setMaturity(maturity);
@@ -174,11 +166,11 @@ public class JobEngineService {
         return jobExecution;
     }
 
-    public JobExecution updateJobExecution(Long jobExecutionId, JobExecutionStatus status, String parametersJson, boolean priority, LocalDateTime maturity,
+    public JobExecution updateJobExecution(Long jobExecutionId, JobExecutionStatus status, String parameters, boolean priority, LocalDateTime maturity,
                     Long chainId, Long previousJobExecutionId, int fails) {
         JobExecution jobExecution = getJobExecutionById(jobExecutionId);
         jobExecution.setStatus(status);
-        jobExecution.setParametersJson(parametersJson);
+        jobExecution.setParameters(parameters);
         jobExecution.setPriority(priority);
         jobExecution.setMaturity(maturity);
         jobExecution.setChainId(chainId);
