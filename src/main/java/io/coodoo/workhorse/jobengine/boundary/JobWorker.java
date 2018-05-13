@@ -14,8 +14,7 @@ public abstract class JobWorker extends BaseJobWorker {
 
     public void doWork(JobExecution jobExecution) throws Exception {
 
-        this.jobExecution = jobExecution;
-        this.jobLogger.setLog(jobExecution.getLog());
+        this.jobContext.init(jobExecution);
 
         doWork();
     }

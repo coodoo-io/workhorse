@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
@@ -20,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.coodoo.workhorse.jobengine.boundary.JobExecutionParameters;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.entity.JobType;
@@ -33,11 +30,6 @@ public final class JobEngineUtil {
     private static Logger log = LoggerFactory.getLogger(JobEngineUtil.class);
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-
-    @Deprecated
-    private static final String PARAMETERS_CLASS_REGEX = "\"" + JobExecutionParameters.PARAMETERS_CLASS_JSON_KEY + "\"\\s*:\\s*\"(\\w+(.\\w+)*)\"";
-    @Deprecated
-    private static final Pattern PARAMETERS_CLASS_PATTERN = Pattern.compile(PARAMETERS_CLASS_REGEX);
 
     public static final ZoneId ZONE_UTC = ZoneId.of("UTC");
 
@@ -65,38 +57,6 @@ public final class JobEngineUtil {
 
     public static LocalDateTime timestamp() {
         return LocalDateTime.now(ZONE_UTC);
-    }
-
-    @Deprecated
-    public static JobExecutionParameters jsonToJobExecutionParameters(String parametersJson) {
-        if (parametersJson == null || parametersJson.isEmpty()) {
-            return null;
-        }
-        try {
-
-            Matcher matcher = PARAMETERS_CLASS_PATTERN.matcher(parametersJson);
-            if (matcher.find()) {
-                if (matcher.group(1) != null) {
-                    Class<?> parametersClass = Class.forName(matcher.group(1));
-                    return (JobExecutionParameters) objectMapper.readValue(parametersJson, parametersClass);
-                }
-            }
-            return null;
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("JSON Parameter could not be mapped to an object", e);
-        }
-    }
-
-    @Deprecated
-    public static String jobExecutionParametersToJson(JobExecutionParameters parameters) {
-        if (parameters == null) {
-            return null;
-        }
-        try {
-            return objectMapper.writeValueAsString(parameters);
-        } catch (IOException e) {
-            throw new RuntimeException("Parameter object could not be mapped to json", e);
-        }
     }
 
     public static <T> T jsonToParameters(String parametersJson, Class<T> parametersClass) {
