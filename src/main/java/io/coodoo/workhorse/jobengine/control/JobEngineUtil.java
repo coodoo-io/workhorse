@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,15 @@ public final class JobEngineUtil {
 
     public static LocalDateTime timestamp() {
         return LocalDateTime.now(ZONE_UTC);
+    }
+
+    public static LocalDateTime delayToMaturity(Long delayValue, ChronoUnit delayUnit) {
+
+        LocalDateTime maturity = null;
+        if (delayValue != null && delayUnit != null) {
+            maturity = timestamp().plus(delayValue, delayUnit);
+        }
+        return maturity;
     }
 
     public static <T> T jsonToParameters(String parametersJson, Class<T> parametersClass) {
