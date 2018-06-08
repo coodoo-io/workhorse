@@ -110,6 +110,9 @@ public class JobExecution extends RevisionDatesEntity {
     @Column(name = "parameters")
     private String parameters;
 
+    @Column(name = "parameters_hash")
+    private Integer parametersHash;
+
     @Column(name = "log")
     private String log;
 
@@ -211,6 +214,14 @@ public class JobExecution extends RevisionDatesEntity {
         this.parameters = parameters;
     }
 
+    public Integer getParametersHash() {
+        return parametersHash;
+    }
+
+    public void setParametersHash(Integer parametersHash) {
+        this.parametersHash = parametersHash;
+    }
+
     public String getLog() {
         return log;
     }
@@ -255,8 +266,9 @@ public class JobExecution extends RevisionDatesEntity {
     public String toString() {
         return "JobExecution [jobId=" + jobId + ", status=" + status + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration=" + duration
                         + ", priority=" + priority + ", maturity=" + maturity + ", chainId=" + chainId + ", chainPreviousExecutionId="
-                        + chainPreviousExecutionId + ", parameters=" + parameters + ", failRetry=" + failRetry + ", failRetryExecutionId="
-                        + failRetryExecutionId + ", failMessage=" + failMessage + ", failStacktrace=" + failStacktrace + "]";
+                        + chainPreviousExecutionId + ", parameters=" + parameters + ", parametersHash=" + parametersHash + ", log=" + log + ", failRetry="
+                        + failRetry + ", failRetryExecutionId=" + failRetryExecutionId + ", failMessage=" + failMessage + ", failStacktrace=" + failStacktrace
+                        + "]";
     }
 
     @SuppressWarnings("unchecked")

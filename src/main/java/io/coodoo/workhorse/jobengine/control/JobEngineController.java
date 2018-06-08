@@ -199,6 +199,7 @@ public class JobEngineController {
             retryExecution.setChainId(failedExecution.getChainId());
             retryExecution.setChainPreviousExecutionId(failedExecution.getChainPreviousExecutionId());
             retryExecution.setParameters(failedExecution.getParameters());
+            retryExecution.setParametersHash(failedExecution.getParametersHash());
 
             // increase failure number
             retryExecution.setFailRetry(failedExecution.getFailRetry() + 1);

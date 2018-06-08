@@ -136,16 +136,19 @@ public class JobEngineService {
         return JobExecution.getChain(entityManager, chainId);
     }
 
-    public JobExecution createJobExecution(Long jobId, String parameter, Boolean priority, LocalDateTime maturity, Long chainId, Long previousJobExecutionId,
+    public JobExecution createJobExecution(Long jobId, String parameters, Boolean priority, LocalDateTime maturity, Long chainId, Long previousJobExecutionId,
                     boolean uniqueInQueue) {
 
-        if (parameter != null && parameter.isEmpty()) {
-            parameter = null;
+        Integer parametersHash = null;
+        if (parameters != null) {
+            parameters.hashCode();
+            if (parameters.isEmpty()) {
+                parameters = null;
+            }
         }
-
         if (uniqueInQueue) {
             // Prüfen ob es beretis eine Job Excecution mit diesn Parametern existiert und im Status QUEUED ist. Wenn ja diese zurückgeben.
-            JobExecution equalQueuedJobExcecution = JobExecution.getFirstCreatedByJobIdAndParamters(entityManager, jobId, parameter);
+            JobExecution equalQueuedJobExcecution = JobExecution.getFirstCreatedByJobIdAndParamters(entityManager, jobId, parameters);
             if (equalQueuedJobExcecution != null) {
                 return equalQueuedJobExcecution;
             }
@@ -154,7 +157,8 @@ public class JobEngineService {
         JobExecution jobExecution = new JobExecution();
         jobExecution.setJobId(jobId);
         jobExecution.setStatus(JobExecutionStatus.QUEUED);
-        jobExecution.setParameters(parameter);
+        jobExecution.setParameters(parameters);
+        jobExecution.setParametersHash(parametersHash);
         jobExecution.setFailRetry(0);
         jobExecution.setPriority(priority != null ? priority : false);
         jobExecution.setMaturity(maturity);

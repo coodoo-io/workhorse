@@ -1,7 +1,8 @@
-CREATE SEQUENCE workhorse_job_seq;
 
-CREATE TABLE workhorse_job (
-  id bigint NOT NULL DEFAULT NEXTVAL ('workhorse_job_seq'),
+CREATE SEQUENCE jobengine_job_seq;
+
+CREATE TABLE jobengine_job (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_job_seq'),
   name varchar(128) NOT NULL,
   description varchar(2028) DEFAULT NULL,
   worker_class_name varchar(512) NOT NULL,
@@ -10,50 +11,19 @@ CREATE TABLE workhorse_job (
   threads int NOT NULL DEFAULT '1',
   fail_retries int NOT NULL DEFAULT '0',
   retry_delay int check (retry_delay > 0) NOT NULL DEFAULT '4000',
-  unique_in_queue bytea NOT NULL DEFAULT b'1',
+  unique_in_queue boolean NOT NULL DEFAULT TRUE,
   days_until_clean_up int NOT NULL DEFAULT '30',
   created_at timestamp(0) NOT NULL,
   updated_at timestamp(0) DEFAULT NULL,
   version int NOT NULL DEFAULT '0',
   PRIMARY KEY (id),
-  CONSTRAINT worker_class_name UNIQUE (worker_class_name)
-);
+  CONSTRAINT worker_class_name UNIQUE  (worker_class_name)
+)  ;
 
-CREATE SEQUENCE workhorse_execution_seq;
+CREATE SEQUENCE jobengine_schedule_seq;
 
-CREATE TABLE workhorse_execution (
-  id bigint NOT NULL DEFAULT NEXTVAL ('workhorse_execution_seq'),
-  job_id bigint NOT NULL,
-  status varchar(32) NOT NULL DEFAULT 'QUEUED',
-  started_at timestamp(0) DEFAULT NULL,
-  ended_at timestamp(0) DEFAULT NULL,
-  priority bytea NOT NULL DEFAULT b'0',
-  maturity timestamp(0) DEFAULT NULL,
-  chain_id bigint DEFAULT NULL,
-  chain_previous_execution_id bigint DEFAULT NULL,
-  duration bigint DEFAULT NULL,
-  parameters text,
-  log text varchar(max),
-  fail_retry int NOT NULL DEFAULT '0',
-  fail_retry_execution_id bigint DEFAULT NULL,
-  fail_message varchar(4096) DEFAULT NULL,
-  fail_stacktrace varchar(max),
-  created_at datetime2(0) NOT NULL,
-  updated_at datetime2(0) DEFAULT NULL,
-  PRIMARY KEY (id),
-  CONSTRAINT fk_workhorse_job_execution_job FOREIGN KEY (job_id) REFERENCES workhorse_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
-
-CREATE INDEX fk_workhorse_job_execution_job_idx ON workhorse_execution (job_id);
-CREATE INDEX idx_workhorse_job_execution_jobid_status ON workhorse_execution (job_id,status);
-CREATE INDEX fk_workhorse_job_execution_jobid_status ON workhorse_execution (job_id,status);
-CREATE INDEX idx_workhorse_job_execution_poller ON workhorse_execution (job_id,status,maturity,chain_previous_execution_id);
-CREATE INDEX idx_workhorse_job_execution_status ON workhorse_execution (status);
-
-CREATE SEQUENCE workhorse_schedule_seq;
-
-CREATE TABLE workhorse_schedule (
-  id bigint NOT NULL DEFAULT NEXTVAL ('workhorse_schedule_seq'),
+CREATE TABLE jobengine_schedule (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_schedule_seq'),
   job_id bigint NOT NULL,
   second varchar(128) NOT NULL DEFAULT '0',
   minute varchar(128) NOT NULL DEFAULT '0',
@@ -66,8 +36,41 @@ CREATE TABLE workhorse_schedule (
   updated_at timestamp(0) DEFAULT NULL,
   version int NOT NULL DEFAULT '0',
   PRIMARY KEY (id),
-  CONSTRAINT job_id UNIQUE (job_id),
-  CONSTRAINT fk_workhorse_schedule_job FOREIGN KEY (job_id) REFERENCES workhorse_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
+  CONSTRAINT job_id UNIQUE  (job_id)
+ ,
+  CONSTRAINT fk_jobengine_schedule_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+)  ;
 
-CREATE INDEX fk_workhorse_schedule_job_idx ON workhorse_schedule (job_id);
+CREATE INDEX fk_jobengine_schedule_job_idx ON jobengine_schedule (job_id);
+
+CREATE SEQUENCE jobengine_execution_seq;
+
+CREATE TABLE jobengine_execution (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_execution_seq'),
+  job_id bigint NOT NULL,
+  status varchar(32) NOT NULL DEFAULT 'QUEUED',
+  started_at timestamp(0) DEFAULT NULL,
+  ended_at timestamp(0) DEFAULT NULL,
+  priority boolean NOT NULL DEFAULT FALSE,
+  maturity timestamp(0) DEFAULT NULL,
+  chain_id bigint DEFAULT NULL,
+  chain_previous_execution_id bigint DEFAULT NULL,
+  duration bigint DEFAULT NULL,
+  parameters text,
+  parameters_hash int DEFAULT NULL,
+  log text,
+  fail_retry int NOT NULL DEFAULT '0',
+  fail_retry_execution_id bigint DEFAULT NULL,
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
+  fail_message varchar(4096) DEFAULT NULL,
+  fail_stacktrace text,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+)  ;
+
+CREATE INDEX fk_jobengine_job_execution_job_idx ON jobengine_execution (job_id);
+CREATE INDEX idx_jobengine_job_execution_jobid_status ON jobengine_execution (job_id,status);
+CREATE INDEX fk_jobengine_job_execution_jobid_status ON jobengine_execution (job_id,status);
+CREATE INDEX idx_jobengine_job_execution_poller ON jobengine_execution (job_id,status,parameters_hash);
