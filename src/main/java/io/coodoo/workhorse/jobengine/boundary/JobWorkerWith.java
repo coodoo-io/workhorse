@@ -10,7 +10,7 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 
 /**
- * Job worker class to define the creation and execution of jobs.
+ * Job worker class to define the creation and execution of jobs with parameters. Your job does not need parameters? See {@link JobWorker}!
  * 
  * @author coodoo GmbH (coodoo.io)
  */
