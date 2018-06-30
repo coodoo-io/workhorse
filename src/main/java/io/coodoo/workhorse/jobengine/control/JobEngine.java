@@ -51,28 +51,19 @@ public class JobEngine implements Serializable {
     @Inject
     private JobExecutor jobExecutor;
 
+    @Inject
+    private Event<AllJobsDoneEvent> allJobsDoneEvent;
+
     private Map<Long, Queue<JobExecution>> jobExecutions = new HashMap<>();
     private Map<Long, Queue<JobExecution>> priorityJobExecutions = new HashMap<>();
     private Map<Long, Set<JobExecution>> runningJobExecutions = new HashMap<>();
-
     private Map<Long, Integer> jobThreadCounts = new HashMap<>();
-
     private Map<Long, Set<JobThread>> jobThreads = new HashMap<>();
-
-    private Map<Long, Map<Future<Long>, JobThread>> futures = new HashMap<>();
-
-    // TODO muss das sein?!
-    private Map<Long, Long> jobStartTimes = new HashMap<>();
-
-    ReentrantLock myLock = new ReentrantLock();
-
-    private static Map<Long, ReentrantLock> jobLocks = new ConcurrentHashMap<>();
-
-    // TODO muss das sein?!
-    @Inject
-    private Event<AllJobsDoneEvent> processFinishedEvent;
-
     private Map<Long, Boolean> pausedJobs = new HashMap<>();
+    private Map<Long, Map<Future<Long>, JobThread>> futures = new HashMap<>();
+    private Map<Long, Long> jobStartTimes = new HashMap<>();
+    private static Map<Long, ReentrantLock> jobLocks = new ConcurrentHashMap<>();
+    private ReentrantLock myLock = new ReentrantLock();
 
     public void initializeMemoryQueues() {
 
@@ -214,7 +205,7 @@ public class JobEngine implements Serializable {
                                 }
                                 if (jobThreads.get(jobId).isEmpty()) {
                                     log.info("All job executions done for job {}", job.getName());
-                                    processFinishedEvent.fire(new AllJobsDoneEvent(job));
+                                    allJobsDoneEvent.fire(new AllJobsDoneEvent(job));
                                 }
                                 return;
                             }
@@ -241,20 +232,21 @@ public class JobEngine implements Serializable {
                                 jobEngineController.setJobExecutionFinished(jobExecutionId, duration, jobExecutionLog);
 
                                 runningJobExecutions.get(jobId).remove(jobExecution);
+                                jobWorker.onFinished(jobExecutionId);
 
                                 if (jobExecution.getChainId() != null) {
-
                                     if (jobExecution.getFailRetryExecutionId() != null) {
                                         // retry failed execution in chain
                                         jobExecutionId = jobExecution.getFailRetryExecutionId();
                                     }
-
-                                    jobExecution = jobEngineController.getNextInChain(jobExecution.getChainId(), jobExecutionId);
-
-                                    if (jobExecution != null) {
+                                    JobExecution nextInChain = jobEngineController.getNextInChain(jobExecution.getChainId(), jobExecutionId);
+                                    if (nextInChain != null) {
+                                        jobExecution = nextInChain;
                                         continue jobExecutionLoop;
                                     }
+                                    jobWorker.onChainFinished(jobExecutionId);
                                 }
+
                                 break jobExecutionLoop;
 
                             } catch (Exception exception) {
@@ -262,9 +254,8 @@ public class JobEngine implements Serializable {
                                 runningJobExecutions.get(jobId).remove(jobExecution);
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
-                                String jobExecutionLog = jobWorker.getJobExecutionLog();
-                                jobExecution = jobEngineController.handleFailedExecution(job, jobExecutionId, exception, duration, jobExecutionLog);
 
+                                jobExecution = jobEngineController.handleFailedExecution(job, jobExecutionId, exception, duration, jobWorker);
                                 if (jobExecution == null) {
                                     break jobExecutionLoop; // no retry
                                 }
@@ -301,11 +292,9 @@ public class JobEngine implements Serializable {
             public JobExecution getActiveJobExecution() {
                 return activeJob;
             }
-
         };
 
         // TODO: Verschiedene JobExecuter (EJB / Thread / ...) per CDI managen
-
         final Future<Long> future = jobExecutor.execute(job, jobThread);
         futures.get(job.getId()).put(future, jobThread);
 
@@ -409,7 +398,6 @@ public class JobEngine implements Serializable {
         return jobExecutions.get(jobId).size() + priorityJobExecutions.get(jobId).size() + runningJobExecutions.get(jobId).size();
     }
 
-    // TODO muss das sein?!
     @Asynchronous
     public void allJobsDone(@Observes AllJobsDoneEvent event) {
         final Job job = event.getJob();

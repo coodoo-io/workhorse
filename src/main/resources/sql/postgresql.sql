@@ -72,5 +72,5 @@ CREATE TABLE jobengine_execution (
 
 CREATE INDEX fk_jobengine_job_execution_job_idx ON jobengine_execution (job_id);
 CREATE INDEX idx_jobengine_job_execution_jobid_status ON jobengine_execution (job_id,status);
-CREATE INDEX fk_jobengine_job_execution_jobid_status ON jobengine_execution (job_id,status);
 CREATE INDEX idx_jobengine_job_execution_poller ON jobengine_execution (job_id,status,parameters_hash);
+CREATE INDEX idx_jobengine_job_execution__chain_id__chain_prev_exec_id (chain_id,chain_previous_execution_id);

@@ -26,7 +26,7 @@ public abstract class BaseJobWorker {
     private Job job;
 
     /**
-     * The job engine will uses this method as the entrance point to perform the execution.
+     * The job engine will uses this method to perform the job execution.
      * 
      * @param jobExecution job execution object, containing parameters and meta information
      * @throws Exception in case the job execution fails
@@ -34,7 +34,40 @@ public abstract class BaseJobWorker {
     public abstract void doWork(JobExecution jobExecution) throws Exception;
 
     /**
-     * Gets the Job from the database
+     * The job engine will call this callback method after the job execution is finished. <br>
+     * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
+     * 
+     * @param jobExecutionId ID of current job execution that is finished
+     */
+    public void onFinished(Long jobExecutionId) {}
+
+    /**
+     * The job engine will call this callback method after the last job execution of a chain is finished. <br>
+     * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
+     * 
+     * @param jobExecutionId ID of last job execution of a chain that is finished
+     */
+    public void onChainFinished(Long jobExecutionId) {}
+
+    /**
+     * The job engine will call this callback method after the job execution has failed and there will be a retry of the failed job execution. <br>
+     * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
+     * 
+     * @param failedExecutionId ID of current job execution that has failed
+     * @param retryExecutionId ID of new job execution that that will retry the failed one
+     */
+    public void onRetry(Long failedExecutionId, Long retryExecutionId) {}
+
+    /**
+     * The job engine will call this callback method after the job execution has failed. <br>
+     * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
+     * 
+     * @param jobExecutionId ID of current job execution that has failed
+     */
+    public void onFailed(Long jobExecutionId) {}
+
+    /**
+     * Gets the Job from the database s
      * 
      * @return the Job that belongs to this service
      */

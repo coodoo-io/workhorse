@@ -182,7 +182,7 @@ public class JobEngineController {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public synchronized JobExecution handleFailedExecution(Job job, Long jobExecutionId, Exception exception, Long duration, String jobExecutionLog) {
+    public synchronized JobExecution handleFailedExecution(Job job, Long jobExecutionId, Exception exception, Long duration, BaseJobWorker jobWorker) {
 
         JobExecution failedExecution = entityManager.find(JobExecution.class, jobExecutionId);
         JobExecution retryExecution = null;
@@ -216,10 +216,15 @@ public class JobEngineController {
         failedExecution.setStatus(JobExecutionStatus.FAILED);
         failedExecution.setEndedAt(JobEngineUtil.timestamp());
         failedExecution.setDuration(duration);
-        failedExecution.setLog(jobExecutionLog);
+        failedExecution.setLog(jobWorker.getJobExecutionLog());
         failedExecution.setFailMessage(exception.getMessage());
         failedExecution.setFailStacktrace(JobEngineUtil.stacktraceToString(exception));
 
+        if (retryExecution == null) {
+            jobWorker.onFailed(jobExecutionId);
+        } else {
+            jobWorker.onRetry(jobExecutionId, retryExecution.getId());
+        }
         return retryExecution;
     }
 

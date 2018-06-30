@@ -59,8 +59,8 @@ CREATE TABLE `jobengine_execution` (
   `fail_stacktrace` mediumtext COLLATE utf8_bin,
   PRIMARY KEY (`id`),
   KEY `fk_jobengine_job_execution_job_idx` (`job_id`),
-  KEY `idx_jobengine_job_execution_jobid_status` (`job_id`,`status`),
-  KEY `fk_jobengine_job_execution_jobid_status` (`job_id`,`status`),
-  KEY `idx_jobengine_job_execution_poller` (`job_id`,`status`,`parameters_hash`),
+  KEY `idx_jobengine_job_execution__jobid__status` (`job_id`,`status`),
+  KEY `idx_jobengine_job_execution__poller` (`job_id`,`status`,`parameters_hash`),
+  KEY `idx_jobengine_job_execution__chain_id__chain_prev_exec_id` (`chain_id`,`chain_previous_execution_id`),
   CONSTRAINT `fk_jobengine_job_execution_job` FOREIGN KEY (`job_id`) REFERENCES `jobengine_job` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
