@@ -147,7 +147,7 @@ public class JobEngineService {
             }
         }
         if (uniqueInQueue) {
-            // Prüfen ob es beretis eine Job Excecution mit diesn Parametern existiert und im Status QUEUED ist. Wenn ja diese zurückgeben.
+            // Prüfen ob es bereits eine Job Excecution mit diesn Parametern existiert und im Status QUEUED ist. Wenn ja diese zurückgeben.
             JobExecution equalQueuedJobExcecution = JobExecution.getFirstCreatedByJobIdAndParamters(entityManager, jobId, parameters);
             if (equalQueuedJobExcecution != null) {
                 return equalQueuedJobExcecution;

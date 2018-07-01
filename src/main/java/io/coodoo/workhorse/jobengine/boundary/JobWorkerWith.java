@@ -20,6 +20,7 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
 
     public abstract void doWork(T parameters) throws Exception;
 
+    @Override
     public void doWork(JobExecution jobExecution) throws Exception {
 
         this.jobContext.init(jobExecution);
@@ -39,7 +40,7 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
         try {
             String className = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0].getTypeName();
             Class<?> clazz = Class.forName(className);
-            parametersClass = (Class<T>) clazz;
+            parametersClass = clazz;
             return parametersClass;
 
         } catch (Exception e) {
@@ -188,6 +189,10 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
         Long chainId = null;
         Long chainPreviousExecutionId = null;
 
+        // TODO: Damit dieser Code immer ohne Fehler funktioniert muss die vollständige Erstellung in einer eigenen Transaktion laufen, d.h. aktuell muss der
+        // Worker dafür eine Stateless Bean sein.
+        // Es kam vor, dass diese Stelle ohne Transaktion aufgerufen wurde und somit das nächsträgliche ändern der Chain ID der ersten Execution nicht mehr
+        // gegriffen hat. Diese ganze Stelle sollte in den Service oder einen Controller mit eigener neuer Transaktion ausgelagert werden ausgelagert werden.
         for (T parameters : parametersList) {
             if (chainId == null) { // start of chain
                 // mark as chained, so the poller wont draft it to early
