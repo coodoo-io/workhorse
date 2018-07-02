@@ -141,14 +141,16 @@ public class JobEngineService {
 
         Integer parametersHash = null;
         if (parameters != null) {
-            parameters.hashCode();
-            if (parameters.isEmpty()) {
+            parametersHash = parameters.hashCode();
+            if (parameters.trim().isEmpty() || parameters.isEmpty()) {
                 parameters = null;
+                parametersHash = null;
             }
         }
+
         if (uniqueInQueue) {
             // Prüfen ob es bereits eine Job Excecution mit diesn Parametern existiert und im Status QUEUED ist. Wenn ja diese zurückgeben.
-            JobExecution equalQueuedJobExcecution = JobExecution.getFirstCreatedByJobIdAndParamters(entityManager, jobId, parameters);
+            JobExecution equalQueuedJobExcecution = JobExecution.getFirstCreatedByJobIdAndParameterHash(entityManager, jobId, parametersHash);
             if (equalQueuedJobExcecution != null) {
                 return equalQueuedJobExcecution;
             }

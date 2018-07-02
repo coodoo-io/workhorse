@@ -56,8 +56,8 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
                                 query = "UPDATE JobExecution j SET j.status = 'FINISHED', j.endedAt = :endedAt, j.duration = :duration, j.log = :log, j.updatedAt = :endedAt WHERE j.id = :jobExecutionId"),
 
                 // Analytic
-                @NamedQuery(name = "JobExecution.getFirstCreatedByJobIdAndParamters",
-                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parameters IS NULL OR j.parameters = :parameters) ORDER BY j.createdAt ASC"),
+                @NamedQuery(name = "JobExecution.getFirstCreatedByJobIdAndParameterHash",
+                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parameterHash IS NULL OR j.parameterHash = :parameterHash) ORDER BY j.createdAt ASC"),
                 @NamedQuery(name = "JobExecution.countQueudByJobIdAndParamters",
                                 query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' and (j.parameters IS NULL or j.parameters = :parameters)"),
                 @NamedQuery(name = "JobExecution.countByJobIdAndStatus",
@@ -459,27 +459,6 @@ public class JobExecution extends RevisionDatesEntity {
     }
 
     /**
-     * Executes the query 'JobExecution.getFirstCreatedByJobIdAndParamters' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param parameters the parameters
-     * @return the result
-     */
-    public static JobExecution getFirstCreatedByJobIdAndParamters(EntityManager entityManager, Long jobId, String parameters) {
-        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParamters");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("parameters", parameters);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (JobExecution) results.get(0);
-    }
-
-    /**
      * Executes the query 'JobExecution.countQueudByJobIdAndParamters' returning one/the first object or null if nothing has been found.
      *
      * @param entityManager the entityManager
@@ -498,6 +477,28 @@ public class JobExecution extends RevisionDatesEntity {
             return null;
         }
         return (Long) results.get(0);
+    }
+
+    /**
+     * Executes the query 'JobExecution.getFirstCreatedByJobIdAndParameterHash' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @param parameterHash the parameterHash
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static JobExecution getFirstCreatedByJobIdAndParameterHash(EntityManager entityManager, Long jobId, Object parameterHash) {
+        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParameterHash");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("parameterHash", parameterHash);
+        query = query.setMaxResults(1);
+        List<JobExecution> resultList = query.getResultList();
+        if (resultList.isEmpty()) {
+            return null;
+        } else {
+            return resultList.get(0);
+        }
     }
 
 }
