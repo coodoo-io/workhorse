@@ -70,7 +70,7 @@ public class JobEngineServiceTest {
 
         JobExecution jobExecutionInQueue = new JobExecution();
         jobExecutionInQueue.setId(21l);
-        when(JobExecution.getFirstCreatedByJobIdAndParameterHash(entityManager, 1l, parameters.hashCode())).thenReturn(jobExecutionInQueue);
+        when(JobExecution.getFirstCreatedByJobIdAndParametersHash(entityManager, 1l, parameters.hashCode())).thenReturn(jobExecutionInQueue);
 
         JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, true);
         assertThat(jobExecution, not(nullValue()));
@@ -84,7 +84,7 @@ public class JobEngineServiceTest {
 
         JobExecution jobExecutionInQueue = new JobExecution();
         jobExecutionInQueue.setId(21l);
-        when(JobExecution.getFirstCreatedByJobIdAndParameterHash(entityManager, 1l, parameters.hashCode())).thenReturn(null);
+        when(JobExecution.getFirstCreatedByJobIdAndParametersHash(entityManager, 1l, parameters.hashCode())).thenReturn(null);
 
         JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, true);
 

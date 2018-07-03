@@ -508,13 +508,13 @@ public class JobExecutionTest {
         NamedQuery queryUnderTest = null;
         for (Object obj : annotations) {
             NamedQuery query = (NamedQuery) obj;
-            if (query.name().equals("JobExecution.getFirstCreatedByJobIdAndParameterHash")) {
+            if (query.name().equals("JobExecution.getFirstCreatedByJobIdAndParametersHash")) {
                 queryUnderTest = query;
                 break;
             }
         }
         if (queryUnderTest == null) {
-            org.junit.Assert.fail("Query JobExecution.getFirstCreatedByJobIdAndParameterHash does not exist anymore.");
+            org.junit.Assert.fail("Query JobExecution.getFirstCreatedByJobIdAndParametersHash does not exist anymore.");
         }
         String queryText = queryUnderTest.query();
         // Minor changes with whitespace are ignored
@@ -523,9 +523,9 @@ public class JobExecutionTest {
             queryText = queryText.replace("  ", " ");
         }
         org.junit.Assert.assertEquals(
-                        "There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parameterHash IS NULL OR j.parameterHash = :parameterHash) ORDER BY j.createdAt ASC' to '"
+                        "There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parametersHash IS NULL OR j.parametersHash = :parametersHash) ORDER BY j.createdAt ASC' to '"
                                         + queryText + "'",
-                        "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parameterHash IS NULL OR j.parameterHash = :parameterHash) ORDER BY j.createdAt ASC",
+                        "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parametersHash IS NULL OR j.parametersHash = :parametersHash) ORDER BY j.createdAt ASC",
                         queryText);
     }
 

@@ -56,8 +56,8 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
                                 query = "UPDATE JobExecution j SET j.status = 'FINISHED', j.endedAt = :endedAt, j.duration = :duration, j.log = :log, j.updatedAt = :endedAt WHERE j.id = :jobExecutionId"),
 
                 // Analytic
-                @NamedQuery(name = "JobExecution.getFirstCreatedByJobIdAndParameterHash",
-                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parameterHash IS NULL OR j.parameterHash = :parameterHash) ORDER BY j.createdAt ASC"),
+                @NamedQuery(name = "JobExecution.getFirstCreatedByJobIdAndParametersHash",
+                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parametersHash IS NULL OR j.parametersHash = :parametersHash) ORDER BY j.createdAt ASC"),
                 @NamedQuery(name = "JobExecution.countQueudByJobIdAndParamters",
                                 query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' and (j.parameters IS NULL or j.parameters = :parameters)"),
                 @NamedQuery(name = "JobExecution.countByJobIdAndStatus",
@@ -488,10 +488,10 @@ public class JobExecution extends RevisionDatesEntity {
      * @return List of result objects
      */
     @SuppressWarnings("unchecked")
-    public static JobExecution getFirstCreatedByJobIdAndParameterHash(EntityManager entityManager, Long jobId, Object parameterHash) {
-        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParameterHash");
+    public static JobExecution getFirstCreatedByJobIdAndParametersHash(EntityManager entityManager, Long jobId, Object parametersHash) {
+        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParametersHash");
         query = query.setParameter("jobId", jobId);
-        query = query.setParameter("parameterHash", parameterHash);
+        query = query.setParameter("parametersHash", parametersHash);
         query = query.setMaxResults(1);
         List<JobExecution> resultList = query.getResultList();
         if (resultList.isEmpty()) {
