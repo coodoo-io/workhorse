@@ -484,7 +484,7 @@ public class JobExecution extends RevisionDatesEntity {
      *
      * @param entityManager the entityManager
      * @param jobId the jobId
-     * @param parameterHash the parameterHash
+     * @param parametersHash the parameterHash
      * @return List of result objects
      */
     @SuppressWarnings("unchecked")
