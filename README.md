@@ -50,17 +50,7 @@ Now we are able to inject this backup job to a service and trigger a job executi
     }
 ```
 
-Lets add some parameters to this job! Therefore we need a POJO with the wanted attributes and implement the `JobExecutionParameters` interface.
-
-```java
-public class BackupJobParameters implements JobExecutionParameters {
-
-    private String evironment;
-    private boolean replaceOldBackup;
-    // getters, setters, ...
-}
-```
-
+Lets add some parameters to this job! Therefore we need just a POJO with the wanted attributes.
 The service can pass the parameters object to the `createJobExecution` method.
 
 ```java
