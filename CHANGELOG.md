@@ -6,7 +6,7 @@
 ### BREAKING CHANGES
 -->
 
-<a name="1.0.0"></a>
+<a name="1.1.0"></a>
 
 ## 1.1.0 (2018-??-??)
 
@@ -25,6 +25,9 @@
 * Changes in the database schema
   * Table `jobengine_execution` got a new column `log`
 
+### Bug Fixes
+
+* Fixed vulnerability in Lib com.fasterxml.jackson.core:jackson-databind by raising the the version from 2.9.4 to 2.9.5
 
 <a name="1.0.0"></a>
 
