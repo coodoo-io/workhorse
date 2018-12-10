@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
@@ -67,11 +66,33 @@ public class JobEngineController {
             Job job = jobEngineService.getJobByClassName(workerClass.getName());
 
             if (job == null) {
+                job = new Job();
 
-                JobConfig jobConfig = workerClass.getAnnotation(JobConfig.class);
-                JobType jobType = availableWorker.getValue();
-
-                job = new Job(workerClass, jobType, jobConfig);
+                if (workerClass.isAnnotationPresent(JobConfig.class)) {
+                    // Use initial worker informations from annotation if available
+                    JobConfig jobConfig = workerClass.getAnnotation(JobConfig.class);
+                    job.setName(jobConfig.name().isEmpty() ? workerClass.getSimpleName() : jobConfig.name());
+                    job.setDescription(jobConfig.description().isEmpty() ? null : jobConfig.description());
+                    job.setWorkerClassName(workerClass.getName());
+                    job.setType(availableWorker.getValue());
+                    job.setStatus(jobConfig.status());
+                    job.setThreads(jobConfig.threads());
+                    job.setFailRetries(jobConfig.failRetries());
+                    job.setRetryDelay(jobConfig.retryDelay());
+                    job.setDaysUntilCleanUp(jobConfig.daysUntilCleanUp());
+                    job.setUniqueInQueue(jobConfig.uniqueInQueue());
+                } else {
+                    // Use initial default worker informations
+                    job.setName(workerClass.getSimpleName());
+                    job.setWorkerClassName(workerClass.getName());
+                    job.setType(availableWorker.getValue());
+                    job.setStatus(JobStatus.ACTIVE);
+                    job.setThreads(JobConfig.JOB_CONFIG_THREADS);
+                    job.setFailRetries(JobConfig.JOB_CONFIG_FAIL_RETRIES);
+                    job.setRetryDelay(JobConfig.JOB_CONFIG_RETRY_DELAY);
+                    job.setDaysUntilCleanUp(JobConfig.JOB_CONFIG_DAYS_UNTIL_CLEANUP);
+                    job.setUniqueInQueue(JobConfig.JOB_CONFIG_UNIQUE_IN_QUEUE);
+                }
                 entityManager.persist(job);
 
                 log.info("Set up job {} for JobWorker {}", job.getName(), workerClass.getSimpleName());
@@ -127,11 +148,11 @@ public class JobEngineController {
         }
     }
 
-    public JobWorker getJobWorker(Job job) throws Exception {
+    public BaseJobWorker getJobWorker(Job job) throws Exception {
         try {
 
             Class<?> workerClass = Class.forName(job.getWorkerClassName());
-            return (JobWorker) CDI.current().select(workerClass).get();
+            return (BaseJobWorker) CDI.current().select(workerClass).get();
 
         } catch (Exception exception) {
 
@@ -149,8 +170,8 @@ public class JobEngineController {
      */
     public void deleteOlderJobExecutions() {
         for (Job job : Job.getAll(entityManager)) {
-            if (job.getDaysUntilCLeanUp() > 0) {
-                jobExecutionCleanupWorker.createJobExecution(new JobExecutionCleanupParameter(job.getId(), job.getName(), job.getDaysUntilCLeanUp()));
+            if (job.getDaysUntilCleanUp() > 0) {
+                jobExecutionCleanupWorker.createJobExecution(new JobExecutionCleanupParameter(job.getId(), job.getName(), job.getDaysUntilCleanUp()));
             }
         }
     }
@@ -161,7 +182,7 @@ public class JobEngineController {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public synchronized JobExecution handleFailedExecution(Job job, Long jobExecutionId, Exception exception, Long duration) {
+    public synchronized JobExecution handleFailedExecution(Job job, Long jobExecutionId, Exception exception, Long duration, BaseJobWorker jobWorker) {
 
         JobExecution failedExecution = entityManager.find(JobExecution.class, jobExecutionId);
         JobExecution retryExecution = null;
@@ -177,7 +198,8 @@ public class JobEngineController {
             retryExecution.setMaturity(failedExecution.getMaturity());
             retryExecution.setChainId(failedExecution.getChainId());
             retryExecution.setChainPreviousExecutionId(failedExecution.getChainPreviousExecutionId());
-            retryExecution.setParametersJson(failedExecution.getParametersJson());
+            retryExecution.setParameters(failedExecution.getParameters());
+            retryExecution.setParametersHash(failedExecution.getParametersHash());
 
             // increase failure number
             retryExecution.setFailRetry(failedExecution.getFailRetry() + 1);
@@ -194,29 +216,28 @@ public class JobEngineController {
         failedExecution.setStatus(JobExecutionStatus.FAILED);
         failedExecution.setEndedAt(JobEngineUtil.timestamp());
         failedExecution.setDuration(duration);
+        failedExecution.setLog(jobWorker.getJobExecutionLog());
         failedExecution.setFailMessage(exception.getMessage());
         failedExecution.setFailStacktrace(JobEngineUtil.stacktraceToString(exception));
 
+        if (retryExecution == null) {
+            jobWorker.onFailed(jobExecutionId);
+        } else {
+            jobWorker.onRetry(jobExecutionId, retryExecution.getId());
+        }
         return retryExecution;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public synchronized void setJobExecutionStatus(Long jobExecutionId, JobExecutionStatus jobExecutionStatus, Long duration) {
+    public synchronized void setJobExecutionRunning(Long jobExecutionId) {
 
-        final LocalDateTime now = JobEngineUtil.timestamp();
-        switch (jobExecutionStatus) {
-            case RUNNING:
-                JobExecution.updateStarted(entityManager, now, jobExecutionId);
-                break;
-            case FINISHED:
-            case FAILED:
-                JobExecution.updateEnded(entityManager, jobExecutionStatus, now, duration, jobExecutionId);
-                break;
-            case ABORTED:
-            case QUEUED:
-                JobExecution.updateStatus(entityManager, jobExecutionStatus, now, jobExecutionId);
-                break;
-        }
+        JobExecution.updateStatusRunning(entityManager, JobEngineUtil.timestamp(), jobExecutionId);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public synchronized void setJobExecutionFinished(Long jobExecutionId, Long duration, String jobExecutionLog) {
+
+        JobExecution.updateStatusFinished(entityManager, JobEngineUtil.timestamp(), duration, jobExecutionLog, jobExecutionId);
     }
 
     public synchronized JobExecution getNextInChain(Long chainId, Long currentJobExecutionId) {

@@ -13,9 +13,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import io.coodoo.workhorse.jobengine.boundary.JobExecutionParameters;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
+import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 
 /**
  * <p>
@@ -50,19 +49,17 @@ import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
                                 query = "DELETE FROM JobExecution j WHERE j.jobId = :jobId AND j.createdAt < :preDate"),
                 @NamedQuery(name = "JobExecution.selectDuration", query = "SELECT j.duration FROM JobExecution j WHERE j.id = :jobExecutionId"),
 
-                // Status updates
-                @NamedQuery(name = "JobExecution.updateStatus",
-                                query = "UPDATE JobExecution j SET j.status = :status, j.updatedAt = :updatedAt WHERE j.id = :jobExecutionId"),
-                @NamedQuery(name = "JobExecution.updateStarted",
+                // Status
+                @NamedQuery(name = "JobExecution.updateStatusRunning",
                                 query = "UPDATE JobExecution j SET j.status = 'RUNNING', j.startedAt = :startedAt, j.updatedAt = :startedAt WHERE j.id = :jobExecutionId"),
-                @NamedQuery(name = "JobExecution.updateEnded",
-                                query = "UPDATE JobExecution j SET j.status = :status, j.endedAt = :endedAt, j.duration = :duration, j.updatedAt = :endedAt WHERE j.id = :jobExecutionId"),
+                @NamedQuery(name = "JobExecution.updateStatusFinished",
+                                query = "UPDATE JobExecution j SET j.status = 'FINISHED', j.endedAt = :endedAt, j.duration = :duration, j.log = :log, j.updatedAt = :endedAt WHERE j.id = :jobExecutionId"),
 
                 // Analytic
-                @NamedQuery(name = "JobExecution.getFirstCreatedByJobIdAndParamters",
-                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parametersJson is NULL OR j.parametersJson = :parametersJson) ORDER BY j.createdAt ASC"),
+                @NamedQuery(name = "JobExecution.getFirstCreatedByJobIdAndParametersHash",
+                                query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parametersHash IS NULL OR j.parametersHash = :parametersHash) ORDER BY j.createdAt ASC"),
                 @NamedQuery(name = "JobExecution.countQueudByJobIdAndParamters",
-                                query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' and (j.parametersJson IS NULL or j.parametersJson = :parametersJson)"),
+                                query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' and (j.parameters IS NULL or j.parameters = :parameters)"),
                 @NamedQuery(name = "JobExecution.countByJobIdAndStatus",
                                 query = "SELECT COUNT(j) FROM JobExecution j WHERE j.jobId = :jobId AND j.status = :status")
 
@@ -111,7 +108,13 @@ public class JobExecution extends RevisionDatesEntity {
     private Long chainPreviousExecutionId;
 
     @Column(name = "parameters")
-    private String parametersJson;
+    private String parameters;
+
+    @Column(name = "parameters_hash")
+    private Integer parametersHash;
+
+    @Column(name = "log")
+    private String log;
 
     @Column(name = "fail_retry")
     private int failRetry;
@@ -120,15 +123,15 @@ public class JobExecution extends RevisionDatesEntity {
     private Long failRetryExecutionId;
 
     /**
-     * The exception message, if the job excecution ends in an exception.
+     * The exception message, if the job execution ends in an exception.
      */
-    @Column(name = "fail_message", length = 4096)
+    @Column(name = "fail_message")
     private String failMessage;
 
     /**
-     * The exception stacktrace, if the job excecution ends in an exception.
+     * The exception stacktrace, if the job execution ends in an exception.
      */
-    @Column(name = "fail_stacktrace", length = 10000)
+    @Column(name = "fail_stacktrace")
     private String failStacktrace;
 
     public Long getJobId() {
@@ -203,20 +206,28 @@ public class JobExecution extends RevisionDatesEntity {
         this.chainPreviousExecutionId = chainPreviousExecutionId;
     }
 
-    public String getParametersJson() {
-        return parametersJson;
+    public String getParameters() {
+        return parameters;
     }
 
-    public void setParametersJson(String parametersJson) {
-        this.parametersJson = parametersJson;
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
     }
 
-    public JobExecutionParameters getParameters() {
-        return JobEngineUtil.jsonToJobExecutionParameters(parametersJson);
+    public Integer getParametersHash() {
+        return parametersHash;
     }
 
-    public void setParameters(JobExecutionParameters parameters) {
-        this.parametersJson = JobEngineUtil.jobExecutionParametersToJson(parameters);
+    public void setParametersHash(Integer parametersHash) {
+        this.parametersHash = parametersHash;
+    }
+
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log;
     }
 
     public int getFailRetry() {
@@ -255,8 +266,9 @@ public class JobExecution extends RevisionDatesEntity {
     public String toString() {
         return "JobExecution [jobId=" + jobId + ", status=" + status + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration=" + duration
                         + ", priority=" + priority + ", maturity=" + maturity + ", chainId=" + chainId + ", chainPreviousExecutionId="
-                        + chainPreviousExecutionId + ", parametersJson=" + parametersJson + ", failRetry=" + failRetry + ", failRetryExecutionId="
-                        + failRetryExecutionId + ", failMessage=" + failMessage + ", failStacktrace=" + failStacktrace + "]";
+                        + chainPreviousExecutionId + ", parameters=" + parameters + ", parametersHash=" + parametersHash + ", log=" + log + ", failRetry="
+                        + failRetry + ", failRetryExecutionId=" + failRetryExecutionId + ", failMessage=" + failMessage + ", failStacktrace=" + failStacktrace
+                        + "]";
     }
 
     @SuppressWarnings("unchecked")
@@ -329,57 +341,6 @@ public class JobExecution extends RevisionDatesEntity {
     }
 
     /**
-     * Executes the query 'JobExecution.updateStatus' returning the number of affected rows.
-     *
-     * @param entityManager the entityManager
-     * @param status the status
-     * @param updatedAt the updatedAt
-     * @param jobExecutionId the jobExecutionId
-     * @return Number of updated objects
-     */
-    public static int updateStatus(EntityManager entityManager, JobExecutionStatus status, LocalDateTime updatedAt, Long jobExecutionId) {
-        Query query = entityManager.createNamedQuery("JobExecution.updateStatus");
-        query = query.setParameter("status", status);
-        query = query.setParameter("updatedAt", updatedAt);
-        query = query.setParameter("jobExecutionId", jobExecutionId);
-        return query.executeUpdate();
-    }
-
-    /**
-     * Executes the query 'JobExecution.updateStartedAt' returning the number of affected rows.
-     *
-     * @param entityManager the entityManager
-     * @param startedAt the startedAt
-     * @param jobExecutionId the jobExecutionId
-     * @return Number of updated objects
-     */
-    public static int updateStarted(EntityManager entityManager, LocalDateTime startedAt, Long jobExecutionId) {
-        Query query = entityManager.createNamedQuery("JobExecution.updateStarted");
-        query = query.setParameter("startedAt", startedAt);
-        query = query.setParameter("jobExecutionId", jobExecutionId);
-        return query.executeUpdate();
-    }
-
-    /**
-     * Executes the query 'JobExecution.updateEnded' returning the number of affected rows.
-     *
-     * @param entityManager the entityManager
-     * @param status the status
-     * @param endedAt the endedAt
-     * @param duration the duration
-     * @param jobExecutionId the jobExecutionId
-     * @return Number of updated objects
-     */
-    public static int updateEnded(EntityManager entityManager, JobExecutionStatus status, LocalDateTime endedAt, Long duration, Long jobExecutionId) {
-        Query query = entityManager.createNamedQuery("JobExecution.updateEnded");
-        query = query.setParameter("status", status);
-        query = query.setParameter("endedAt", endedAt);
-        query = query.setParameter("duration", duration);
-        query = query.setParameter("jobExecutionId", jobExecutionId);
-        return query.executeUpdate();
-    }
-
-    /**
      * Executes the query 'JobExecution.getChain' returning a list of result objects.
      *
      * @param entityManager the entityManager
@@ -404,48 +365,6 @@ public class JobExecution extends RevisionDatesEntity {
         Query query = entityManager.createNamedQuery("JobExecution.abortChain");
         query = query.setParameter("chainId", chainId);
         return query.executeUpdate();
-    }
-
-    /**
-     * Executes the query 'JobExecution.getFirstCreatedByJobIdAndParamters' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param parametersJson the parametersJson
-     * @return the result
-     */
-    public static JobExecution getFirstCreatedByJobIdAndParamters(EntityManager entityManager, Long jobId, String parametersJson) {
-        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParamters");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("parametersJson", parametersJson);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (JobExecution) results.get(0);
-    }
-
-    /**
-     * Executes the query 'JobExecution.countQueudByJobIdAndParamters' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param parametersJson the parametersJson
-     * @return the result
-     */
-    public static Long countQueudByJobIdAndParamters(EntityManager entityManager, Long jobId, String parametersJson) {
-        Query query = entityManager.createNamedQuery("JobExecution.countQueudByJobIdAndParamters");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("parametersJson", parametersJson);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (Long) results.get(0);
     }
 
     /**
@@ -503,6 +422,83 @@ public class JobExecution extends RevisionDatesEntity {
             return null;
         }
         return (JobExecution) results.get(0);
+    }
+
+    /**
+     * Executes the query 'JobExecution.updateStatusRunning' returning the number of affected rows.
+     *
+     * @param entityManager the entityManager
+     * @param startedAt the startedAt
+     * @param jobExecutionId the jobExecutionId
+     * @return Number of updated objects
+     */
+    public static int updateStatusRunning(EntityManager entityManager, LocalDateTime startedAt, Long jobExecutionId) {
+        Query query = entityManager.createNamedQuery("JobExecution.updateStatusRunning");
+        query = query.setParameter("startedAt", startedAt);
+        query = query.setParameter("jobExecutionId", jobExecutionId);
+        return query.executeUpdate();
+    }
+
+    /**
+     * Executes the query 'JobExecution.updateStatusFinished' returning the number of affected rows.
+     *
+     * @param entityManager the entityManager
+     * @param endedAt the endedAt
+     * @param duration the duration
+     * @param log the log
+     * @param jobExecutionId the jobExecutionId
+     * @return Number of updated objects
+     */
+    public static int updateStatusFinished(EntityManager entityManager, LocalDateTime endedAt, Long duration, String log, Long jobExecutionId) {
+        Query query = entityManager.createNamedQuery("JobExecution.updateStatusFinished");
+        query = query.setParameter("endedAt", endedAt);
+        query = query.setParameter("duration", duration);
+        query = query.setParameter("log", log);
+        query = query.setParameter("jobExecutionId", jobExecutionId);
+        return query.executeUpdate();
+    }
+
+    /**
+     * Executes the query 'JobExecution.countQueudByJobIdAndParamters' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @param parameters the parameters
+     * @return the result
+     */
+    public static Long countQueudByJobIdAndParamters(EntityManager entityManager, Long jobId, String parameters) {
+        Query query = entityManager.createNamedQuery("JobExecution.countQueudByJobIdAndParamters");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("parameters", parameters);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (Long) results.get(0);
+    }
+
+    /**
+     * Executes the query 'JobExecution.getFirstCreatedByJobIdAndParameterHash' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @param parametersHash the parameterHash
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static JobExecution getFirstCreatedByJobIdAndParametersHash(EntityManager entityManager, Long jobId, Object parametersHash) {
+        Query query = entityManager.createNamedQuery("JobExecution.getFirstCreatedByJobIdAndParametersHash");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("parametersHash", parametersHash);
+        query = query.setMaxResults(1);
+        List<JobExecution> resultList = query.getResultList();
+        if (resultList.isEmpty()) {
+            return null;
+        } else {
+            return resultList.get(0);
+        }
     }
 
 }

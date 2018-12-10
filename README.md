@@ -17,22 +17,21 @@
 
 ## Who is this Workhorse?
 
-The coodoo Workhorse is Java EE job engine for mostly all kind of tasks and background jobs as it is a combination of task scheduler and an event system. It can help you to send out thousands of e-mails or perform long running imports.
+The coodoo Workhorse is a Java EE job engine for mostly all kind of tasks and background jobs as it is a combination of task scheduler and an event system. It can help you to send out thousands of e-mails or perform long running imports.
 
-Just fire jobs on demand when ever from where ever in your code and Workhorse will take care of it. You can also define an interval or specific time the job has to be started by using the cron syntax. There are also many options like prioritizing, delaying, chaining, multithreading, uniquifying, retrying the jobs. 
+Just fire jobs on demand when ever from where ever in your code and Workhorse will take care of it. You can also define an interval or specific time the job has to be started by using the cron syntax. There are also many options like prioritizing, delaying, chaining, multithreading, uniquifying and retrying the jobs. 
 
 ## Getting started
 
-Lets create a backup job. Therefore you need to extend the `JobWorker` class that provides you the `doWork` method. This method is where the magic happens! You also have to add the `@JobConfig` annotation to provide basic configurations.
+Lets create a backup job. Therefore you just need to extend the `JobWorker` class that provides you the `doWork` method. And this method is where the magic happens!
 
 ```java
-@JobConfig(name = "Backup", description = "Better backup!")
 public class BackupJob extends JobWorker {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
 
     @Override
-    public void doWork(JobExecution jobExecution) {
+    public void doWork() {
 
         log.info("Performing some fine backup!");
     }
@@ -51,17 +50,7 @@ Now we are able to inject this backup job to a service and trigger a job executi
     }
 ```
 
-Lets add some parameters to this job! Therefore we need a POJO with the wanted attributes and implement the `JobExecutionParameters` interface.
-
-```java
-public class BackupJobParameters implements JobExecutionParameters {
-
-    private String evironment;
-    private boolean replaceOldBackup;
-    // getters, setters, ...
-}
-```
-
+Lets add some parameters to this job! Therefore we need just a POJO with the wanted attributes.
 The service can pass the parameters object to the `createJobExecution` method.
 
 ```java
@@ -82,11 +71,12 @@ You can access the parameters in the `doWork` method like this.
 
 ```java
     @Override
-    public void doWork(JobExecution jobExecution) {
+    public void doWork() {
 
-        BackupJobParameters params = (BackupJobParameters) jobExecution.getParameters();
+        BackupJobParameters parameters = getParameters();
 
-        log.info("Performing some fine backup on {} environment! Replace old backup: {}", params.getEvironment(), params.isReplaceOldBackup());
+        log.info("Performing some fine backup on {} environment! Replace old backup: {}",
+            parameters.getEvironment(), parameters.isReplaceOldBackup());
     }
 ```
 
@@ -94,7 +84,6 @@ Everybody knows backups should be made on a regular basis, so lets tell this job
 
 ```java
 @JobScheduleConfig(hour = "3", minute = "30")
-@JobConfig(name = "Backup", description = "Better backup!")
 public class BackupJob extends JobWorker {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
@@ -110,11 +99,12 @@ public class BackupJob extends JobWorker {
     }
 
     @Override
-    public void doWork(JobExecution jobExecution) {
+    public void doWork() {
 
-        BackupJobParameters params = (BackupJobParameters) jobExecution.getParameters();
+        BackupJobParameters parameters = getParameters();
 
-        log.info("Performing some fine backup on {} environment! Replace old backup: {}", params.getEvironment(), params.isReplaceOldBackup());
+        log.info("Performing some fine backup on {} environment! Replace old backup: {}",
+            parameters.getEvironment(), parameters.isReplaceOldBackup());
     }
 }
 ```
@@ -134,13 +124,13 @@ Doesn't work? That is because you have to start the jobEngine using the method `
 
 ## Install
 
-1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.0.0%7Cjar))
+1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.1.0%7Cjar))
    
    ```xml
    <dependency>
        <groupId>io.coodoo</groupId>
        <artifactId>workhorse</artifactId>
-       <version>1.0.0</version>
+       <version>1.1.0</version>
    </dependency>
    ```
    

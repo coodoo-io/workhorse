@@ -5,10 +5,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
@@ -20,9 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.coodoo.workhorse.jobengine.boundary.JobExecutionParameters;
-import io.coodoo.workhorse.jobengine.boundary.JobWorker;
-import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.entity.JobType;
@@ -36,9 +32,6 @@ public final class JobEngineUtil {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String PARAMETERS_CLASS_REGEX = "\"" + JobExecutionParameters.PARAMETERS_CLASS_JSON_KEY + "\"\\s*:\\s*\"(\\w+(.\\w+)*)\"";
-    private static final Pattern PARAMETERS_CLASS_PATTERN = Pattern.compile(PARAMETERS_CLASS_REGEX);
-
     public static final ZoneId ZONE_UTC = ZoneId.of("UTC");
 
     private JobEngineUtil() {}
@@ -48,13 +41,10 @@ public final class JobEngineUtil {
 
         Map<Class<?>, JobType> workers = new HashMap<>();
 
-        for (Bean<?> workerBean : CDI.current().getBeanManager().getBeans(JobWorker.class, new AnnotationLiteral<Any>() {})) {
+        for (Bean<?> workerBean : CDI.current().getBeanManager().getBeans(BaseJobWorker.class, new AnnotationLiteral<Any>() {})) {
 
             Class<?> workerClass = workerBean.getBeanClass();
 
-            if (!workerClass.isAnnotationPresent(JobConfig.class)) {
-                log.error("@JobConfig annotation is missing on {}!", workerClass);
-            }
             if (workerClass.isAnnotationPresent(SystemJob.class)) {
                 workers.put(workerClass, JobType.SYSTEM);
             } else if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {
@@ -70,31 +60,32 @@ public final class JobEngineUtil {
         return LocalDateTime.now(ZONE_UTC);
     }
 
-    public static JobExecutionParameters jsonToJobExecutionParameters(String parametersJson) {
+    public static LocalDateTime delayToMaturity(Long delayValue, ChronoUnit delayUnit) {
+
+        LocalDateTime maturity = null;
+        if (delayValue != null && delayUnit != null) {
+            maturity = timestamp().plus(delayValue, delayUnit);
+        }
+        return maturity;
+    }
+
+    public static <T> T jsonToParameters(String parametersJson, Class<T> parametersClass) {
         if (parametersJson == null || parametersJson.isEmpty()) {
             return null;
         }
         try {
-
-            Matcher matcher = PARAMETERS_CLASS_PATTERN.matcher(parametersJson);
-            if (matcher.find()) {
-                if (matcher.group(1) != null) {
-                    Class<?> parametersClass = Class.forName(matcher.group(1));
-                    return (JobExecutionParameters) objectMapper.readValue(parametersJson, parametersClass);
-                }
-            }
-            return null;
-        } catch (IOException | ClassNotFoundException e) {
+            return (T) objectMapper.readValue(parametersJson, parametersClass);
+        } catch (IOException e) {
             throw new RuntimeException("JSON Parameter could not be mapped to an object", e);
         }
     }
 
-    public static String jobExecutionParametersToJson(JobExecutionParameters parameters) {
-        if (parameters == null) {
+    public static String parametersToJson(Object parametersObject) {
+        if (parametersObject == null) {
             return null;
         }
         try {
-            return objectMapper.writeValueAsString(parameters);
+            return objectMapper.writeValueAsString(parametersObject);
         } catch (IOException e) {
             throw new RuntimeException("Parameter object could not be mapped to json", e);
         }

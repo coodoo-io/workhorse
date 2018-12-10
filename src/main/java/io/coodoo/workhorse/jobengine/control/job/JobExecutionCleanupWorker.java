@@ -6,12 +6,11 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.coodoo.workhorse.jobengine.boundary.JobWorker;
+import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
-import io.coodoo.workhorse.jobengine.entity.JobExecution;
 
 /**
  * Deletes old Job Executions database entries, which are not needed anymore.
@@ -22,7 +21,7 @@ import io.coodoo.workhorse.jobengine.entity.JobExecution;
 @SystemJob
 @JobConfig(name = "Job Execution Cleanup", description = "Deletes old job executions from the database")
 @JobScheduleConfig(minute = "17", hour = "4")
-public class JobExecutionCleanupWorker extends JobWorker {
+public class JobExecutionCleanupWorker extends JobWorkerWith<JobExecutionCleanupParameter> {
 
     private final Logger log = LoggerFactory.getLogger(JobExecutionCleanupWorker.class);
 
@@ -34,9 +33,7 @@ public class JobExecutionCleanupWorker extends JobWorker {
     }
 
     @Override
-    public void doWork(JobExecution jobExecution) {
-
-        JobExecutionCleanupParameter parameters = (JobExecutionCleanupParameter) jobExecution.getParameters();
+    public void doWork(JobExecutionCleanupParameter parameters) throws Exception {
 
         int deletedJobExecutions = jobEngineController.deleteOlderJobExecutions(parameters.jobId, parameters.minDaysOld);
 

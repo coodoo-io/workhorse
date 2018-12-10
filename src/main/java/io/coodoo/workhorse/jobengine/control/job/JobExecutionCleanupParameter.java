@@ -1,13 +1,9 @@
 package io.coodoo.workhorse.jobengine.control.job;
 
-import io.coodoo.workhorse.jobengine.boundary.JobExecutionParameters;
-
-public class JobExecutionCleanupParameter implements JobExecutionParameters {
+public class JobExecutionCleanupParameter {
 
     public Long jobId;
-
     public String jobName;
-
     public int minDaysOld;
 
     public JobExecutionCleanupParameter() {}
