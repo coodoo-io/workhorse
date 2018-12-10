@@ -41,43 +41,43 @@ public class BackupJob extends JobWorker {
 Now we are able to inject this backup job to a service and trigger a job execution. After calling `createJobExecution` the job gets pushed into the job queue and the job engine will take care from this point.
 
 ```java
-    @Inject
-    BackupJob backupJob;
+@Inject
+BackupJob backupJob;
 
-    public void performBackup() {
+public void performBackup() {
 
-        backupJob.createJobExecution();
-    }
+    backupJob.createJobExecution();
+}
 ```
 
 Lets add some parameters to this job! Therefore we need just a POJO with the wanted attributes.
 The service can pass the parameters object to the `createJobExecution` method.
 
 ```java
-    @Inject
-    BackupJob backupJob;
+@Inject
+BackupJob backupJob;
 
-    public void performBackup() {
-    
-        BackupJobParameters parameters = new BackupJobParameters();
-        parameters.setEvironment("STAGE-2");
-        parameters.setReplaceOldBackup(false);
+public void performBackup() {
 
-        backupJob.createJobExecution(parameters);
-    }
+    BackupJobParameters parameters = new BackupJobParameters();
+    parameters.setEvironment("STAGE-2");
+    parameters.setReplaceOldBackup(false);
+
+    backupJob.createJobExecution(parameters);
+}
 ```
 
 You can access the parameters in the `doWork` method like this.
 
 ```java
-    @Override
-    public void doWork() {
+@Override
+public void doWork() {
 
-        BackupJobParameters parameters = getParameters();
+    BackupJobParameters parameters = getParameters();
 
-        log.info("Performing some fine backup on {} environment! Replace old backup: {}",
-            parameters.getEvironment(), parameters.isReplaceOldBackup());
-    }
+    log.info("Performing some fine backup on {} environment! Replace old backup: {}",
+        parameters.getEvironment(), parameters.isReplaceOldBackup());
+}
 ```
 
 Everybody knows backups should be made on a regular basis, so lets tell this job to run every night half past three by adding `@JobScheduleConfig` annotation. In this case we overwrite the method `scheduledJobExecutionCreation()` witch triggers the job to add some parameters.
@@ -112,13 +112,13 @@ public class BackupJob extends JobWorker {
 Doesn't work? That is because you have to start the jobEngine using the method `start()` of the `JobEngineService` somewhere in your application. It takes the job queue polling interval in seconds as a parameter and there is also a `stop()` method to halt the job engine.
 
 ```java
-    @Inject
-    JobEngineService jobEngineService;
+@Inject
+JobEngineService jobEngineService;
 
-    public void start() {
+public void start() {
 
-        jobEngineService.start(5);
-    }
+    jobEngineService.start(5);
+}
 ```
 
 
