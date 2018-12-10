@@ -18,7 +18,7 @@
   * Add log entries in the `doWork()` method of `JobWorker` using `logLine(message)` or `logLineWithTimestamp(message)`
   * Anywhere in the code, inject and use `JobLogger` for logging, provided that you are in the context of `doWork()`
 
-### BREAKING CHANGES
+### Breaking changes
 
 * Changes in `JobWorker`
   * Method `doWork()` doesn’t need the `JobExecution` object anymore.
