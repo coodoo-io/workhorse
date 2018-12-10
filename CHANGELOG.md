@@ -8,11 +8,12 @@
 
 <a name="1.1.0"></a>
 
-## 1.1.0 (2018-??-??)
+## 1.1.0 (2018-12-10)
 
 ### Features
 
 * Annotation `@JobConfig` in now optional
+* No interface for job execution parameters is needed anymore
 * Simple logging on job execution level
   * Add log entries in the `doWork()` method of `JobWorker` using `logLine(message)` or `logLineWithTimestamp(message)`
   * Anywhere in the code, inject and use `JobLogger` for logging, provided that you are in the context of `doWork()`
@@ -27,7 +28,7 @@
 
 ### Bug Fixes
 
-* Fixed vulnerability in Lib com.fasterxml.jackson.core:jackson-databind by raising the the version from 2.9.4 to 2.9.5
+* Fixed vulnerability in library com.fasterxml.jackson.core:jackson-databind by raising the the version from 2.9.4 to 2.9.5
 
 <a name="1.0.0"></a>
 

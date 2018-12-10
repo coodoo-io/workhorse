@@ -84,7 +84,6 @@ Everybody knows backups should be made on a regular basis, so lets tell this job
 
 ```java
 @JobScheduleConfig(hour = "3", minute = "30")
-@JobConfig(name = "Backup", description = "Better backup!")
 public class BackupJob extends JobWorker {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
