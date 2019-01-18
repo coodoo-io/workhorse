@@ -14,10 +14,13 @@ import org.slf4j.MDC;
 
 import io.coodoo.workhorse.jobengine.entity.Job;
 
+/**
+ * @author coodoo GmbH (coodoo.io)
+ */
 @Stateless
 public class JobExecutor {
 
-    private static Logger log = LoggerFactory.getLogger(JobExecutor.class);
+    private static Logger logger = LoggerFactory.getLogger(JobExecutor.class);
 
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.NEVER)
@@ -31,8 +34,8 @@ public class JobExecutor {
 
         jobThread.run(job);
         long t2 = System.currentTimeMillis();
-        if (log.isTraceEnabled()) {
-            log.trace("Thread duration: " + (t2 - t1));
+        if (logger.isTraceEnabled()) {
+            logger.trace("Thread duration: " + (t2 - t1));
         }
 
         MDC.remove("key");

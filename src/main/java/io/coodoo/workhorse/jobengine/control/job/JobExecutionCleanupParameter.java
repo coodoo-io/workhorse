@@ -1,5 +1,10 @@
 package io.coodoo.workhorse.jobengine.control.job;
 
+/**
+ * Parameters for the usage in {@link JobExecutionCleanupWorker}
+ * 
+ * @author coodoo GmbH (coodoo.io)
+ */
 public class JobExecutionCleanupParameter {
 
     public Long jobId;

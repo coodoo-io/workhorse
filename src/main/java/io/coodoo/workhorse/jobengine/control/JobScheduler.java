@@ -20,6 +20,9 @@ import io.coodoo.workhorse.jobengine.entity.JobSchedule;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.JobType;
 
+/**
+ * @author coodoo GmbH (coodoo.io)
+ */
 @Singleton
 public class JobScheduler {
 

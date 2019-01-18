@@ -6,6 +6,23 @@
 ### BREAKING CHANGES
 -->
 
+<a name="1.1.1"></a>
+
+## 1.1.1 (2019-01-18)
+
+### Features
+
+* Added `getJobId()` to the `JobWorker` 
+* Created logging convenience methods `logInfo` and `logError` to `JobWorker` and `JobContext` that allows to log into the execution and the server log at once.
+* New job status `NO_WORKER` in case the `JobWorker` implementation is missing
+
+### Bug Fixes
+
+* MySQL script: Reduced `worker_class_name` column length to 255 to avoid *Error Code: 1071. Specified key was too long; max key length is 767 bytes*
+* Fixed vulnerability in library com.fasterxml.jackson.core:jackson-databind by raising the the version from 2.9.5 to 2.9.8
+* Added a `serialVersionUID` to all entities to avoid conflicts possible caused by accessing the persistence by different JVMs 
+
+
 <a name="1.1.0"></a>
 
 ## 1.1.0 (2018-12-10)

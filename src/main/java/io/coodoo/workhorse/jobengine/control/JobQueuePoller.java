@@ -1,7 +1,6 @@
 package io.coodoo.workhorse.jobengine.control;
 
 import javax.annotation.Resource;
-import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
@@ -13,6 +12,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author coodoo GmbH (coodoo.io)
+ */
 @Singleton
 public class JobQueuePoller {
 

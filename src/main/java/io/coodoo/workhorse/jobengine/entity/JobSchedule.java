@@ -10,15 +10,19 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
+import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 
-@SuppressWarnings("serial")
+/**
+ * @author coodoo GmbH (coodoo.io)
+ */
 @Entity
 @Table(name = "jobengine_schedule")
 @NamedQueries({@NamedQuery(name = "JobSchedule.getAll", query = "SELECT s FROM JobSchedule s"),
                 @NamedQuery(name = "JobSchedule.getByJobId", query = "SELECT s FROM JobSchedule s WHERE s.jobId=:jobId")})
 public class JobSchedule extends RevisionDatesOccEntity {
+
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "job_id")
     private Long jobId;

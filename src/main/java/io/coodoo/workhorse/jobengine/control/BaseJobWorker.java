@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+
 import io.coodoo.workhorse.jobengine.boundary.JobContext;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.entity.Job;
@@ -67,7 +69,7 @@ public abstract class BaseJobWorker {
     public void onFailed(Long jobExecutionId) {}
 
     /**
-     * Gets the Job from the database s
+     * Gets the Job from the database
      * 
      * @return the Job that belongs to this service
      */
@@ -78,12 +80,62 @@ public abstract class BaseJobWorker {
         return job;
     }
 
+    /**
+     * Gets the Job-ID from the database
+     * 
+     * @return the ID of the job that belongs to this service
+     */
+    public Long getJobId() {
+        if (getJob() != null) {
+            return null;
+        }
+        return job.getId();
+    }
+
+    /**
+     * Adds the message text in as a new line to the executions log
+     * 
+     * @param message text to log
+     */
+    protected void logLine(String message) {
+        jobContext.logLine(message);
+    }
+
+    /**
+     * Adds a timestamp followed by the message text in as a new line to the executions log <br>
+     * Timestamp pattern: <code>[HH:mm:ss.SSS]</code><br>
+     * Example: <code>[22:06:42.680] Step 3 complete</code>
+     * 
+     * @param message text to log
+     */
     protected void logLineWithTimestamp(String message) {
         jobContext.logLineWithTimestamp(message);
     }
 
-    protected void logLine(String message) {
-        jobContext.logLine(message);
+    /**
+     * Adds a timestamp followed by the message text in as a new line to the executions log and also adds the message in severity INFO to the server log<br>
+     * Timestamp pattern: <code>[HH:mm:ss.SSS]</code><br>
+     * Example: <code>[22:06:42.680] Step 3 complete</code>
+     * 
+     * @param logger server log logger
+     * @param message text to log
+     */
+    protected void logInfo(Logger logger, String message) {
+        jobContext.logInfo(logger, message);
+    }
+
+    /**
+     * Adds a timestamp followed by an error marker and the error message as a new line to the executions log. It also adds the message in severity ERROR to the
+     * server log<br>
+     * Timestamp pattern: <code>[HH:mm:ss.SSS]</code><br>
+     * Error marker: <code>[ERROR]</code><br>
+     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code>
+     * 
+     * @param logger server log logger
+     * @param message text to log
+     */
+    protected void logError(Logger logger, String message) {
+        jobContext.logError(logger, message);
     }
 
     /**

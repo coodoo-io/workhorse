@@ -28,7 +28,7 @@ import io.coodoo.workhorse.jobengine.entity.JobType;
  */
 public final class JobEngineUtil {
 
-    private static Logger log = LoggerFactory.getLogger(JobEngineUtil.class);
+    private static Logger logger = LoggerFactory.getLogger(JobEngineUtil.class);
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -100,7 +100,7 @@ public final class JobEngineUtil {
             stacktraceString = stringWriter.toString();
         } catch (IOException e1) {
             stacktraceString = "Couldn't write exception!";
-            log.error(stacktraceString, e);
+            logger.error(stacktraceString, e);
         }
         return stacktraceString;
     }

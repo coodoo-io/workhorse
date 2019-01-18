@@ -26,7 +26,6 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
  * 
  * @author coodoo GmbH (coodoo.io)
  */
-@SuppressWarnings("serial")
 @Entity
 @Table(name = "jobengine_execution")
 @NamedQueries({@NamedQuery(name = "JobExecution.getAllByJobId", query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId"),
@@ -66,6 +65,8 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 })
 
 public class JobExecution extends RevisionDatesEntity {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * The reference to the job description.

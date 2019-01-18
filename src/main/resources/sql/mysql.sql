@@ -3,7 +3,7 @@ CREATE TABLE `jobengine_job` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
   `description` varchar(2028) COLLATE utf8_bin DEFAULT NULL,
-  `worker_class_name` varchar(512) COLLATE utf8_bin NOT NULL,
+  `worker_class_name` varchar(255) COLLATE utf8_bin NOT NULL,
   `type` varchar(32) COLLATE utf8_bin NOT NULL DEFAULT 'ADHOC',
   `status` varchar(32) COLLATE utf8_bin NOT NULL DEFAULT 'ACTIVE',
   `threads` int(4) NOT NULL DEFAULT '1',

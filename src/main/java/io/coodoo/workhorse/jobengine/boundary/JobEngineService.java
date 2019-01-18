@@ -26,14 +26,14 @@ import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.JobType;
 
 /**
- * Provides basically CRUD functionality
+ * Provides basically CRUD and management functionality
  * 
  * @author coodoo GmbH (coodoo.io)
  */
 @Stateless
 public class JobEngineService {
 
-    private final Logger log = LoggerFactory.getLogger(JobEngineService.class);
+    private final Logger logger = LoggerFactory.getLogger(JobEngineService.class);
 
     @Inject
     JobEngine jobEngine;
@@ -53,7 +53,7 @@ public class JobEngineService {
 
     public void start(Integer interval) {
 
-        log.info("Starting job engine...");
+        logger.info("Starting job engine...");
 
         jobEngineController.checkJobConfiguration();
         jobEngine.initializeMemoryQueues();
@@ -63,7 +63,7 @@ public class JobEngineService {
 
     public void stop() {
 
-        log.info("Stopping job engine...");
+        logger.info("Stopping job engine...");
 
         jobQueuePoller.stop();
 
@@ -75,7 +75,7 @@ public class JobEngineService {
 
     public void activateJob(Job job) {
 
-        log.info("Activate job {}", job.getName());
+        logger.info("Activate job {}", job.getName());
 
         updateJob(job.getId(), job.getName(), job.getDescription(), job.getWorkerClassName(), JobStatus.ACTIVE, job.getThreads(), job.getFailRetries());
         jobScheduler.start(job);
@@ -83,7 +83,7 @@ public class JobEngineService {
 
     public void deactivateJob(Job job) {
 
-        log.info("Deactivate job {}", job.getName());
+        logger.info("Deactivate job {}", job.getName());
 
         updateJob(job.getId(), job.getName(), job.getDescription(), job.getWorkerClassName(), JobStatus.INACTIVE, job.getThreads(), job.getFailRetries());
         jobScheduler.stop(job);
@@ -114,7 +114,7 @@ public class JobEngineService {
         job.setStatus(status);
         job.setThreads(threads);
         job.setFailRetries(failRetries);
-        log.debug("Job updated: {}", job);
+        logger.debug("Job updated: {}", job);
         return job;
     }
 
@@ -125,7 +125,7 @@ public class JobEngineService {
             deleteSchedule(jobId);
         }
         entityManager.remove(job);
-        log.debug("Job removed (including {} executions): {}", deletedJobExecutions, job);
+        logger.debug("Job removed (including {} executions): {}", deletedJobExecutions, job);
     }
 
     public JobExecution getJobExecutionById(Long jobExecutionId) {
@@ -168,7 +168,7 @@ public class JobEngineService {
         jobExecution.setChainPreviousExecutionId(previousJobExecutionId);
 
         entityManager.persist(jobExecution);
-        log.debug("JobExecution created: {}", jobExecution);
+        logger.debug("JobExecution created: {}", jobExecution);
         return jobExecution;
     }
 
@@ -182,20 +182,20 @@ public class JobEngineService {
         jobExecution.setChainId(chainId);
         jobExecution.setChainPreviousExecutionId(previousJobExecutionId);
         jobExecution.setFailRetry(fails);
-        log.debug("JobExecution updated: {}", jobExecution);
+        logger.debug("JobExecution updated: {}", jobExecution);
         return jobExecution;
     }
 
     public void deleteJobExecution(Long jobExecutionId) {
         JobExecution jobExecution = getJobExecutionById(jobExecutionId);
         entityManager.remove(jobExecution);
-        log.debug("JobExecution removed: {}", jobExecution);
+        logger.debug("JobExecution removed: {}", jobExecution);
     }
 
     public void updateJobStatus(Long jobId, JobStatus status) {
         Job job = getJobById(jobId);
         job.setStatus(status);
-        log.debug("Job status updated to: {}", status);
+        logger.debug("Job status updated to: {}", status);
     }
 
     public void clearMemoryQueue(Long jobId) {
@@ -223,7 +223,7 @@ public class JobEngineService {
         jobSchedule.setDayOfMonth(dayOfMonth);
         jobSchedule.setMonth(month);
         jobSchedule.setYear(year);
-        log.debug("Schedule updated: {}", jobSchedule);
+        logger.debug("Schedule updated: {}", jobSchedule);
 
         jobScheduler.start(getJobById(jobId));
 
@@ -237,7 +237,7 @@ public class JobEngineService {
         jobScheduler.stop(job);
 
         entityManager.remove(jobSchedule);
-        log.debug("Schedule removed: {}", jobSchedule);
+        logger.debug("Schedule removed: {}", jobSchedule);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

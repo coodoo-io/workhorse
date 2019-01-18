@@ -16,6 +16,8 @@ import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
  * Deletes old Job Executions database entries, which are not needed anymore.
  * 
  * Every Job can configure his own clean up days count by setting JobConfig.
+ * 
+ * @author coodoo GmbH (coodoo.io)
  */
 @RequestScoped
 @SystemJob
@@ -23,7 +25,7 @@ import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 @JobScheduleConfig(minute = "17", hour = "4")
 public class JobExecutionCleanupWorker extends JobWorkerWith<JobExecutionCleanupParameter> {
 
-    private final Logger log = LoggerFactory.getLogger(JobExecutionCleanupWorker.class);
+    private final Logger logger = LoggerFactory.getLogger(JobExecutionCleanupWorker.class);
 
     @Inject
     JobEngineController jobEngineController;
@@ -37,7 +39,7 @@ public class JobExecutionCleanupWorker extends JobWorkerWith<JobExecutionCleanup
 
         int deletedJobExecutions = jobEngineController.deleteOlderJobExecutions(parameters.jobId, parameters.minDaysOld);
 
-        log.info("Deleted {} job executions of job '{}' that were older than {} days", deletedJobExecutions, parameters.jobName, parameters.minDaysOld);
+        logger.info("Deleted {} job executions of job '{}' that were older than {} days", deletedJobExecutions, parameters.jobName, parameters.minDaysOld);
     }
 
 }

@@ -35,7 +35,7 @@ public class JobEngineController {
     private static final int ADD_JOB_EXECUTION_LIMIT = 1000;
     private static final int ACTIVE_JOB_EXECUTION_MINIMUM_LEVEL = 100;
 
-    private final Logger log = LoggerFactory.getLogger(JobEngineController.class);
+    private final Logger logger = LoggerFactory.getLogger(JobEngineController.class);
 
     @Inject
     JobEngine jobEngine;
@@ -55,13 +55,13 @@ public class JobEngineController {
 
     public void checkJobConfiguration() {
 
-        log.info("Checking JobWorker classes...");
+        logger.info("Checking JobWorker classes...");
         Map<Class<?>, JobType> availableWorkers = JobEngineUtil.getAvailableWorkers();
 
         for (Map.Entry<Class<?>, JobType> availableWorker : availableWorkers.entrySet()) {
 
             Class<?> workerClass = availableWorker.getKey();
-            log.info("Found JobWorker class {}", workerClass.getSimpleName());
+            logger.info("Found JobWorker class {}", workerClass.getSimpleName());
 
             Job job = jobEngineService.getJobByClassName(workerClass.getName());
 
@@ -95,7 +95,7 @@ public class JobEngineController {
                 }
                 entityManager.persist(job);
 
-                log.info("Set up job {} for JobWorker {}", job.getName(), workerClass.getSimpleName());
+                logger.info("Set up job {} for JobWorker {}", job.getName(), workerClass.getSimpleName());
 
                 if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {
                     JobScheduleConfig jobScheduleConfig = workerClass.getAnnotation(JobScheduleConfig.class);
@@ -103,13 +103,13 @@ public class JobEngineController {
                     JobSchedule jobSchedule = new JobSchedule(job.getId(), jobScheduleConfig);
                     entityManager.persist(jobSchedule);
 
-                    log.info("Set up schedule {} for JobWorker {}", jobScheduler.toString(jobScheduler.toScheduleExpression(jobSchedule)),
+                    logger.info("Set up schedule {} for JobWorker {}", jobScheduler.toString(jobScheduler.toScheduleExpression(jobSchedule)),
                                     workerClass.getSimpleName());
                 }
             }
         }
 
-        log.info("Checking persisted jobs...");
+        logger.info("Checking persisted jobs...");
         for (Job job : jobEngineService.getAllJobs()) {
 
             try {
@@ -117,10 +117,15 @@ public class JobEngineController {
                 if (availableWorkers.get(workerClass) == null) {
                     throw new ClassNotFoundException();
                 }
+                if (JobStatus.NO_WORKER == job.getStatus()) {
+
+                    setJobStatus(job.getId(), JobStatus.INACTIVE);
+                    logger.error("Found JobWorker class and put it in status INACTIVE for {}", job);
+                }
             } catch (ClassNotFoundException e) {
 
-                setJobStatus(job.getId(), JobStatus.ERROR);
-                log.error("No JobWorker class found for {}", job);
+                setJobStatus(job.getId(), JobStatus.NO_WORKER);
+                logger.error("No JobWorker class found for {}", job);
             }
         }
     }
@@ -141,7 +146,7 @@ public class JobEngineController {
                     }
                 }
                 if (addedJobExecutions > 0) {
-                    log.info("Added {} new to {} existing job executions in memory queue for job {}", addedJobExecutions, numberOfJobExecutionsQueued,
+                    logger.info("Added {} new to {} existing job executions in memory queue for job {}", addedJobExecutions, numberOfJobExecutionsQueued,
                                     job.getName());
                 }
             }
@@ -156,7 +161,7 @@ public class JobEngineController {
 
         } catch (Exception exception) {
 
-            log.error("Could not find JobWorker for job {}", job.getName(), exception);
+            logger.error("Could not find JobWorker for job {}", job.getName(), exception);
 
             job = jobEngineService.getJobById(job.getId());
             job.setStatus(JobStatus.ERROR);

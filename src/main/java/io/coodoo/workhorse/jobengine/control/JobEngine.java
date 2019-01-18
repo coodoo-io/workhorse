@@ -35,12 +35,16 @@ import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
-@SuppressWarnings("serial")
+/**
+ * @author coodoo GmbH (coodoo.io)
+ */
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class JobEngine implements Serializable {
 
-    private static Logger log = LoggerFactory.getLogger(JobEngine.class);
+    private static final long serialVersionUID = 1L;
+
+    private static Logger logger = LoggerFactory.getLogger(JobEngine.class);
 
     @Inject
     private JobEngineService jobEngineService;
@@ -67,7 +71,7 @@ public class JobEngine implements Serializable {
 
     public void initializeMemoryQueues() {
 
-        log.info("Intitialize memory queue");
+        logger.info("Intitialize memory queue");
 
         this.jobThreads.clear();
         this.jobThreadCounts.clear();
@@ -129,7 +133,7 @@ public class JobEngine implements Serializable {
         } else {
             jobExecutions.get(jobId).add(jobExecution);
         }
-        log.debug("Added JobExecution: {} (Current queued JobExecutions: {})", jobExecution, numberOfJobs);
+        logger.debug("Added JobExecution: {} (Current queued JobExecutions: {})", jobExecution, numberOfJobs);
 
         if (jobThreadCounts.get(jobId) > jobThreads.get(jobId).size()) {
             final ReentrantLock lock = getLock(job);
@@ -137,12 +141,12 @@ public class JobEngine implements Serializable {
                 lock.lock();
                 for (int i = jobThreads.get(jobId).size(); i < jobThreadCounts.get(jobId); i++) {
                     startJobThread(job);
-                    if (log.isTraceEnabled()) {
-                        log.trace("Job thread started.");
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("Job thread started.");
                     }
                 }
-                if (log.isTraceEnabled()) {
-                    log.trace("Current job thread count: {}", jobThreads.get(jobId).size());
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Current job thread count: {}", jobThreads.get(jobId).size());
                 }
             } finally {
                 lock.unlock();
@@ -174,10 +178,10 @@ public class JobEngine implements Serializable {
                         }
 
                         if (JobEngine.this.pausedJobs.get(jobId)) {
-                            log.info("Job thread shall be paused: {}", job);
+                            logger.info("Job thread shall be paused: {}", job);
                             while (JobEngine.this.pausedJobs.get(jobId) && !stopMe) {
                                 Thread.sleep(10000L);
-                                log.info("Job thread gets paused: {}", job);
+                                logger.info("Job thread gets paused: {}", job);
                             }
                             if (stopMe) {
                                 break;
@@ -197,14 +201,14 @@ public class JobEngine implements Serializable {
                             }
 
                             if (jobExecution == null) {
-                                log.debug("No further job execution available for {} - removing this thread", job);
+                                logger.debug("No further job execution available for {} - removing this thread", job);
 
                                 jobThreads.get(jobId).remove(this);
-                                if (log.isTraceEnabled()) {
-                                    log.trace("Job thread removed. Remainder: {}", jobThreads.get(jobId).size());
+                                if (logger.isTraceEnabled()) {
+                                    logger.trace("Job thread removed. Remainder: {}", jobThreads.get(jobId).size());
                                 }
                                 if (jobThreads.get(jobId).isEmpty()) {
-                                    log.info("All job executions done for job {}", job.getName());
+                                    logger.info("All job executions done for job {}", job.getName());
                                     allJobsDoneEvent.fire(new AllJobsDoneEvent(job));
                                 }
                                 return;
@@ -261,7 +265,7 @@ public class JobEngine implements Serializable {
                                 }
                                 jobExecutionId = jobExecution.getId();
 
-                                log.info("{}. Error '{}' - next try in {} seconds", jobExecution.getFailRetry(), exception.getMessage(),
+                                logger.info("{}. Error '{}' - next try in {} seconds", jobExecution.getFailRetry(), exception.getMessage(),
                                                 job.getRetryDelay() / 1000);
 
                                 // enforce delay before retry
@@ -271,15 +275,15 @@ public class JobEngine implements Serializable {
                     }
                 } catch (Exception e) {
 
-                    log.error("Error in job thread - Process gets cancelled", e);
+                    logger.error("Error in job thread - Process gets cancelled", e);
 
                     jobEngineController.setJobStatus(job.getId(), JobStatus.ERROR);
                     cancelProcess(job);
 
                     return;
                 }
-                if (log.isTraceEnabled()) {
-                    log.trace("Job thread removed.");
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Job thread removed.");
                 }
                 jobThreads.get(jobId).remove(this);
 
@@ -309,21 +313,21 @@ public class JobEngine implements Serializable {
         }
 
         jobThreads.get(job.getId()).add(jobThread);
-        if (log.isTraceEnabled())
-            log.trace("Job thread started. Remainder: {}", jobThreads.get(job.getId()).size());
+        if (logger.isTraceEnabled())
+            logger.trace("Job thread started. Remainder: {}", jobThreads.get(job.getId()).size());
     }
 
     public void cancelProcess(Job job) {
 
         MDC.put("key", job.getName());
-        if (log.isTraceEnabled()) {
-            log.trace("Cancelling process...");
+        if (logger.isTraceEnabled()) {
+            logger.trace("Cancelling process...");
         }
 
         clearMemoryQueue(job);
 
         if (!jobThreads.get(job.getId()).isEmpty()) {
-            log.info("Process cancelled. All job threads and job executions removed.");
+            logger.info("Process cancelled. All job threads and job executions removed.");
         }
         for (JobThread jobThread : (Set<JobThread>) this.jobThreads.get(job.getId())) {
             jobThread.stop();
@@ -410,7 +414,7 @@ public class JobEngine implements Serializable {
                             TimeUnit.MILLISECONDS.toSeconds(durationMillis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(durationMillis)));
             final String message = "Duration of all " + job.getName() + " job executions: " + durationText;
 
-            log.info(message);
+            logger.info(message);
             jobStartTimes.remove(job.getId());
         }
     }
@@ -422,7 +426,7 @@ public class JobEngine implements Serializable {
 
         if (sizeMemoryQueue > 0 || sizePriorityMemoryQueue > 0) {
 
-            log.info("Clearing job execution queue with {} elements and {} priority elements for job {}.", jobExecutions.get(job.getId()).size(),
+            logger.info("Clearing job execution queue with {} elements and {} priority elements for job {}.", jobExecutions.get(job.getId()).size(),
                             priorityJobExecutions.get(job.getId()).size(), job.getName());
 
             jobExecutions.get(job.getId()).clear();

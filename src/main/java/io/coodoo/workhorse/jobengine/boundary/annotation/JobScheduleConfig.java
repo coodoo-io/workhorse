@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * Initial / default job schedule settings
+ * 
+ * @author coodoo GmbH (coodoo.io)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

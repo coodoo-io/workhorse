@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.coodoo</groupId>
     <artifactId>workhorse</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Workhorse</name>
     <description>Java EE Job Engine for background jobs and business critical tasks</description>
@@ -60,7 +60,7 @@
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-databind</artifactId>
-		    <version>2.9.5</version>
+		    <version>2.9.8</version>
 		</dependency>
         	<dependency>
 			<groupId>io.coodoo</groupId>

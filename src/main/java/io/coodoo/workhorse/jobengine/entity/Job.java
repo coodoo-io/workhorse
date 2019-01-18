@@ -14,7 +14,9 @@ import javax.persistence.Table;
 
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
 
-@SuppressWarnings("serial")
+/**
+ * @author coodoo GmbH (coodoo.io)
+ */
 @Entity
 @Table(name = "jobengine_job")
 @NamedQueries({@NamedQuery(name = "Job.getAll", query = "SELECT job FROM Job job"),
@@ -22,6 +24,8 @@ import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
                 @NamedQuery(name = "Job.getByWorkerClassName", query = "SELECT job FROM Job job WHERE job.workerClassName=:workerClassName"),
                 @NamedQuery(name = "Job.getAllByStatus", query = "SELECT job FROM Job job WHERE job.status=:status")})
 public class Job extends RevisionDatesOccEntity {
+
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "name")
     private String name;

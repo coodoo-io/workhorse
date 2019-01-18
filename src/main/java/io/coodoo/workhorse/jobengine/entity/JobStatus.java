@@ -1,5 +1,10 @@
 package io.coodoo.workhorse.jobengine.entity;
 
+import io.coodoo.workhorse.jobengine.boundary.JobWorker;
+
+/**
+ * @author coodoo GmbH (coodoo.io)
+ */
 public enum JobStatus {
 
     /**
@@ -13,8 +18,15 @@ public enum JobStatus {
     INACTIVE,
 
     /**
-     * Error occurred while checking or processing the job
+     * Error occurred while processing the job
      */
-    ERROR;
+    ERROR,
+
+    /**
+     * The {@link JobWorker} implementation is missing
+     */
+    NO_WORKER,
+
+    ;
 
 }

@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * System job marker
+ * 
+ * @author coodoo GmbH (coodoo.io)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

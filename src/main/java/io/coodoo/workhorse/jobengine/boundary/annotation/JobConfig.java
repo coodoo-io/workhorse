@@ -9,6 +9,8 @@ import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
 /**
  * Initial / default job settings
+ * 
+ * @author coodoo GmbH (coodoo.io)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

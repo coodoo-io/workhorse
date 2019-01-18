@@ -18,7 +18,7 @@ import io.coodoo.workhorse.jobengine.control.JobEngine;
 @Stateless
 public class JobEngineStatisticsService {
 
-    private final Logger log = LoggerFactory.getLogger(JobEngineStatisticsService.class);
+    private final Logger logger = LoggerFactory.getLogger(JobEngineStatisticsService.class);
 
     @Inject
     JobEngine jobEngine;
@@ -80,7 +80,7 @@ public class JobEngineStatisticsService {
 
         String status = runnung + System.lineSeparator() + jobs + System.lineSeparator() + executions;
 
-        log.info(status);
+        logger.info(status);
         return status;
     }
 
