@@ -29,8 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import io.coodoo.workhorse.jobengine.boundary.JobContext;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.control.event.AllJobsDoneEvent;
+import io.coodoo.workhorse.jobengine.control.event.AllJobExecutionsDoneEvent;
+import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
@@ -56,7 +58,10 @@ public class JobEngine implements Serializable {
     private JobExecutor jobExecutor;
 
     @Inject
-    private Event<AllJobsDoneEvent> allJobsDoneEvent;
+    private Event<AllJobExecutionsDoneEvent> allJobsDoneEvent;
+
+    @Inject
+    private Event<JobErrorEvent> jobErrorEvent;
 
     private Map<Long, Queue<JobExecution>> jobExecutions = new HashMap<>();
     private Map<Long, Queue<JobExecution>> priorityJobExecutions = new HashMap<>();
@@ -209,7 +214,7 @@ public class JobEngine implements Serializable {
                                 }
                                 if (jobThreads.get(jobId).isEmpty()) {
                                     logger.info("All job executions done for job {}", job.getName());
-                                    allJobsDoneEvent.fire(new AllJobsDoneEvent(job));
+                                    allJobsDoneEvent.fire(new AllJobExecutionsDoneEvent(job));
                                 }
                                 return;
                             }
@@ -223,6 +228,7 @@ public class JobEngine implements Serializable {
 
                             long millisAtStart = System.currentTimeMillis();
                             Long jobExecutionId = jobExecution.getId();
+                            JobContext jobContext = jobWorker.getJobContext();
 
                             try {
 
@@ -232,7 +238,7 @@ public class JobEngine implements Serializable {
                                 jobWorker.doWork(jobExecution);
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
-                                String jobExecutionLog = jobWorker.getJobExecutionLog();
+                                String jobExecutionLog = jobContext.getLog();
                                 jobEngineController.setJobExecutionFinished(jobExecutionId, duration, jobExecutionLog);
 
                                 runningJobExecutions.get(jobId).remove(jobExecution);
@@ -258,8 +264,8 @@ public class JobEngine implements Serializable {
                                 runningJobExecutions.get(jobId).remove(jobExecution);
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
-
-                                jobExecution = jobEngineController.handleFailedExecution(job, jobExecutionId, exception, duration, jobWorker);
+                                String jobExecutionLog = jobContext.getLog();
+                                jobExecution = jobEngineController.handleFailedExecution(job, jobExecutionId, exception, duration, jobExecutionLog, jobWorker);
                                 if (jobExecution == null) {
                                     break jobExecutionLoop; // no retry
                                 }
@@ -273,20 +279,22 @@ public class JobEngine implements Serializable {
                             }
                         }
                     }
-                } catch (Exception e) {
+                } catch (Exception exception) {
 
-                    logger.error("Error in job thread - Process gets cancelled", e);
+                    logger.error("Error in job thread - Process gets cancelled", exception);
 
                     jobEngineController.setJobStatus(job.getId(), JobStatus.ERROR);
                     cancelProcess(job);
 
+                    // let the JobWorker know!
+                    job = jobEngineService.getJobById(job.getId());
+                    jobErrorEvent.fire(new JobErrorEvent(job, exception));
                     return;
                 }
                 if (logger.isTraceEnabled()) {
                     logger.trace("Job thread removed.");
                 }
                 jobThreads.get(jobId).remove(this);
-
             }
 
             public void stop() {
@@ -403,7 +411,7 @@ public class JobEngine implements Serializable {
     }
 
     @Asynchronous
-    public void allJobsDone(@Observes AllJobsDoneEvent event) {
+    public void allJobExecutionsDone(@Observes AllJobExecutionsDoneEvent event) {
         final Job job = event.getJob();
 
         Long startTime = jobStartTimes.get(job.getId());

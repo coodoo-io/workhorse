@@ -6,6 +6,21 @@
 ### BREAKING CHANGES
 -->
 
+<a name="1.1.2"></a>
+
+## 1.1.2 (2019-01-19)
+
+### Features
+
+* Added new callback methods the `JobWorker`: 
+  * `onAllJobExecutionsDone()` gets called after all job executions in the queue are done
+  * `onJobError()` gets called after the job went into status ERROR
+
+### Bug Fixes
+
+* Fixed NullPointerException caused by uninitialized JobContext in case of an execution retry
+
+
 <a name="1.1.1"></a>
 
 ## 1.1.1 (2019-01-18)

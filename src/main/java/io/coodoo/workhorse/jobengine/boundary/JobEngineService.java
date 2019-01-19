@@ -136,6 +136,14 @@ public class JobEngineService {
         return JobExecution.getChain(entityManager, chainId);
     }
 
+    public List<JobExecution> getAllByStatus(JobExecutionStatus jobExecutionStatus) {
+        return JobExecution.getAllByStatus(entityManager, jobExecutionStatus);
+    }
+
+    public List<JobExecution> getAllByJobIdAndStatus(Long jobId, JobExecutionStatus jobExecutionStatus) {
+        return JobExecution.getAllByJobIdAndStatus(entityManager, jobId, jobExecutionStatus);
+    }
+
     public JobExecution createJobExecution(Long jobId, String parameters, Boolean priority, LocalDateTime maturity, Long chainId, Long previousJobExecutionId,
                     boolean uniqueInQueue) {
 

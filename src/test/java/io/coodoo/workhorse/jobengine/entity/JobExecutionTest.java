@@ -1,14 +1,8 @@
 package io.coodoo.workhorse.jobengine.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Query;
+import java.util.*;
+import javax.persistence.*;
 
 public class JobExecutionTest {
     /**
@@ -527,6 +521,113 @@ public class JobExecutionTest {
                                         + queryText + "'",
                         "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.parametersHash IS NULL OR j.parametersHash = :parametersHash) ORDER BY j.createdAt ASC",
                         queryText);
+    }
+
+    /**
+     * Tests that query 'JobExecution.getAllByJobIdAndStatus' has not changed since this test had been created. If this test fails, you should consider re-generating ALL methods created from that query as they may be out-dated.
+     *
+     */
+    @SuppressWarnings({"unchecked", "rawtypes", "null"})
+    @org.junit.Test 
+    public void testGetAllByJobIdAndStatusQueryUnchanged()
+    {
+    	List annotations = new ArrayList();
+    	NamedQuery namedQueryAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQuery.class);
+    	if (namedQueryAnnotation == null) {
+    	NamedQueries namedQueriesAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQueries.class);
+    	if (namedQueriesAnnotation != null) {
+    	annotations.addAll(Arrays.asList(namedQueriesAnnotation.value())); }
+    	} else { annotations.add(namedQueryAnnotation); }
+    	NamedQuery queryUnderTest = null;
+    	for (Object obj : annotations) {
+    	NamedQuery query = (NamedQuery) obj;
+    	if (query.name().equals("JobExecution.getAllByJobIdAndStatus")) {
+    	queryUnderTest = query;
+    	break;
+    	}
+    	}
+    	if (queryUnderTest == null) {
+    	org.junit.Assert.fail("Query JobExecution.getAllByJobIdAndStatus does not exist anymore.");
+    	}
+    	String queryText = queryUnderTest.query();
+    	// Minor changes with whitespace are ignored
+    	queryText = queryText.trim().replace('\t', ' ').replace('\n', ' ').replace('\r', ' ');
+    	while (queryText.contains("  ")) {
+    	queryText = queryText.replace("  ", " ");
+    	}
+    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = :status' to '" + queryText + "'", "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = :status", queryText);
+    }
+
+    /**
+     * Tests that call and query are consistent for query 'JobExecution.getAllByJobIdAndStatus'.
+     *
+     */
+    @org.junit.Test 
+    public void testGetAllByJobIdAndStatus()
+    {
+    	Query query = org.mockito.Mockito.mock(Query.class);
+    	EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
+    	org.mockito.BDDMockito.given(entityManager.createNamedQuery("JobExecution.getAllByJobIdAndStatus")).willReturn(query);
+    	Long jobId = java.lang.Long.valueOf(0);
+    	org.mockito.BDDMockito.given(query.setParameter("jobId", jobId)).willReturn(query);
+    	JobExecutionStatus status = JobExecutionStatus.values().length <= 0 ? null : JobExecutionStatus.values()[0];
+    	org.mockito.BDDMockito.given(query.setParameter("status", status)).willReturn(query);
+    	// Call
+    	io.coodoo.workhorse.jobengine.entity.JobExecution.getAllByJobIdAndStatus(entityManager,jobId, status);
+    	// Verification
+    	org.mockito.BDDMockito.verify(entityManager, org.mockito.Mockito.times(1)).createNamedQuery("JobExecution.getAllByJobIdAndStatus");
+    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("jobId",jobId);
+    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("status",status);
+    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).getResultList();
+    }
+
+    /**
+     * Tests that all classes and members/fields used in query 'JobExecution.getAllByJobIdAndStatus' still exist.
+     *
+     */
+    @org.junit.Test 
+    public void testGetAllByJobIdAndStatusVerifyFields()
+    {
+    	String[][] classesFieldsAndTypes = new String[3][4];
+    	classesFieldsAndTypes[0][0] = "j";
+    	classesFieldsAndTypes[0][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
+    	classesFieldsAndTypes[1][0] = "j.jobId";
+    	classesFieldsAndTypes[1][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
+    	classesFieldsAndTypes[1][2] = "jobId";
+    	classesFieldsAndTypes[1][3] = "java.lang.Long";
+    	classesFieldsAndTypes[2][0] = "j.status";
+    	classesFieldsAndTypes[2][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
+    	classesFieldsAndTypes[2][2] = "status";
+    	classesFieldsAndTypes[2][3] = "io.coodoo.workhorse.jobengine.entity.JobExecutionStatus";
+    	for (String[] testcase : classesFieldsAndTypes) {
+    	String fieldPath = testcase[0];
+    	String className = testcase[1];
+    	String fieldName = testcase[2];
+    	String fieldType = testcase[3];
+    	try {
+    	Class<?> clazz = Class.forName(className);
+    	if (fieldName != null) {
+    	boolean fieldFound = false;
+    	do {
+    	for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+    	if (field.getName().equals(fieldName)) {
+    	if (fieldType != null && !field.getType().getName().equals(fieldType)) {
+    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getAllByJobIdAndStatus: The field " + clazz.getName() + "." + field + " does not have the type " + fieldType + " (anymore)");
+    	}
+    	fieldFound = true;
+    	break;
+    	}
+    	}
+    	clazz = clazz.getSuperclass();
+    	} while (!fieldFound && clazz != null);
+    	if (!fieldFound) {
+    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getAllByJobIdAndStatus: The field " + className + "." + fieldName + " does not exist (anymore)");
+    	}
+    	}
+    	} catch (ClassNotFoundException e) {
+    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getAllByJobIdAndStatus: The class "	+ className + " does not exist (anymore)");
+    	}
+    	}
     }
 
 }

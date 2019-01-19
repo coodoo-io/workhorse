@@ -31,6 +31,7 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 @NamedQueries({@NamedQuery(name = "JobExecution.getAllByJobId", query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId"),
                 @NamedQuery(name = "JobExecution.deleteAllByJobId", query = "DELETE FROM JobExecution j WHERE j.jobId = :jobId"),
                 @NamedQuery(name = "JobExecution.getAllByStatus", query = "SELECT j FROM JobExecution j WHERE j.status = :status"),
+                @NamedQuery(name = "JobExecution.getAllByJobIdAndStatus", query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = :status"),
 
                 // Poller
                 @NamedQuery(name = "JobExecution.getNextCandidates",
@@ -325,6 +326,22 @@ public class JobExecution extends RevisionDatesEntity {
         Query query = entityManager.createNamedQuery("JobExecution.deleteAllByJobId");
         query = query.setParameter("jobId", jobId);
         return query.executeUpdate();
+    }
+
+    /**
+     * Executes the query 'JobExecution.getAllByJobIdAndStatus' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @param status the status
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<JobExecution> getAllByJobIdAndStatus(EntityManager entityManager, Long jobId, JobExecutionStatus status) {
+        Query query = entityManager.createNamedQuery("JobExecution.getAllByJobIdAndStatus");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("status", status);
+        return query.getResultList();
     }
 
     /**

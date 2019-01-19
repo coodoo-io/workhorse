@@ -2,12 +2,16 @@ package io.coodoo.workhorse.jobengine.control;
 
 import java.time.LocalDateTime;
 
+import javax.ejb.Asynchronous;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 
 import io.coodoo.workhorse.jobengine.boundary.JobContext;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.control.event.AllJobExecutionsDoneEvent;
+import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
@@ -53,7 +57,7 @@ public abstract class BaseJobWorker {
 
     /**
      * The job engine will call this callback method after the job execution has failed and there will be a retry of the failed job execution. <br>
-     * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
+     * <i>If needed, this method can be overwritten to react on a retry job execution.</i>
      * 
      * @param failedExecutionId ID of current job execution that has failed
      * @param retryExecutionId ID of new job execution that that will retry the failed one
@@ -62,11 +66,55 @@ public abstract class BaseJobWorker {
 
     /**
      * The job engine will call this callback method after the job execution has failed. <br>
-     * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
+     * <i>If needed, this method can be overwritten to react on a failed job execution.</i>
      * 
      * @param jobExecutionId ID of current job execution that has failed
      */
     public void onFailed(Long jobExecutionId) {}
+
+    /**
+     * The job engine will call this callback method after the job went into status ERROR <br>
+     * <i>If needed, this method can be overwritten to react on an error that will stop this worker.</i>
+     * 
+     * @param throwable Error triggering exception
+     */
+    public void onJobError(Throwable throwable) {}
+
+    /**
+     * This is just the listener for jobs going into status error. Use {@link #onJobError(Throwable)} to react on errors of this worker!
+     * 
+     * @param event any JobErrorEvent
+     */
+    @Asynchronous
+    public void onJobError(@Observes JobErrorEvent event) {
+        // is that me?!
+        if (getJobId() == event.getJob().getId()) {
+            // oh fuck, better refresh the job in this worker
+            job = event.getJob();
+            // trigger callback method
+            onJobError(event.getThrowable());
+        }
+    }
+
+    /**
+     * The job engine will call this callback method after all job executions in the queue are done<br>
+     * <i>If needed, this method can be overwritten to react on this event.</i>
+     */
+    public void onAllJobExecutionsDone() {}
+
+    /**
+     * This is just the listener for a depleted job execution queue. Use {@link #onAllJobExecutionsDone()} to react on it!
+     * 
+     * @param event any AllJobExecutionsDoneEvent
+     */
+    @Asynchronous
+    public void onAllJobExecutionsDone(@Observes AllJobExecutionsDoneEvent event) {
+        // is that me?!
+        if (getJobId() == event.getJob().getId()) {
+            // trigger callback method
+            onAllJobExecutionsDone();
+        }
+    }
 
     /**
      * Gets the Job from the database
@@ -86,7 +134,7 @@ public abstract class BaseJobWorker {
      * @return the ID of the job that belongs to this service
      */
     public Long getJobId() {
-        if (getJob() != null) {
+        if (getJob() == null) { // loads job if needed
             return null;
         }
         return job.getId();
@@ -139,10 +187,17 @@ public abstract class BaseJobWorker {
     }
 
     /**
-     * @return the log text of the current active job execution or <code>null</code> if there isn't any
+     * @return the log text of the current running job execution or <code>null</code> if there isn't any
      */
     public String getJobExecutionLog() {
         return jobContext.getLog();
+    }
+
+    /**
+     * @return the context of the current running job execution
+     */
+    public JobContext getJobContext() {
+        return jobContext;
     }
 
     /**
