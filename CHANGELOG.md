@@ -6,6 +6,18 @@
 ### BREAKING CHANGES
 -->
 
+<a name="1.1.3"></a>
+
+## 1.1.3 (2019-01-26)
+
+### Features
+
+
+
+### Bug Fixes
+
+* `LocalDateTime` and `LocalDateTime` are now possible to use as or in JobExecution parameters
+
 <a name="1.1.2"></a>
 
 ## 1.1.2 (2019-01-19)

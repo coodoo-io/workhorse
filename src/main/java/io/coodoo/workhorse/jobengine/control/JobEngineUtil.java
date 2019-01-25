@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
@@ -30,7 +31,7 @@ public final class JobEngineUtil {
 
     private static Logger logger = LoggerFactory.getLogger(JobEngineUtil.class);
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public static final ZoneId ZONE_UTC = ZoneId.of("UTC");
 
