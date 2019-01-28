@@ -8,15 +8,16 @@
 
 <a name="1.1.3"></a>
 
-## 1.1.3 (2019-01-26)
+## 1.1.3 (2019-01-28)
 
 ### Features
 
+* Lists of simple Java types can now be used as JobExecution parameters
 
 
 ### Bug Fixes
 
-* `LocalDateTime` and `LocalDateTime` are now possible to use as or in JobExecution parameters
+* `LocalDate` and `LocalDateTime` are now possible to use as or in JobExecution parameters
 
 <a name="1.1.2"></a>
 

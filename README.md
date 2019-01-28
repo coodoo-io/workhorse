@@ -70,14 +70,14 @@ public void performBackup() {
 You can access the parameters by changing the `JobWorker` to `JobWorkerWith` and using the parameters object as type.
 
 ```java
-public class BackupJob extends JobWorkerWith<BackupJobParameters> {
+public class BackupJob extends JobWorkerWith<String> {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
 
     @Override
-    public void doWork(BackupJobParameters parameters) {
+    public void doWork(String parameters) {
 
-        log.info("Performing some fine backup on " + parameters.getEvironment());
+        log.info("Performing some fine backup on " + parameters);
     }
 }
 ```
@@ -86,24 +86,20 @@ Everybody knows backups should be made on a regular basis, so lets tell this job
 
 ```java
 @JobScheduleConfig(hour = "3", minute = "30")
-public class BackupJob extends JobWorkerWith<BackupJobParameters> {
+public class BackupJob extends JobWorkerWith<String> {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
 
     @Override
     public void scheduledJobExecutionCreation() {
 
-        BackupJobParameters parameters = new BackupJobParameters();
-        parameters.setEvironment("STAGE-2");
-        parameters.setReplaceOldBackup(false);
-
-        createJobExecution(parameters);
+        createJobExecution("STAGE-2");
     }
 
     @Override
-    public void doWork(BackupJobParameters parameters) {
+    public void doWork(String parameters) {
 
-        log.info("Performing some fine backup on " + parameters.getEvironment());
+        log.info("Performing some fine backup on " + parameters);
     }
 }
 ```

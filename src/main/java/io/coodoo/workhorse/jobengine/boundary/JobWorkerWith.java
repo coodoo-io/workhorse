@@ -10,7 +10,9 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 
 /**
- * Job worker class to define the creation and execution of jobs with parameters. Your job does not need parameters? See {@link JobWorker}!
+ * Job worker class to define the creation and execution of jobs with parameters. <br>
+ * <tt>T</tt> can be any Object or a {@link List} of simple Java types <br>
+ * Your job does not need parameters? See {@link JobWorker}!
  * 
  * @author coodoo GmbH (coodoo.io)
  */
@@ -31,7 +33,6 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
         doWork(parameters);
     }
 
-    @SuppressWarnings("unchecked")
     private Class<?> getParametersClass() {
 
         if (parametersClass != null) {
@@ -39,7 +40,13 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
         }
         try {
             String className = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0].getTypeName();
-            Class<?> clazz = Class.forName(className);
+
+            Class<?> clazz = null;
+            if (className.startsWith(List.class.getName())) {
+                clazz = List.class;
+            } else {
+                clazz = Class.forName(className);
+            }
             parametersClass = clazz;
             return parametersClass;
 
