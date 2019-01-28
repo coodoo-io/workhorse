@@ -31,15 +31,16 @@ public class JobExecutionCleanupWorker extends JobWorkerWith<JobExecutionCleanup
     JobEngineController jobEngineController;
 
     public void scheduledJobExecutionCreation() {
+
         jobEngineController.deleteOlderJobExecutions();
     }
 
     @Override
     public void doWork(JobExecutionCleanupParameter parameters) throws Exception {
 
-        int deletedJobExecutions = jobEngineController.deleteOlderJobExecutions(parameters.jobId, parameters.minDaysOld);
+        int deleted = jobEngineController.deleteOlderJobExecutions(parameters.jobId, parameters.minDaysOld);
 
-        logger.info("Deleted {} job executions of job '{}' that were older than {} days", deletedJobExecutions, parameters.jobName, parameters.minDaysOld);
+        logInfo(logger, "Deleted " + deleted + " job executions of job '" + parameters.jobName + "' that were older than " + parameters.minDaysOld + " days");
     }
 
 }
