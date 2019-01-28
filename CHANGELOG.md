@@ -13,6 +13,7 @@
 ### Features
 
 * Lists of simple Java types can now be used as JobExecution parameters
+* Yet another logging convenience methods `logWarn`
 
 
 ### Bug Fixes

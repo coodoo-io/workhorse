@@ -52,7 +52,7 @@ public class JobContext {
      * @param message text to log
      */
     public void logLine(String message) {
-        appendLog(message, false, false);
+        appendLog(message, false, "l");
     }
 
     /**
@@ -63,7 +63,7 @@ public class JobContext {
      * @param message text to log
      */
     public void logLineWithTimestamp(String message) {
-        appendLog(message, true, false);
+        appendLog(message, true, "lt");
     }
 
     /**
@@ -76,7 +76,22 @@ public class JobContext {
      */
     public void logInfo(Logger logger, String message) {
         logger.info(message);
-        appendLog(message, true, false);
+        appendLog(message, true, "i");
+    }
+
+    /**
+     * Adds a timestamp followed by an warn marker and the warn message as a new line to the executions log. It also adds the message in severity WARN to the
+     * server log<br>
+     * Timestamp pattern: <code>[HH:mm:ss.SSS]</code><br>
+     * Error marker: <code>[WARN]</code><br>
+     * Example: <code>[22:06:42.680] [WARN] Well thats suspicious...</code>
+     * 
+     * @param logger server log logger
+     * @param message text to log
+     */
+    public void logWarn(Logger logger, String message) {
+        logger.warn(message);
+        appendLog(message, true, "w");
     }
 
     /**
@@ -91,10 +106,10 @@ public class JobContext {
      */
     public void logError(Logger logger, String message) {
         logger.error(message);
-        appendLog(message, true, true);
+        appendLog(message, true, "e");
     }
 
-    private void appendLog(String message, boolean timestamp, boolean error) {
+    private void appendLog(String message, boolean timestamp, String mode) {
 
         if (logBuffer.length() > 0) {
             logBuffer.append(System.lineSeparator());
@@ -104,8 +119,15 @@ public class JobContext {
             logBuffer.append(JobEngineUtil.timestamp().toLocalTime());
             logBuffer.append("] ");
         }
-        if (error) {
-            logBuffer.append("[ERROR] ");
+        switch (mode) {
+            case "w":
+                logBuffer.append("[WARN] ");
+                break;
+            case "e":
+                logBuffer.append("[ERROR] ");
+                break;
+            default:
+                break;
         }
         logBuffer.append(message);
     }
