@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
@@ -31,9 +32,6 @@ import io.coodoo.workhorse.jobengine.entity.JobType;
  */
 @Stateless
 public class JobEngineController {
-
-    private static final int ADD_JOB_EXECUTION_LIMIT = 1000;
-    private static final int ACTIVE_JOB_EXECUTION_MINIMUM_LEVEL = 100;
 
     private final Logger logger = LoggerFactory.getLogger(JobEngineController.class);
 
@@ -139,8 +137,8 @@ public class JobEngineController {
             int numberOfJobExecutionsQueued = jobEngine.getNumberOfJobExecutionsInQueue(job.getId());
             int addedJobExecutions = 0;
 
-            if (numberOfJobExecutionsQueued < ACTIVE_JOB_EXECUTION_MINIMUM_LEVEL) {
-                for (JobExecution jobExecution : JobExecution.getNextCandidates(entityManager, job.getId(), ADD_JOB_EXECUTION_LIMIT)) {
+            if (numberOfJobExecutionsQueued < JobEngineConfig.JOB_QUEUE_MIN) {
+                for (JobExecution jobExecution : JobExecution.getNextCandidates(entityManager, job.getId(), JobEngineConfig.JOB_QUEUE_MAX)) {
                     if (jobEngine.addJobExecution(jobExecution)) {
                         addedJobExecutions++;
                     }

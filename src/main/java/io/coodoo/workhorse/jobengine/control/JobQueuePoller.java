@@ -12,6 +12,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
+
 /**
  * @author coodoo GmbH (coodoo.io)
  */
@@ -36,7 +38,7 @@ public class JobQueuePoller {
     public void start(Integer interval) {
 
         if (interval == null) {
-            interval = 5;
+            interval = JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL;
         }
         ScheduleExpression scheduleExpression = new ScheduleExpression().second("*/" + interval).minute("*").hour("*");
 

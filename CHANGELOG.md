@@ -12,9 +12,9 @@
 
 ### Features
 
+* Basic configuration that can be changed in the implementation, see `JobEngineConfig`
 * Lists of simple Java types can now be used as JobExecution parameters
-* Yet another logging convenience methods `logWarn`
-
+* Yet some other logging convenience methods
 
 ### Bug Fixes
 

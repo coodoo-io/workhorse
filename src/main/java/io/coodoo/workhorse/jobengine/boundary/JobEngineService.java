@@ -51,6 +51,10 @@ public class JobEngineService {
     @JobEngineEntityManager
     EntityManager entityManager;
 
+    public void start() {
+        start(null);
+    }
+
     public void start(Integer interval) {
 
         logger.info("Starting job engine...");

@@ -30,9 +30,8 @@ public class JobExecutor {
 
         long t1 = System.currentTimeMillis();
 
-        // TODO: Zeiten in Job Entitiy
-
         jobThread.run(job);
+
         long t2 = System.currentTimeMillis();
         if (logger.isTraceEnabled()) {
             logger.trace("Thread duration: " + (t2 - t1));

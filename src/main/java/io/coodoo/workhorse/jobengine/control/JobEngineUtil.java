@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.entity.JobType;
@@ -32,8 +32,6 @@ public final class JobEngineUtil {
     private static Logger logger = LoggerFactory.getLogger(JobEngineUtil.class);
 
     private static ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
-    public static final ZoneId ZONE_UTC = ZoneId.of("UTC");
 
     private JobEngineUtil() {}
 
@@ -58,7 +56,7 @@ public final class JobEngineUtil {
     }
 
     public static LocalDateTime timestamp() {
-        return LocalDateTime.now(ZONE_UTC);
+        return LocalDateTime.now(JobEngineConfig.TIME_ZONE);
     }
 
     public static LocalDateTime delayToMaturity(Long delayValue, ChronoUnit delayUnit) {
