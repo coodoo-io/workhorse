@@ -8,13 +8,14 @@
 
 <a name="1.1.3"></a>
 
-## 1.1.3 (2019-01-28)
+## 1.1.3 (2019-01-31)
 
 ### Features
 
 * Basic configuration that can be changed in the implementation, see `JobEngineConfig`
 * Lists of simple Java types can now be used as JobExecution parameters
 * Yet some other logging convenience methods
+* Access to the parameters object via `getParameters()` in `JobWorkerWith`
 
 ### Bug Fixes
 

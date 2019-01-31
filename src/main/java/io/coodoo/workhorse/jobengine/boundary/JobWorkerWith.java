@@ -27,10 +27,34 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
 
         this.jobContext.init(jobExecution);
 
-        @SuppressWarnings("unchecked")
-        T parameters = (T) JobEngineUtil.jsonToParameters(jobExecution.getParameters(), getParametersClass());
+        doWork(getParameters(jobExecution));
+    }
 
-        doWork(parameters);
+    /**
+     * Gets the parameters object of the given job execution
+     * 
+     * @param jobExecution job execution
+     * @return parameters object
+     */
+    @SuppressWarnings("unchecked")
+    public T getParameters(JobExecution jobExecution) {
+
+        return (T) JobEngineUtil.jsonToParameters(jobExecution.getParameters(), getParametersClass());
+    }
+
+    /**
+     * Gets the parameters object of the given job execution
+     * 
+     * @param jobExecutionId job execution ID
+     * @return parameters object
+     */
+    public T getParameters(Long jobExecutionId) {
+
+        JobExecution jobExecution = jobEngineService.getJobExecutionById(jobExecutionId);
+        if (jobExecution == null) {
+            return null;
+        }
+        return getParameters(jobExecution);
     }
 
     private Class<?> getParametersClass() {
