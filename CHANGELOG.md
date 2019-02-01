@@ -16,6 +16,7 @@
 * Lists of simple Java types can now be used as JobExecution parameters
 * Yet some other logging convenience methods
 * Access to the parameters object via `getParameters()` in `JobWorkerWith`
+* Questionable possibility to get a `JobWorker` instance via `JobEngineConfig.getJobWorker(Job)`
 
 ### Bug Fixes
 

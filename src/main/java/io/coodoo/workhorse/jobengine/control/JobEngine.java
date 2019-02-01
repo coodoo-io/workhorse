@@ -222,6 +222,12 @@ public class JobEngine implements Serializable {
                             lock.unlock();
                         }
 
+                        // Integer maxRpm = 30; // max rate/revolutions per minute | TODO: put into Job entity
+                        // int minMillisPerExecution = 0;
+                        // if (maxRpm != null && maxRpm > 0 && maxRpm <= 60000) {
+                        // minMillisPerExecution = 60000 / maxRpm;
+                        // }
+
                         jobExecutionLoop: while (true) {
 
                             runningJobExecutions.get(jobId).add(jobExecution);
@@ -238,6 +244,12 @@ public class JobEngine implements Serializable {
                                 jobWorker.doWork(jobExecution);
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
+
+                                // if (duration < minMillisPerExecution) {
+                                // // this execution was to fast and must wait to not exceed the limit of executions per minute
+                                // Thread.sleep(minMillisPerExecution - duration);
+                                // }
+
                                 String jobExecutionLog = jobContext.getLog();
                                 jobEngineController.setJobExecutionFinished(jobExecutionId, duration, jobExecutionLog);
 
@@ -428,6 +440,11 @@ public class JobEngine implements Serializable {
     }
 
     public void clearMemoryQueue(Job job) {
+
+        if (!jobExecutions.containsKey(job.getId()) || !priorityJobExecutions.containsKey(job.getId())) {
+            logger.warn("Job execution queue is missing for job {}", job);
+            return;
+        }
 
         int sizeMemoryQueue = jobExecutions.get(job.getId()).size();
         int sizePriorityMemoryQueue = priorityJobExecutions.get(job.getId()).size();

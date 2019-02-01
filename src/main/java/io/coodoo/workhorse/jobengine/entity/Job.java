@@ -141,9 +141,9 @@ public class Job extends RevisionDatesOccEntity {
 
     @Override
     public String toString() {
-        return "Job [name=" + name + ", description=" + description + ", workerClassName=" + workerClassName + ", type=" + type + ", status=" + status
-                        + ", threads=" + threads + ", failRetries=" + failRetries + ", retryDelay=" + retryDelay + ", daysUntilCleanUp=" + daysUntilCleanUp
-                        + ", uniqueInQueue=" + uniqueInQueue + "]";
+        return "Job [id=" + id + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", name=" + name + ", description=" + description
+                        + ", workerClassName=" + workerClassName + ", type=" + type + ", status=" + status + ", threads=" + threads + ", failRetries="
+                        + failRetries + ", retryDelay=" + retryDelay + ", daysUntilCleanUp=" + daysUntilCleanUp + ", uniqueInQueue=" + uniqueInQueue + "]";
     }
 
     /**

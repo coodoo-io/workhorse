@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
+import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
@@ -108,6 +109,10 @@ public class JobEngineService {
 
     public Job getJobByClassName(String className) {
         return Job.getByWorkerClassName(entityManager, className);
+    }
+
+    public BaseJobWorker getJobWorker(Job job) throws Exception {
+        return jobEngineController.getJobWorker(job);
     }
 
     public Job updateJob(Long jobId, String name, String description, String workerClassName, JobStatus status, int threads, int failRetries) {
