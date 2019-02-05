@@ -5,18 +5,24 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
+import io.coodoo.workhorse.jobengine.control.BatchHelper;
 import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 
 /**
  * Job worker class to define the creation and execution of jobs with parameters. <br>
- * <tt>T</tt> can be any Object or a {@link List} of simple Java types <br>
+ * <tt>T</tt> can be any Object or a {@link List} of {@link String} of {@link Integer} <br>
  * Your job does not need parameters? See {@link JobWorker}!
  * 
  * @author coodoo GmbH (coodoo.io)
  */
 public abstract class JobWorkerWith<T> extends BaseJobWorker {
+
+    @Inject
+    private BatchHelper batchHelper;
 
     private Class<?> parametersClass;
 
@@ -103,7 +109,7 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
      * @return job execution ID
      */
     public Long createJobExecution(T parameters, Boolean priority, LocalDateTime maturity) {
-        return create(parameters, priority, maturity, null, null).getId();
+        return create(parameters, priority, maturity, null, null, null).getId();
     }
 
     /**
@@ -119,7 +125,7 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
      * @return job execution ID
      */
     public Long createJobExecution(T parameters, Boolean priority, Long delayValue, ChronoUnit delayUnit) {
-        return create(parameters, priority, JobEngineUtil.delayToMaturity(delayValue, delayUnit), null, null).getId();
+        return create(parameters, priority, JobEngineUtil.delayToMaturity(delayValue, delayUnit), null, null, null).getId();
     }
 
     /**
@@ -162,6 +168,79 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
     }
 
     /**
+     * This creates a batch of {@link JobExecution} objects
+     * 
+     * @param parametersList list of needed parameters to do the batch
+     * @return batch ID
+     */
+    public Long createBatchJobExecutions(List<T> parametersList) {
+        return createBatchJobExecutions(parametersList, false, null);
+    }
+
+    /**
+     * This creates a batch of {@link JobExecution} objects that gets added to the priority queue of the job engine to be treated first class
+     * 
+     * @param parametersList list of needed parameters to do the batch
+     * @return batch ID
+     */
+    public Long createPriorityBatchJobExecutions(List<T> parametersList) {
+        return createBatchJobExecutions(parametersList, true, null);
+    }
+
+    /**
+     * This creates a batch of {@link JobExecution} objects that gets added to the job engine on a specified time
+     * 
+     * 
+     * @param parametersList list of needed parameters to do the batch
+     * @param maturity specified time for the execution
+     * @return batch ID
+     */
+    public Long createPlannedBatchJobExecutions(List<T> parametersList, LocalDateTime maturity) {
+        return createBatchJobExecutions(parametersList, false, maturity);
+    }
+
+    /**
+     * This creates a batch of {@link JobExecution} objects that gets added to the job engine after the given delay
+     * 
+     * 
+     * @param parametersList list of needed parameters to do the batch
+     * @param delayValue time to wait
+     * @param delayUnit what kind of time to wait
+     * @return batch ID
+     */
+    public Long createDelayedBatchJobExecutions(List<T> parametersList, Long delayValue, ChronoUnit delayUnit) {
+        return createBatchJobExecutions(parametersList, false, JobEngineUtil.delayToMaturity(delayValue, delayUnit));
+    }
+
+    /**
+     * This creates a batch of {@link JobExecution} objects
+     * 
+     * @param parametersList list of needed parameters to do the batch
+     * @param priority priority queuing
+     * @param maturity specified time for the execution
+     * @return batch ID
+     */
+    public Long createBatchJobExecutions(List<T> parametersList, Boolean priority, LocalDateTime maturity) {
+
+        Long batchId = null;
+        Long jobId = getJob().getId();
+        boolean uniqueInQueue = getJob().isUniqueInQueue();
+
+        for (T parameters : parametersList) {
+            if (batchId == null) { // start of chain
+
+                Long id = batchHelper.createFirstInChain(jobId, parameters, priority, maturity, uniqueInQueue).getId();
+                batchHelper.activateFirstInBatch(id);
+                batchId = id;
+
+            } else { // now that we have the batch id, all the beloning executions can have it!
+                create(parameters, priority, maturity, batchId, null, null);
+            }
+        }
+        return batchId;
+    }
+
+    /**
      * This creates a chain of {@link JobExecution} objects, so when the first one gets executed it will bring all its chained friends.
      * 
      * @param parametersList list of needed parameters to do the job in the order of the execution chain
@@ -183,8 +262,7 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
     }
 
     /**
-     * This creates a chain of {@link JobExecution} objects that gets added to the job engine after the given delay. So when the first one gets executed it will
-     * bring all its chained friends.
+     * This creates a chain of {@link JobExecution} objects that gets added to the job engine on a specified time
      * 
      * @param parametersList list of needed parameters to do the job in the order of the execution chain
      * @param maturity specified time for the execution
@@ -220,25 +298,22 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
         Long chainId = null;
         Long chainPreviousExecutionId = null;
 
-        // TODO: Damit dieser Code immer ohne Fehler funktioniert muss die vollständige Erstellung in einer eigenen Transaktion laufen, d.h. aktuell muss der
-        // Worker dafür eine Stateless Bean sein.
-        // Es kam vor, dass diese Stelle ohne Transaktion aufgerufen wurde und somit das nächsträgliche ändern der Chain ID der ersten Execution nicht mehr
-        // gegriffen hat. Diese ganze Stelle sollte in den Service oder einen Controller mit eigener neuer Transaktion ausgelagert werden ausgelagert werden.
+        Long jobId = getJob().getId();
+        boolean uniqueInQueue = getJob().isUniqueInQueue();
+
         for (T parameters : parametersList) {
             if (chainId == null) { // start of chain
-                // mark as chained, so the poller wont draft it to early
-                Long id = create(parameters, priority, maturity, -1L, -1L).getId();
-                JobExecution jobExecution = jobEngineService.getJobExecutionById(id);
 
+                Long id = batchHelper.createFirstInChain(jobId, parameters, priority, maturity, uniqueInQueue).getId();
+                batchHelper.activateFirstInChain(id);
                 chainPreviousExecutionId = id;
                 chainId = id;
-                jobExecution.setChainId(chainId);
-                jobExecution.setChainPreviousExecutionId(null);
 
             } else { // chain peasants
-                chainPreviousExecutionId = create(parameters, priority, maturity, chainId, chainPreviousExecutionId).getId();
+                chainPreviousExecutionId = create(parameters, priority, maturity, null, chainId, chainPreviousExecutionId).getId();
             }
         }
         return chainId;
     }
+
 }

@@ -38,28 +38,28 @@ public class JobEngineServiceTest {
     @Test
     public void createJobExecution_parameterString_HashIsSetInJobExecution() {
         String parameters = "{meine parameter}";
-        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, false);
+        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, null, false);
         assertThat(jobExecution.getParametersHash(), not(nullValue()));
     }
 
     @Test
     public void createJobExecution_parameterString_HashIsCorrect() {
         String parameters = "{meine parameter}";
-        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, false);
+        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, null, false);
         assertThat(jobExecution.getParametersHash(), equalTo(parameters.hashCode()));
     }
 
     @Test
     public void createJobExecution_emptyParameterString_HashIsNullInJobExecution() {
         String parameters = "";
-        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, false);
+        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, null, false);
         assertThat(jobExecution.getParametersHash(), is(nullValue()));
     }
 
     @Test
     public void createJobExecution_blankParameterString_HashIsNullInJobExecution() {
         String parameters = "         ";
-        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, false);
+        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, null, false);
         assertThat(jobExecution.getParametersHash(), is(nullValue()));
     }
 
@@ -72,7 +72,7 @@ public class JobEngineServiceTest {
         jobExecutionInQueue.setId(21l);
         when(JobExecution.getFirstCreatedByJobIdAndParametersHash(entityManager, 1l, parameters.hashCode())).thenReturn(jobExecutionInQueue);
 
-        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, true);
+        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, null, true);
         assertThat(jobExecution, not(nullValue()));
         assertThat(jobExecution.getId(), equalTo(21l));
     }
@@ -86,7 +86,7 @@ public class JobEngineServiceTest {
         jobExecutionInQueue.setId(21l);
         when(JobExecution.getFirstCreatedByJobIdAndParametersHash(entityManager, 1l, parameters.hashCode())).thenReturn(null);
 
-        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, true);
+        JobExecution jobExecution = classUnderTest.createJobExecution(1l, parameters, false, null, null, null, null, true);
 
         assertThat(jobExecution, not(nullValue()));
         assertThat(jobExecution.getJobId(), equalTo(1l));

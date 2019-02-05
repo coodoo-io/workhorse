@@ -34,7 +34,7 @@ public abstract class JobWorker extends BaseJobWorker {
      * @return job execution ID
      */
     public Long createJobExecution(Boolean priority, LocalDateTime maturity) {
-        return create(null, priority, maturity, null, null).getId();
+        return create(null, priority, maturity, null, null, null).getId();
     }
 
     /**
@@ -49,7 +49,7 @@ public abstract class JobWorker extends BaseJobWorker {
      * @return job execution ID
      */
     public Long createJobExecution(Boolean priority, Long delayValue, ChronoUnit delayUnit) {
-        return create(null, priority, JobEngineUtil.delayToMaturity(delayValue, delayUnit), null, null).getId();
+        return create(null, priority, JobEngineUtil.delayToMaturity(delayValue, delayUnit), null, null, null).getId();
     }
 
     /**
@@ -60,7 +60,7 @@ public abstract class JobWorker extends BaseJobWorker {
      * @return job execution ID
      */
     public Long createPriorityJobExecution() {
-        return create(null, true, null, null, null).getId();
+        return create(null, true, null, null, null, null).getId();
     }
 
     /**
@@ -73,7 +73,7 @@ public abstract class JobWorker extends BaseJobWorker {
      * @return job execution ID
      */
     public Long createDelayedJobExecution(Long delayValue, ChronoUnit delayUnit) {
-        return create(null, false, JobEngineUtil.delayToMaturity(delayValue, delayUnit), null, null).getId();
+        return create(null, false, JobEngineUtil.delayToMaturity(delayValue, delayUnit), null, null, null).getId();
     }
 
     /**
@@ -85,7 +85,7 @@ public abstract class JobWorker extends BaseJobWorker {
      * @return job execution ID
      */
     public Long createPlannedJobExecution(LocalDateTime maturity) {
-        return create(null, false, maturity, null, null).getId();
+        return create(null, false, maturity, null, null, null).getId();
     }
 
 }

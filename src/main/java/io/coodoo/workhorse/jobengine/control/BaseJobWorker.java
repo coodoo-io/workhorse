@@ -49,12 +49,22 @@ public abstract class BaseJobWorker {
     public void onFinished(Long jobExecutionId) {}
 
     /**
-     * The job engine will call this callback method after the last job execution of a chain is finished. <br>
-     * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
+     * The job engine will call this callback method after the last job execution of a batch is finished. <br>
+     * <i>If needed, this method can be overwritten to react on a finished batch.</i>
      * 
+     * @param batchId batch ID
+     * @param jobExecutionId ID of last job execution of a batch that is finished
+     */
+    public void onFinishedBatch(Long batchId, Long jobExecutionId) {}
+
+    /**
+     * The job engine will call this callback method after the last job execution of a chain is finished. <br>
+     * <i>If needed, this method can be overwritten to react on a finished chain.</i>
+     * 
+     * @param chainId chain ID
      * @param jobExecutionId ID of last job execution of a chain that is finished
      */
-    public void onChainFinished(Long jobExecutionId) {}
+    public void onFinishedChain(Long chainId, Long jobExecutionId) {}
 
     /**
      * The job engine will call this callback method after the job execution has failed and there will be a retry of the failed job execution. <br>
@@ -72,6 +82,24 @@ public abstract class BaseJobWorker {
      * @param jobExecutionId ID of current job execution that has failed
      */
     public void onFailed(Long jobExecutionId) {}
+
+    /**
+     * The job engine will call this callback method after a batch has failed. <br>
+     * <i>If needed, this method can be overwritten to react on a failed batch.</i>
+     * 
+     * @param batchId chain ID
+     * @param jobExecutionId ID of last job execution of a batch that has failed
+     */
+    public void onFailedBatch(Long batchId, Long jobExecutionId) {}
+
+    /**
+     * The job engine will call this callback method after a chain has failed. <br>
+     * <i>If needed, this method can be overwritten to react on a failed chain.</i>
+     * 
+     * @param chainId chain ID
+     * @param jobExecutionId ID of last job execution of a chain that has failed
+     */
+    public void onFailedChain(Long chainId, Long jobExecutionId) {}
 
     /**
      * The job engine will call this callback method after the job went into status ERROR <br>
@@ -272,17 +300,17 @@ public abstract class BaseJobWorker {
      * @return job execution ID
      */
     public Long createJobExecution() {
-        return create(null, null, null, null, null).getId();
+        return create(null, null, null, null, null, null).getId();
     }
 
-    protected JobExecution create(Object parameters, Boolean priority, LocalDateTime maturity, Long chainId, Long chainPreviousExecutionId) {
+    protected JobExecution create(Object parameters, Boolean priority, LocalDateTime maturity, Long batchId, Long chainId, Long chainPreviousExecutionId) {
 
         Long jobId = getJob().getId();
         boolean uniqueInQueue = getJob().isUniqueInQueue();
 
         String parametersJson = JobEngineUtil.parametersToJson(parameters);
 
-        return jobEngineService.createJobExecution(jobId, parametersJson, priority, maturity, chainId, chainPreviousExecutionId, uniqueInQueue);
+        return jobEngineService.createJobExecution(jobId, parametersJson, priority, maturity, batchId, chainId, chainPreviousExecutionId, uniqueInQueue);
     }
 
     public long currentQueuedExecutions() {

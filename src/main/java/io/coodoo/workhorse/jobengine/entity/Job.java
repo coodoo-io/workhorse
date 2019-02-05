@@ -47,6 +47,9 @@ public class Job extends RevisionDatesOccEntity {
     @Column(name = "threads")
     private int threads;
 
+    @Column(name = "max_per_minute")
+    private Integer maxPerMinute;
+
     @Column(name = "fail_retries")
     private int failRetries;
 
@@ -107,6 +110,14 @@ public class Job extends RevisionDatesOccEntity {
         this.threads = threads;
     }
 
+    public Integer getMaxPerMinute() {
+        return maxPerMinute;
+    }
+
+    public void setMaxPerMinute(Integer maxPerMinute) {
+        this.maxPerMinute = maxPerMinute;
+    }
+
     public int getFailRetries() {
         return failRetries;
     }
@@ -142,8 +153,9 @@ public class Job extends RevisionDatesOccEntity {
     @Override
     public String toString() {
         return "Job [id=" + id + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", name=" + name + ", description=" + description
-                        + ", workerClassName=" + workerClassName + ", type=" + type + ", status=" + status + ", threads=" + threads + ", failRetries="
-                        + failRetries + ", retryDelay=" + retryDelay + ", daysUntilCleanUp=" + daysUntilCleanUp + ", uniqueInQueue=" + uniqueInQueue + "]";
+                        + ", workerClassName=" + workerClassName + ", type=" + type + ", status=" + status + ", threads=" + threads + ", maxPerMinute="
+                        + maxPerMinute + ", failRetries=" + failRetries + ", retryDelay=" + retryDelay + ", daysUntilCleanUp=" + daysUntilCleanUp
+                        + ", uniqueInQueue=" + uniqueInQueue + "]";
     }
 
     /**

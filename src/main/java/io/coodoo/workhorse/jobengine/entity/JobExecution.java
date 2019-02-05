@@ -28,7 +28,9 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
  */
 @Entity
 @Table(name = "jobengine_execution")
-@NamedQueries({@NamedQuery(name = "JobExecution.getAllByJobId", query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId"),
+@NamedQueries({
+
+                @NamedQuery(name = "JobExecution.getAllByJobId", query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId"),
                 @NamedQuery(name = "JobExecution.deleteAllByJobId", query = "DELETE FROM JobExecution j WHERE j.jobId = :jobId"),
                 @NamedQuery(name = "JobExecution.getAllByStatus", query = "SELECT j FROM JobExecution j WHERE j.status = :status"),
                 @NamedQuery(name = "JobExecution.getAllByJobIdAndStatus", query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = :status"),
@@ -37,8 +39,21 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
                 @NamedQuery(name = "JobExecution.getNextCandidates",
                                 query = "SELECT j FROM JobExecution j WHERE j.jobId = :jobId AND j.status = 'QUEUED' AND (j.maturity IS NULL OR j.maturity < :currentTime) AND j.chainPreviousExecutionId IS NULL ORDER BY j.priority, j.createdAt"),
 
+                // Batch
+                @NamedQuery(name = "JobExecution.getBatch", query = "SELECT j FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
+                @NamedQuery(name = "JobExecution.getBatchInfo",
+                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
+                @NamedQuery(name = "JobExecution.getBatchInfoTime",
+                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
+                @NamedQuery(name = "JobExecution.countBatchByStatus",
+                                query = "SELECT COUNT(j) FROM JobExecution j WHERE j.batchId = :batchId AND j.status = :status"),
+
                 // Chained
                 @NamedQuery(name = "JobExecution.getChain", query = "SELECT j FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id"),
+                @NamedQuery(name = "JobExecution.getChainInfo",
+                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id"),
+                @NamedQuery(name = "JobExecution.getChainInfoTime",
+                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.chainId = :batchId ORDER BY j.createdAt, j.id"),
                 @NamedQuery(name = "JobExecution.getNextInChain",
                                 query = "SELECT j FROM JobExecution j WHERE j.chainId = :chainId AND j.chainPreviousExecutionId = :jobExecutionId"),
                 @NamedQuery(name = "JobExecution.abortChain",
@@ -102,6 +117,9 @@ public class JobExecution extends RevisionDatesEntity {
      */
     @Column(name = "maturity")
     private LocalDateTime maturity;
+
+    @Column(name = "batch_id")
+    private Long batchId;
 
     @Column(name = "chain_id")
     private Long chainId;
@@ -192,6 +210,14 @@ public class JobExecution extends RevisionDatesEntity {
         this.maturity = maturity;
     }
 
+    public Long getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(Long batchId) {
+        this.batchId = batchId;
+    }
+
     public Long getChainId() {
         return chainId;
     }
@@ -266,11 +292,10 @@ public class JobExecution extends RevisionDatesEntity {
 
     @Override
     public String toString() {
-        return "JobExecution [jobId=" + jobId + ", status=" + status + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration=" + duration
-                        + ", priority=" + priority + ", maturity=" + maturity + ", chainId=" + chainId + ", chainPreviousExecutionId="
-                        + chainPreviousExecutionId + ", parameters=" + parameters + ", parametersHash=" + parametersHash + ", log=" + log + ", failRetry="
-                        + failRetry + ", failRetryExecutionId=" + failRetryExecutionId + ", failMessage=" + failMessage + ", failStacktrace=" + failStacktrace
-                        + "]";
+        return "JobExecution [id=" + id + ", jobId=" + jobId + ", status=" + status + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration="
+                        + duration + ", priority=" + priority + ", maturity=" + maturity + ", batchId=" + batchId + ", chainId=" + chainId
+                        + ", chainPreviousExecutionId=" + chainPreviousExecutionId + ", parameters=" + parameters + ", parametersHash=" + parametersHash
+                        + ", failRetry=" + failRetry + ", failRetryExecutionId=" + failRetryExecutionId + ", failMessage=" + failMessage + "]";
     }
 
     @SuppressWarnings("unchecked")
@@ -356,6 +381,41 @@ public class JobExecution extends RevisionDatesEntity {
         Query query = entityManager.createNamedQuery("JobExecution.getAllByJobId");
         query = query.setParameter("jobId", jobId);
         return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'JobExecution.getBatch' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param batchId the batchId
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<JobExecution> getBatch(EntityManager entityManager, Long batchId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getBatch");
+        query = query.setParameter("batchId", batchId);
+        return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'JobExecution.countBatchByStatus' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param batchId the batchId
+     * @param status the status
+     * @return the result
+     */
+    public static Long countBatchByStatus(EntityManager entityManager, Long batchId, JobExecutionStatus status) {
+        Query query = entityManager.createNamedQuery("JobExecution.countBatchByStatus");
+        query = query.setParameter("batchId", batchId);
+        query = query.setParameter("status", status);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (Long) results.get(0);
     }
 
     /**
@@ -517,6 +577,72 @@ public class JobExecution extends RevisionDatesEntity {
         } else {
             return resultList.get(0);
         }
+    }
+
+    /**
+     * Executes the query 'JobExecution.getBatchInfo' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param batchId the batchId
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<JobExecutionInfo> getBatchInfo(EntityManager entityManager, Long batchId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getBatchInfo");
+        query = query.setParameter("batchId", batchId);
+        return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'JobExecution.getChainInfo' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param chainId the chainId
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<JobExecutionInfo> getChainInfo(EntityManager entityManager, Long chainId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getChainInfo");
+        query = query.setParameter("chainId", chainId);
+        return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'JobExecution.getBatchInfoTime' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param batchId the batchId
+     * @return the result
+     */
+    public static JobExecutionInfoTime getBatchInfoTime(EntityManager entityManager, Long batchId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getBatchInfoTime");
+        query = query.setParameter("batchId", batchId);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (JobExecutionInfoTime) results.get(0);
+    }
+
+    /**
+     * Executes the query 'JobExecution.getChainInfoTime' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param batchId the batchId
+     * @return the result
+     */
+    public static JobExecutionInfoTime getChainInfoTime(EntityManager entityManager, Long batchId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getChainInfoTime");
+        query = query.setParameter("batchId", batchId);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (JobExecutionInfoTime) results.get(0);
     }
 
 }

@@ -112,20 +112,20 @@ JobEngineService jobEngineService;
 
 public void start() {
 
-    jobEngineService.start(5);
+    jobEngineService.start();
 }
 ```
 
 
 ## Install
 
-1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.1.3%7Cjar))
+1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.2.0%7Cjar))
    
    ```xml
    <dependency>
        <groupId>io.coodoo</groupId>
        <artifactId>workhorse</artifactId>
-       <version>1.1.3</version>
+       <version>1.2.0</version>
    </dependency>
    ```
    
@@ -141,7 +141,6 @@ public void start() {
 3. To provide the EntityManager you have to implement a `@JobEngineEntityManagerProducer` CDI producer.
 
    ```java
-    @Stateless
     public class JobEngineEntityManagerProducer {
     
         @PersistenceContext

@@ -35,12 +35,9 @@ public class JobQueuePoller {
         jobEngineController.syncJobExecutionQueue();
     }
 
-    public void start(Integer interval) {
+    public void start() {
 
-        if (interval == null) {
-            interval = JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL;
-        }
-        ScheduleExpression scheduleExpression = new ScheduleExpression().second("*/" + interval).minute("*").hour("*");
+        ScheduleExpression scheduleExpression = new ScheduleExpression().second("*/" + JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL).minute("*").hour("*");
 
         TimerConfig timerConfig = new TimerConfig();
         timerConfig.setInfo(JOB_QUEUE_POLLER);
@@ -51,7 +48,7 @@ public class JobQueuePoller {
         }
         timerService.createCalendarTimer(scheduleExpression, timerConfig);
 
-        logger.info("Job Queue Poller started with a {} seconds interval", interval);
+        logger.info("Job Queue Poller started with a {} seconds interval", JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL);
     }
 
     public void stop() {

@@ -222,11 +222,10 @@ public class JobEngine implements Serializable {
                             lock.unlock();
                         }
 
-                        // Integer maxRpm = 30; // max rate/revolutions per minute | TODO: put into Job entity
-                        // int minMillisPerExecution = 0;
-                        // if (maxRpm != null && maxRpm > 0 && maxRpm <= 60000) {
-                        // minMillisPerExecution = 60000 / maxRpm;
-                        // }
+                        int minMillisPerExecution = 0;
+                        if (job.getMaxPerMinute() != null && job.getMaxPerMinute() > 0 && job.getMaxPerMinute() <= 60000) {
+                            minMillisPerExecution = 60000 / job.getMaxPerMinute();
+                        }
 
                         jobExecutionLoop: while (true) {
 
@@ -245,16 +244,22 @@ public class JobEngine implements Serializable {
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
 
-                                // if (duration < minMillisPerExecution) {
-                                // // this execution was to fast and must wait to not exceed the limit of executions per minute
-                                // Thread.sleep(minMillisPerExecution - duration);
-                                // }
+                                if (duration < minMillisPerExecution) {
+                                    // this execution was to fast and must wait to not exceed the limit of executions per minute
+                                    Thread.sleep(minMillisPerExecution - duration);
+                                }
 
                                 String jobExecutionLog = jobContext.getLog();
                                 jobEngineController.setJobExecutionFinished(jobExecutionId, duration, jobExecutionLog);
 
                                 runningJobExecutions.get(jobId).remove(jobExecution);
                                 jobWorker.onFinished(jobExecutionId);
+
+                                if (jobExecution.getBatchId() != null) {
+
+                                    // TODO sind alle fertig?
+                                    jobWorker.onFinishedBatch(jobExecution.getBatchId(), jobExecutionId);
+                                }
 
                                 if (jobExecution.getChainId() != null) {
                                     if (jobExecution.getFailRetryExecutionId() != null) {
@@ -266,7 +271,7 @@ public class JobEngine implements Serializable {
                                         jobExecution = nextInChain;
                                         continue jobExecutionLoop;
                                     }
-                                    jobWorker.onChainFinished(jobExecutionId);
+                                    jobWorker.onFinishedChain(jobExecution.getChainId(), jobExecutionId);
                                 }
 
                                 break jobExecutionLoop;

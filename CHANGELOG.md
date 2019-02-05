@@ -6,17 +6,25 @@
 ### BREAKING CHANGES
 -->
 
-<a name="1.1.3"></a>
+<a name="1.2.0"></a>
 
-## 1.1.3 (2019-01-31)
+## 1.2.0 (2019-02-01)
 
 ### Features
 
+* Limit throughput by defining the `maxPerMinute` attribute in the job  
 * Basic configuration that can be changed in the implementation, see `JobEngineConfig`
 * Lists of simple Java types can now be used as JobExecution parameters
 * Yet some other logging convenience methods
 * Access to the parameters object via `getParameters()` in `JobWorkerWith`
-* Questionable possibility to get a `JobWorker` instance via `JobEngineConfig.getJobWorker(Job)`
+* Questionable possibility to get a `JobWorker` instance via `JobEngineService.getJobWorker(Job)`
+
+### BREAKING CHANGES
+
+* `JobEngineService.start(Integer interval)` lost its interval parameter - it is now defined in `JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL`
+* `JobWorker.onChainFinished(Long jobExecutionId)` changed name to `onFinishedChain` got extended with the parameter `chainId`
+* Table `jobengine_job` got a new nullable column `max_per_pinute` - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
+* ---------Column `chain_id` of `jobengine_execution` is now named `batch_id` to serve for chained and batch executions - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
 
 ### Bug Fixes
 
