@@ -214,14 +214,12 @@ public class JobEngineService {
     }
 
     public JobExecution updateJobExecution(Long jobExecutionId, JobExecutionStatus status, String parameters, boolean priority, LocalDateTime maturity,
-                    Long chainId, Long previousJobExecutionId, int fails) {
+                    int fails) {
         JobExecution jobExecution = getJobExecutionById(jobExecutionId);
         jobExecution.setStatus(status);
         jobExecution.setParameters(parameters);
         jobExecution.setPriority(priority);
         jobExecution.setMaturity(maturity);
-        jobExecution.setChainId(chainId);
-        jobExecution.setChainPreviousExecutionId(previousJobExecutionId);
         jobExecution.setFailRetry(fails);
         logger.debug("JobExecution updated: {}", jobExecution);
         return jobExecution;

@@ -26,6 +26,7 @@
 ### BREAKING CHANGES
 
 * `JobEngineService.start(Integer interval)` lost its interval parameter - it is now defined in `JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL`
+* `JobEngineService.updateJobExecution()` lost its parameters `chainId` and `previousJobExecutionId`
 * `JobWorker.onChainFinished(Long jobExecutionId)` changed name to `onFinishedChain` got extended with the parameter `chainId`
 * Table `jobengine_job` got a new nullable column `max_per_pinute` - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
 * New nullable column `batch_id` in `jobengine_execution` to serve for batch executions - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
