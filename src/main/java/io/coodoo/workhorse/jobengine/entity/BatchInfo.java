@@ -34,14 +34,14 @@ public class BatchInfo {
 
     private Long expectedDuration;
 
-    private List<JobExecutionInfo> executions;
+    private List<JobExecutionInfo> executionInfos;
 
     public BatchInfo() {}
 
-    public BatchInfo(Long batchId, JobExecutionInfoTime batchInfoTime, List<JobExecutionInfo> executions) {
+    public BatchInfo(Long batchId, JobExecutionInfoTime batchInfoTime, List<JobExecutionInfo> executionInfos) {
 
         this.batchId = batchId;
-        this.size = executions.size();
+        this.size = executionInfos.size();
         this.queued = 0;
         this.running = 0;
         this.finished = 0;
@@ -49,11 +49,11 @@ public class BatchInfo {
         this.aborted = 0;
         this.startedAt = batchInfoTime.getFirstStartedAt();
         this.endedAt = batchInfoTime.getLastEndedAt();
-        this.executions = executions;
+        this.executionInfos = executionInfos;
         this.duration = 0L;
         int noDurationCount = 0;
 
-        for (JobExecutionInfo execution : executions) {
+        for (JobExecutionInfo execution : executionInfos) {
             switch (execution.getStatus()) {
                 case QUEUED:
                     this.queued++;
@@ -195,12 +195,12 @@ public class BatchInfo {
         this.expectedDuration = expectedDuration;
     }
 
-    public List<JobExecutionInfo> getExecutions() {
-        return executions;
+    public List<JobExecutionInfo> getExecutionInfos() {
+        return executionInfos;
     }
 
-    public void setExecutions(List<JobExecutionInfo> executions) {
-        this.executions = executions;
+    public void setExecutionInfos(List<JobExecutionInfo> executionInfos) {
+        this.executionInfos = executionInfos;
     }
 
     @Override
@@ -208,8 +208,8 @@ public class BatchInfo {
         final int maxLen = 10;
         return "BatchInfo [batchId=" + batchId + ", status=" + status + ", size=" + size + ", queued=" + queued + ", running=" + running + ", finished="
                         + finished + ", failed=" + failed + ", aborted=" + aborted + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration="
-                        + duration + ", expectedEnd=" + expectedEnd + ", expectedDuration=" + expectedDuration + ", executions="
-                        + (executions != null ? executions.subList(0, Math.min(executions.size(), maxLen)) : null) + "]";
+                        + duration + ", expectedEnd=" + expectedEnd + ", expectedDuration=" + expectedDuration + ", executionInfos="
+                        + (executionInfos != null ? executionInfos.subList(0, Math.min(executionInfos.size(), maxLen)) : null) + "]";
     }
 
 }
