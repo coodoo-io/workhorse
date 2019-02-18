@@ -8,10 +8,14 @@
 
 <a name="1.2.0"></a>
 
-## 1.2.0 (2019-02-01)
+## 1.2.0 (2019-02-18)
 
 ### Features
 
+* There are Batch-Jobs! Like the chained jobs you can group a bunch of executions as batch and monitor them by `getJobExecutionChainInfo()` (also chains `getJobExecutionChainInfo()`)
+* There are also new callback methods regarding chained and batch jobs in `JobWorker`: 
+  * `onFinishedBatch()`/`onFinishedChain()` gets called after all job executions of the batch/chain are done
+  * `onFailedBatch()`/`onFailedChain()` gets called after a batch/chain failed
 * Limit throughput by defining the `maxPerMinute` attribute in the job  
 * Basic configuration that can be changed in the implementation, see `JobEngineConfig`
 * Lists of simple Java types can now be used as JobExecution parameters
@@ -24,7 +28,7 @@
 * `JobEngineService.start(Integer interval)` lost its interval parameter - it is now defined in `JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL`
 * `JobWorker.onChainFinished(Long jobExecutionId)` changed name to `onFinishedChain` got extended with the parameter `chainId`
 * Table `jobengine_job` got a new nullable column `max_per_pinute` - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
-* ---------Column `chain_id` of `jobengine_execution` is now named `batch_id` to serve for chained and batch executions - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
+* New nullable column `batch_id` in `jobengine_execution` to serve for batch executions - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
 
 ### Bug Fixes
 
