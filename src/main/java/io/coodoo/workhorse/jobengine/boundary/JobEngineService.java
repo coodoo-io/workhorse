@@ -19,7 +19,7 @@ import io.coodoo.workhorse.jobengine.control.JobEngine;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
-import io.coodoo.workhorse.jobengine.entity.BatchInfo;
+import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionInfo;
@@ -146,28 +146,28 @@ public class JobEngineService {
         return entityManager.find(JobExecution.class, jobExecutionId);
     }
 
-    public BatchInfo getJobExecutionBatchInfo(Long batchId) {
+    public GroupInfo getJobExecutionBatchInfo(Long batchId) {
 
         JobExecutionInfoTime batchInfoTime = JobExecution.getBatchInfoTime(entityManager, batchId);
         if (batchInfoTime == null) {
             return null;
         }
         List<JobExecutionInfo> batchInfo = JobExecution.getBatchInfo(entityManager, batchId);
-        return new BatchInfo(batchId, batchInfoTime, batchInfo);
+        return new GroupInfo(batchId, batchInfoTime, batchInfo);
     }
 
     public List<JobExecution> getJobExecutionBatch(Long batchId) {
         return JobExecution.getBatch(entityManager, batchId);
     }
 
-    public BatchInfo getJobExecutionChainInfo(Long chainId) {
+    public GroupInfo getJobExecutionChainInfo(Long chainId) {
 
         JobExecutionInfoTime batchInfoTime = JobExecution.getChainInfoTime(entityManager, chainId);
         if (batchInfoTime == null) {
             return null;
         }
         List<JobExecutionInfo> batchInfo = JobExecution.getChainInfo(entityManager, chainId);
-        return new BatchInfo(chainId, batchInfoTime, batchInfo);
+        return new GroupInfo(chainId, batchInfoTime, batchInfo);
     }
 
     public List<JobExecution> getJobExecutionChain(Long chainId) {

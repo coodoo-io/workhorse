@@ -6,9 +6,9 @@ import java.util.List;
 /**
  * @author coodoo GmbH (coodoo.io)
  */
-public class BatchInfo {
+public class GroupInfo {
 
-    private Long batchId;
+    private Long id;
 
     private JobExecutionStatus status;
 
@@ -36,11 +36,11 @@ public class BatchInfo {
 
     private List<JobExecutionInfo> executionInfos;
 
-    public BatchInfo() {}
+    public GroupInfo() {}
 
-    public BatchInfo(Long batchId, JobExecutionInfoTime batchInfoTime, List<JobExecutionInfo> executionInfos) {
+    public GroupInfo(Long id, JobExecutionInfoTime batchInfoTime, List<JobExecutionInfo> executionInfos) {
 
-        this.batchId = batchId;
+        this.id = id;
         this.size = executionInfos.size();
         this.queued = 0;
         this.running = 0;
@@ -91,12 +91,12 @@ public class BatchInfo {
         }
     }
 
-    public Long getBatchId() {
-        return batchId;
+    public Long getId() {
+        return id;
     }
 
-    public void setBatchId(Long batchId) {
-        this.batchId = batchId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public JobExecutionStatus getStatus() {
@@ -206,9 +206,9 @@ public class BatchInfo {
     @Override
     public String toString() {
         final int maxLen = 10;
-        return "BatchInfo [batchId=" + batchId + ", status=" + status + ", size=" + size + ", queued=" + queued + ", running=" + running + ", finished="
-                        + finished + ", failed=" + failed + ", aborted=" + aborted + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration="
-                        + duration + ", expectedEnd=" + expectedEnd + ", expectedDuration=" + expectedDuration + ", executionInfos="
+        return "BatchInfo [id=" + id + ", status=" + status + ", size=" + size + ", queued=" + queued + ", running=" + running + ", finished=" + finished
+                        + ", failed=" + failed + ", aborted=" + aborted + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration=" + duration
+                        + ", expectedEnd=" + expectedEnd + ", expectedDuration=" + expectedDuration + ", executionInfos="
                         + (executionInfos != null ? executionInfos.subList(0, Math.min(executionInfos.size(), maxLen)) : null) + "]";
     }
 
