@@ -80,16 +80,13 @@ public class BatchInfo {
             this.expectedDuration = this.duration + (long) (batchInfoTime.getAvgDuration() * noDurationCount);
             this.expectedEnd = this.startedAt.plusSeconds(this.expectedDuration / 1000);
         }
-        if (this.startedAt == null) {
-            this.status = JobExecutionStatus.QUEUED;
-        } else {
-            if (this.running > 0) {
-                this.status = JobExecutionStatus.RUNNING;
-            } else if (this.queued == 0 && this.running == 0) {
-                this.status = JobExecutionStatus.FINISHED;
-                if (this.aborted > 0) {
-                    this.status = JobExecutionStatus.ABORTED;
-                }
+        this.status = JobExecutionStatus.QUEUED;
+        if (this.running > 0) {
+            this.status = JobExecutionStatus.RUNNING;
+        } else if (this.queued == 0 && this.running == 0) {
+            this.status = JobExecutionStatus.FINISHED;
+            if (this.aborted > 0) {
+                this.status = JobExecutionStatus.ABORTED;
             }
         }
     }
