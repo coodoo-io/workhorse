@@ -77,19 +77,23 @@ public class JobEngineService {
         }
     }
 
-    public void activateJob(Job job) {
+    public void activateJob(Long jobId) {
+
+        Job job = getJobById(jobId);
 
         logger.info("Activate job {}", job.getName());
 
-        updateJob(job.getId(), job.getName(), job.getDescription(), job.getWorkerClassName(), JobStatus.ACTIVE, job.getThreads(), job.getFailRetries());
+        updateJobStatus(job.getId(), JobStatus.ACTIVE);
         jobScheduler.start(job);
     }
 
-    public void deactivateJob(Job job) {
+    public void deactivateJob(Long jobId) {
+
+        Job job = getJobById(jobId);
 
         logger.info("Deactivate job {}", job.getName());
 
-        updateJob(job.getId(), job.getName(), job.getDescription(), job.getWorkerClassName(), JobStatus.INACTIVE, job.getThreads(), job.getFailRetries());
+        updateJobStatus(job.getId(), JobStatus.INACTIVE);
         jobScheduler.stop(job);
         jobEngine.clearMemoryQueue(job);
     }
@@ -114,13 +118,15 @@ public class JobEngineService {
         return jobEngineController.getJobWorker(job);
     }
 
-    public Job updateJob(Long jobId, String name, String description, String workerClassName, JobStatus status, int threads, int failRetries) {
+    public Job updateJob(Long jobId, String name, String description, String workerClassName, JobStatus status, int threads, Integer maxPerMinute,
+                    int failRetries) {
         Job job = getJobById(jobId);
         job.setName(name);
         job.setDescription(description);
         job.setWorkerClassName(workerClassName);
         job.setStatus(status);
         job.setThreads(threads);
+        job.setMaxPerMinute(maxPerMinute);
         job.setFailRetries(failRetries);
         logger.debug("Job updated: {}", job);
         return job;
