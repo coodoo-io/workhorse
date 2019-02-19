@@ -229,7 +229,7 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
         for (T parameters : parametersList) {
             if (batchId == null) { // start of chain
 
-                Long id = batchHelper.createFirstInChain(jobId, parameters, priority, maturity, uniqueInQueue).getId();
+                Long id = batchHelper.createFirstInBatch(jobId, parameters, priority, maturity, uniqueInQueue).getId();
                 batchHelper.activateFirstInBatch(id);
                 batchId = id;
 
