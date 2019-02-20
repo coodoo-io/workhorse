@@ -33,6 +33,7 @@ import io.coodoo.workhorse.jobengine.boundary.JobContext;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.control.event.AllJobExecutionsDoneEvent;
 import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
+import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
@@ -169,6 +170,7 @@ public class JobEngine implements Serializable {
             boolean stopMe;
             JobExecution activeJob;
 
+            @Override
             public void run(Job job) {
 
                 final Long jobId = job.getId();
@@ -255,10 +257,18 @@ public class JobEngine implements Serializable {
                                 runningJobExecutions.get(jobId).remove(jobExecution);
                                 jobWorker.onFinished(jobExecutionId);
 
-                                if (jobExecution.getBatchId() != null) {
+                                Long batchId = jobExecution.getBatchId();
+                                if (batchId != null) {
+                                    boolean batchFinished = jobEngineService.isBatchFinished(batchId);
+                                    if (batchFinished) {
+                                        jobWorker.onFinishedBatch(batchId, jobExecutionId);
 
-                                    // TODO sind alle fertig?
-                                    jobWorker.onFinishedBatch(jobExecution.getBatchId(), jobExecutionId);
+                                        // Check if at minimum one batch execution failed and call batch fail callback
+                                        GroupInfo batchInfo = jobEngineService.getJobExecutionBatchInfo(batchId);
+                                        if (batchInfo.getFailed() > 0) {
+                                            jobWorker.onFailedBatch(batchId, jobExecutionId);
+                                        }
+                                    }
                                 }
 
                                 if (jobExecution.getChainId() != null) {
@@ -314,10 +324,12 @@ public class JobEngine implements Serializable {
                 jobThreads.get(jobId).remove(this);
             }
 
+            @Override
             public void stop() {
                 this.stopMe = true;
             }
 
+            @Override
             public JobExecution getActiveJobExecution() {
                 return activeJob;
             }
@@ -354,7 +366,7 @@ public class JobEngine implements Serializable {
         if (!jobThreads.get(job.getId()).isEmpty()) {
             logger.info("Process cancelled. All job threads and job executions removed.");
         }
-        for (JobThread jobThread : (Set<JobThread>) this.jobThreads.get(job.getId())) {
+        for (JobThread jobThread : this.jobThreads.get(job.getId())) {
             jobThread.stop();
         }
         jobThreads.get(job.getId()).clear();

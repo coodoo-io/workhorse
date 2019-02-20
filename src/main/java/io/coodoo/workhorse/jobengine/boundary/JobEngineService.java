@@ -156,6 +156,27 @@ public class JobEngineService {
         return new GroupInfo(batchId, batchInfoTime, batchInfo);
     }
 
+    /**
+     * Check whether all executions of a batch job are finished.
+     * 
+     * @param batchId the ID of the batch executions
+     * @return <code>true</code> if no execution of this batch job is either queued or running.
+     */
+    public boolean isBatchFinished(Long batchId) {
+        Long queuedExecutions = countBatchExecutions(batchId, JobExecutionStatus.QUEUED);
+        if (queuedExecutions.equals(0l)) {
+            Long runningExecutions = countBatchExecutions(batchId, JobExecutionStatus.RUNNING);
+            if (runningExecutions.equals(0l)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Long countBatchExecutions(Long batchId, JobExecutionStatus status) {
+        return JobExecution.countBatchByStatus(entityManager, batchId, status);
+    }
+
     public List<JobExecution> getJobExecutionBatch(Long batchId) {
         return JobExecution.getBatch(entityManager, batchId);
     }

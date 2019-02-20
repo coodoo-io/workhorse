@@ -235,9 +235,6 @@ public class JobEngineController {
 
         if (retryExecution == null) {
             jobWorker.onFailed(jobExecutionId);
-            if (failedExecution.getBatchId() != null) {
-                jobWorker.onFailedBatch(failedExecution.getBatchId(), jobExecutionId);
-            }
             if (failedExecution.getChainId() != null) {
                 jobWorker.onFailedChain(failedExecution.getChainId(), jobExecutionId);
             }
