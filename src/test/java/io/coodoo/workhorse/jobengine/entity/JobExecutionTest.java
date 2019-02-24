@@ -914,7 +914,7 @@ public class JobExecutionTest {
     	while (queryText.contains("  ")) {
     	queryText = queryText.replace("  ", " ");
     	}
-    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id' to '" + queryText + "'", "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id", queryText);
+    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.startedAt, j.endedAt, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id' to '" + queryText + "'", "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.startedAt, j.endedAt, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id", queryText);
     }
 
     /**
@@ -944,7 +944,7 @@ public class JobExecutionTest {
     @org.junit.Test 
     public void testGetBatchInfoVerifyFields()
     {
-    	String[][] classesFieldsAndTypes = new String[7][4];
+    	String[][] classesFieldsAndTypes = new String[9][4];
     	classesFieldsAndTypes[0][0] = "j";
     	classesFieldsAndTypes[0][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
     	classesFieldsAndTypes[1][0] = "j.batchId";
@@ -959,18 +959,26 @@ public class JobExecutionTest {
     	classesFieldsAndTypes[3][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
     	classesFieldsAndTypes[3][2] = "duration";
     	classesFieldsAndTypes[3][3] = "java.lang.Long";
-    	classesFieldsAndTypes[4][0] = "j.failRetryExecutionId";
+    	classesFieldsAndTypes[4][0] = "j.endedAt";
     	classesFieldsAndTypes[4][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[4][2] = "failRetryExecutionId";
-    	classesFieldsAndTypes[4][3] = "java.lang.Long";
-    	classesFieldsAndTypes[5][0] = "j.id";
+    	classesFieldsAndTypes[4][2] = "endedAt";
+    	classesFieldsAndTypes[4][3] = "java.time.LocalDateTime";
+    	classesFieldsAndTypes[5][0] = "j.failRetryExecutionId";
     	classesFieldsAndTypes[5][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[5][2] = "id";
+    	classesFieldsAndTypes[5][2] = "failRetryExecutionId";
     	classesFieldsAndTypes[5][3] = "java.lang.Long";
-    	classesFieldsAndTypes[6][0] = "j.status";
+    	classesFieldsAndTypes[6][0] = "j.id";
     	classesFieldsAndTypes[6][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[6][2] = "status";
-    	classesFieldsAndTypes[6][3] = "io.coodoo.workhorse.jobengine.entity.JobExecutionStatus";
+    	classesFieldsAndTypes[6][2] = "id";
+    	classesFieldsAndTypes[6][3] = "java.lang.Long";
+    	classesFieldsAndTypes[7][0] = "j.startedAt";
+    	classesFieldsAndTypes[7][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
+    	classesFieldsAndTypes[7][2] = "startedAt";
+    	classesFieldsAndTypes[7][3] = "java.time.LocalDateTime";
+    	classesFieldsAndTypes[8][0] = "j.status";
+    	classesFieldsAndTypes[8][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
+    	classesFieldsAndTypes[8][2] = "status";
+    	classesFieldsAndTypes[8][3] = "io.coodoo.workhorse.jobengine.entity.JobExecutionStatus";
     	for (String[] testcase : classesFieldsAndTypes) {
     	String fieldPath = testcase[0];
     	String className = testcase[1];
@@ -1002,7 +1010,7 @@ public class JobExecutionTest {
     	}
     	Object[][] constructors = new Object[1][2];
     	constructors[0][0] = "io.coodoo.workhorse.jobengine.entity.JobExecutionInfo";
-    	constructors[0][1] = 4;
+    	constructors[0][1] = 6;
     	for (Object[] constructor : constructors) {
     	String className = (String)constructor[0];
     	int paramCount = (int)constructor[1];
@@ -1057,7 +1065,7 @@ public class JobExecutionTest {
     	while (queryText.contains("  ")) {
     	queryText = queryText.replace("  ", " ");
     	}
-    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id' to '" + queryText + "'", "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id", queryText);
+    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.startedAt, j.endedAt, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id' to '" + queryText + "'", "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.startedAt, j.endedAt, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id", queryText);
     }
 
     /**
@@ -1087,7 +1095,7 @@ public class JobExecutionTest {
     @org.junit.Test 
     public void testGetChainInfoVerifyFields()
     {
-    	String[][] classesFieldsAndTypes = new String[7][4];
+    	String[][] classesFieldsAndTypes = new String[9][4];
     	classesFieldsAndTypes[0][0] = "j";
     	classesFieldsAndTypes[0][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
     	classesFieldsAndTypes[1][0] = "j.chainId";
@@ -1102,18 +1110,26 @@ public class JobExecutionTest {
     	classesFieldsAndTypes[3][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
     	classesFieldsAndTypes[3][2] = "duration";
     	classesFieldsAndTypes[3][3] = "java.lang.Long";
-    	classesFieldsAndTypes[4][0] = "j.failRetryExecutionId";
+    	classesFieldsAndTypes[4][0] = "j.endedAt";
     	classesFieldsAndTypes[4][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[4][2] = "failRetryExecutionId";
-    	classesFieldsAndTypes[4][3] = "java.lang.Long";
-    	classesFieldsAndTypes[5][0] = "j.id";
+    	classesFieldsAndTypes[4][2] = "endedAt";
+    	classesFieldsAndTypes[4][3] = "java.time.LocalDateTime";
+    	classesFieldsAndTypes[5][0] = "j.failRetryExecutionId";
     	classesFieldsAndTypes[5][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[5][2] = "id";
+    	classesFieldsAndTypes[5][2] = "failRetryExecutionId";
     	classesFieldsAndTypes[5][3] = "java.lang.Long";
-    	classesFieldsAndTypes[6][0] = "j.status";
+    	classesFieldsAndTypes[6][0] = "j.id";
     	classesFieldsAndTypes[6][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[6][2] = "status";
-    	classesFieldsAndTypes[6][3] = "io.coodoo.workhorse.jobengine.entity.JobExecutionStatus";
+    	classesFieldsAndTypes[6][2] = "id";
+    	classesFieldsAndTypes[6][3] = "java.lang.Long";
+    	classesFieldsAndTypes[7][0] = "j.startedAt";
+    	classesFieldsAndTypes[7][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
+    	classesFieldsAndTypes[7][2] = "startedAt";
+    	classesFieldsAndTypes[7][3] = "java.time.LocalDateTime";
+    	classesFieldsAndTypes[8][0] = "j.status";
+    	classesFieldsAndTypes[8][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
+    	classesFieldsAndTypes[8][2] = "status";
+    	classesFieldsAndTypes[8][3] = "io.coodoo.workhorse.jobengine.entity.JobExecutionStatus";
     	for (String[] testcase : classesFieldsAndTypes) {
     	String fieldPath = testcase[0];
     	String className = testcase[1];
@@ -1145,7 +1161,7 @@ public class JobExecutionTest {
     	}
     	Object[][] constructors = new Object[1][2];
     	constructors[0][0] = "io.coodoo.workhorse.jobengine.entity.JobExecutionInfo";
-    	constructors[0][1] = 4;
+    	constructors[0][1] = 6;
     	for (Object[] constructor : constructors) {
     	String className = (String)constructor[0];
     	int paramCount = (int)constructor[1];
@@ -1164,360 +1180,6 @@ public class JobExecutionTest {
     	}
     	} catch (ClassNotFoundException e) {
     	org.junit.Assert.fail("Error checking class " + className + " in query JobExecution.getChainInfo: The constructed class " + className + " does not exist (anymore)");
-    	}
-    	}
-    }
-
-    /**
-     * Tests that query 'JobExecution.getBatchInfoTime' has not changed since this test had been created. If this test fails, you should consider re-generating ALL methods created from that query as they may be out-dated.
-     *
-     */
-    @SuppressWarnings({"unchecked", "rawtypes", "null"})
-    @org.junit.Test 
-    public void testGetBatchInfoTimeQueryUnchanged()
-    {
-    	List annotations = new ArrayList();
-    	NamedQuery namedQueryAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQuery.class);
-    	if (namedQueryAnnotation == null) {
-    	NamedQueries namedQueriesAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQueries.class);
-    	if (namedQueriesAnnotation != null) {
-    	annotations.addAll(Arrays.asList(namedQueriesAnnotation.value())); }
-    	} else { annotations.add(namedQueryAnnotation); }
-    	NamedQuery queryUnderTest = null;
-    	for (Object obj : annotations) {
-    	NamedQuery query = (NamedQuery) obj;
-    	if (query.name().equals("JobExecution.getBatchInfoTime")) {
-    	queryUnderTest = query;
-    	break;
-    	}
-    	}
-    	if (queryUnderTest == null) {
-    	org.junit.Assert.fail("Query JobExecution.getBatchInfoTime does not exist anymore.");
-    	}
-    	String queryText = queryUnderTest.query();
-    	// Minor changes with whitespace are ignored
-    	queryText = queryText.trim().replace('\t', ' ').replace('\n', ' ').replace('\r', ' ');
-    	while (queryText.contains("  ")) {
-    	queryText = queryText.replace("  ", " ");
-    	}
-    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id' to '" + queryText + "'", "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id", queryText);
-    }
-
-    /**
-     * Tests that call and query are consistent for query 'JobExecution.getBatchInfoTime' - no result.
-     *
-     */
-    @org.junit.Test 
-    public void testGetBatchInfoTimeEmptyResult()
-    {
-    	Query query = org.mockito.Mockito.mock(Query.class);
-    	EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
-    	org.mockito.BDDMockito.given(entityManager.createNamedQuery("JobExecution.getBatchInfoTime")).willReturn(query);
-    	@SuppressWarnings("rawtypes")
-    	List results = new ArrayList();
-    	org.mockito.BDDMockito.given(query.getResultList()).willReturn(results);
-    	Long batchId = java.lang.Long.valueOf(0);
-    	org.mockito.BDDMockito.given(query.setParameter("batchId", batchId)).willReturn(query);
-    	org.mockito.BDDMockito.given(query.setMaxResults(1)).willReturn(query);
-    	// Call
-    	JobExecutionInfoTime result = io.coodoo.workhorse.jobengine.entity.JobExecution.getBatchInfoTime(entityManager,batchId);
-    	// Verification
-    	org.mockito.BDDMockito.verify(entityManager, org.mockito.Mockito.times(1)).createNamedQuery("JobExecution.getBatchInfoTime");
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("batchId",batchId);
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).getResultList();
-    	org.junit.Assert.assertNull("Result should be null if list is empty", result);
-    }
-
-    /**
-     * Tests that call and query are consistent for query 'JobExecution.getBatchInfoTime' - one result.
-     *
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @org.junit.Test 
-    public void testGetBatchInfoTimeOneResult()
-    {
-    	Query query = org.mockito.Mockito.mock(Query.class);
-    	EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
-    	org.mockito.BDDMockito.given(entityManager.createNamedQuery("JobExecution.getBatchInfoTime")).willReturn(query);
-    	List results = new java.util.ArrayList();
-    	JobExecutionInfoTime first = org.mockito.Mockito.mock(JobExecutionInfoTime.class);
-    	JobExecutionInfoTime second = org.mockito.Mockito.mock(JobExecutionInfoTime.class);
-    	results.add(first);
-    	results.add(second);
-    	org.mockito.BDDMockito.given(query.getResultList()).willReturn(results);
-    	Long batchId = java.lang.Long.valueOf(0);
-    	org.mockito.BDDMockito.given(query.setParameter("batchId", batchId)).willReturn(query);
-    	org.mockito.BDDMockito.given(query.setMaxResults(1)).willReturn(query);
-    	// Call
-    	JobExecutionInfoTime result = io.coodoo.workhorse.jobengine.entity.JobExecution.getBatchInfoTime(entityManager,batchId);
-    	// Verification
-    	org.mockito.BDDMockito.verify(entityManager, org.mockito.Mockito.times(1)).createNamedQuery("JobExecution.getBatchInfoTime");
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("batchId",batchId);
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).getResultList();
-    	org.junit.Assert.assertEquals("Result not the first of list.", first, result);
-    }
-
-    /**
-     * Tests that all classes and members/fields used in query 'JobExecution.getBatchInfoTime' still exist.
-     *
-     */
-    @org.junit.Test 
-    public void testGetBatchInfoTimeVerifyFields()
-    {
-    	String[][] classesFieldsAndTypes = new String[7][4];
-    	classesFieldsAndTypes[0][0] = "j";
-    	classesFieldsAndTypes[0][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[1][0] = "j.batchId";
-    	classesFieldsAndTypes[1][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[1][2] = "batchId";
-    	classesFieldsAndTypes[1][3] = "java.lang.Long";
-    	classesFieldsAndTypes[2][0] = "j.createdAt";
-    	classesFieldsAndTypes[2][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[2][2] = "createdAt";
-    	classesFieldsAndTypes[2][3] = "java.time.LocalDateTime";
-    	classesFieldsAndTypes[3][0] = "j.duration";
-    	classesFieldsAndTypes[3][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[3][2] = "duration";
-    	classesFieldsAndTypes[3][3] = "java.lang.Long";
-    	classesFieldsAndTypes[4][0] = "j.endedAt";
-    	classesFieldsAndTypes[4][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[4][2] = "endedAt";
-    	classesFieldsAndTypes[4][3] = "java.time.LocalDateTime";
-    	classesFieldsAndTypes[5][0] = "j.id";
-    	classesFieldsAndTypes[5][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[5][2] = "id";
-    	classesFieldsAndTypes[5][3] = "java.lang.Long";
-    	classesFieldsAndTypes[6][0] = "j.startedAt";
-    	classesFieldsAndTypes[6][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[6][2] = "startedAt";
-    	classesFieldsAndTypes[6][3] = "java.time.LocalDateTime";
-    	for (String[] testcase : classesFieldsAndTypes) {
-    	String fieldPath = testcase[0];
-    	String className = testcase[1];
-    	String fieldName = testcase[2];
-    	String fieldType = testcase[3];
-    	try {
-    	Class<?> clazz = Class.forName(className);
-    	if (fieldName != null) {
-    	boolean fieldFound = false;
-    	do {
-    	for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
-    	if (field.getName().equals(fieldName)) {
-    	if (fieldType != null && !field.getType().getName().equals(fieldType)) {
-    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getBatchInfoTime: The field " + clazz.getName() + "." + field + " does not have the type " + fieldType + " (anymore)");
-    	}
-    	fieldFound = true;
-    	break;
-    	}
-    	}
-    	clazz = clazz.getSuperclass();
-    	} while (!fieldFound && clazz != null);
-    	if (!fieldFound) {
-    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getBatchInfoTime: The field " + className + "." + fieldName + " does not exist (anymore)");
-    	}
-    	}
-    	} catch (ClassNotFoundException e) {
-    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getBatchInfoTime: The class "	+ className + " does not exist (anymore)");
-    	}
-    	}
-    	Object[][] constructors = new Object[1][2];
-    	constructors[0][0] = "io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime";
-    	constructors[0][1] = 3;
-    	for (Object[] constructor : constructors) {
-    	String className = (String)constructor[0];
-    	int paramCount = (int)constructor[1];
-    	try {
-    	boolean foundExpectedSizeConstructor = false;
-    	Class<?> clazz = Class.forName(className);
-    	java.lang.reflect.Constructor<?>[] constrs = clazz.getConstructors();
-    	for (java.lang.reflect.Constructor<?> constr : constrs) {
-    	if (constr.getParameterTypes().length == paramCount) {
-    	foundExpectedSizeConstructor = true;
-    	break;
-    	}
-    	}
-    	if (!foundExpectedSizeConstructor) {
-    	org.junit.Assert.fail("Could not find matching constructor of class " + className + " having " + paramCount + " arguments for query JobExecution.getBatchInfoTime");
-    	}
-    	} catch (ClassNotFoundException e) {
-    	org.junit.Assert.fail("Error checking class " + className + " in query JobExecution.getBatchInfoTime: The constructed class " + className + " does not exist (anymore)");
-    	}
-    	}
-    }
-
-    /**
-     * Tests that query 'JobExecution.getChainInfoTime' has not changed since this test had been created. If this test fails, you should consider re-generating ALL methods created from that query as they may be out-dated.
-     *
-     */
-    @SuppressWarnings({"unchecked", "rawtypes", "null"})
-    @org.junit.Test 
-    public void testGetChainInfoTimeQueryUnchanged()
-    {
-    	List annotations = new ArrayList();
-    	NamedQuery namedQueryAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQuery.class);
-    	if (namedQueryAnnotation == null) {
-    	NamedQueries namedQueriesAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQueries.class);
-    	if (namedQueriesAnnotation != null) {
-    	annotations.addAll(Arrays.asList(namedQueriesAnnotation.value())); }
-    	} else { annotations.add(namedQueryAnnotation); }
-    	NamedQuery queryUnderTest = null;
-    	for (Object obj : annotations) {
-    	NamedQuery query = (NamedQuery) obj;
-    	if (query.name().equals("JobExecution.getChainInfoTime")) {
-    	queryUnderTest = query;
-    	break;
-    	}
-    	}
-    	if (queryUnderTest == null) {
-    	org.junit.Assert.fail("Query JobExecution.getChainInfoTime does not exist anymore.");
-    	}
-    	String queryText = queryUnderTest.query();
-    	// Minor changes with whitespace are ignored
-    	queryText = queryText.trim().replace('\t', ' ').replace('\n', ' ').replace('\r', ' ');
-    	while (queryText.contains("  ")) {
-    	queryText = queryText.replace("  ", " ");
-    	}
-    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.chainId = :batchId ORDER BY j.createdAt, j.id' to '" + queryText + "'", "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.chainId = :batchId ORDER BY j.createdAt, j.id", queryText);
-    }
-
-    /**
-     * Tests that call and query are consistent for query 'JobExecution.getChainInfoTime' - no result.
-     *
-     */
-    @org.junit.Test 
-    public void testGetChainInfoTimeEmptyResult()
-    {
-    	Query query = org.mockito.Mockito.mock(Query.class);
-    	EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
-    	org.mockito.BDDMockito.given(entityManager.createNamedQuery("JobExecution.getChainInfoTime")).willReturn(query);
-    	@SuppressWarnings("rawtypes")
-    	List results = new ArrayList();
-    	org.mockito.BDDMockito.given(query.getResultList()).willReturn(results);
-    	Long batchId = java.lang.Long.valueOf(0);
-    	org.mockito.BDDMockito.given(query.setParameter("batchId", batchId)).willReturn(query);
-    	org.mockito.BDDMockito.given(query.setMaxResults(1)).willReturn(query);
-    	// Call
-    	JobExecutionInfoTime result = io.coodoo.workhorse.jobengine.entity.JobExecution.getChainInfoTime(entityManager,batchId);
-    	// Verification
-    	org.mockito.BDDMockito.verify(entityManager, org.mockito.Mockito.times(1)).createNamedQuery("JobExecution.getChainInfoTime");
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("batchId",batchId);
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).getResultList();
-    	org.junit.Assert.assertNull("Result should be null if list is empty", result);
-    }
-
-    /**
-     * Tests that call and query are consistent for query 'JobExecution.getChainInfoTime' - one result.
-     *
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @org.junit.Test 
-    public void testGetChainInfoTimeOneResult()
-    {
-    	Query query = org.mockito.Mockito.mock(Query.class);
-    	EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
-    	org.mockito.BDDMockito.given(entityManager.createNamedQuery("JobExecution.getChainInfoTime")).willReturn(query);
-    	List results = new java.util.ArrayList();
-    	JobExecutionInfoTime first = org.mockito.Mockito.mock(JobExecutionInfoTime.class);
-    	JobExecutionInfoTime second = org.mockito.Mockito.mock(JobExecutionInfoTime.class);
-    	results.add(first);
-    	results.add(second);
-    	org.mockito.BDDMockito.given(query.getResultList()).willReturn(results);
-    	Long batchId = java.lang.Long.valueOf(0);
-    	org.mockito.BDDMockito.given(query.setParameter("batchId", batchId)).willReturn(query);
-    	org.mockito.BDDMockito.given(query.setMaxResults(1)).willReturn(query);
-    	// Call
-    	JobExecutionInfoTime result = io.coodoo.workhorse.jobengine.entity.JobExecution.getChainInfoTime(entityManager,batchId);
-    	// Verification
-    	org.mockito.BDDMockito.verify(entityManager, org.mockito.Mockito.times(1)).createNamedQuery("JobExecution.getChainInfoTime");
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("batchId",batchId);
-    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).getResultList();
-    	org.junit.Assert.assertEquals("Result not the first of list.", first, result);
-    }
-
-    /**
-     * Tests that all classes and members/fields used in query 'JobExecution.getChainInfoTime' still exist.
-     *
-     */
-    @org.junit.Test 
-    public void testGetChainInfoTimeVerifyFields()
-    {
-    	String[][] classesFieldsAndTypes = new String[7][4];
-    	classesFieldsAndTypes[0][0] = "j";
-    	classesFieldsAndTypes[0][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[1][0] = "j.chainId";
-    	classesFieldsAndTypes[1][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[1][2] = "chainId";
-    	classesFieldsAndTypes[1][3] = "java.lang.Long";
-    	classesFieldsAndTypes[2][0] = "j.createdAt";
-    	classesFieldsAndTypes[2][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[2][2] = "createdAt";
-    	classesFieldsAndTypes[2][3] = "java.time.LocalDateTime";
-    	classesFieldsAndTypes[3][0] = "j.duration";
-    	classesFieldsAndTypes[3][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[3][2] = "duration";
-    	classesFieldsAndTypes[3][3] = "java.lang.Long";
-    	classesFieldsAndTypes[4][0] = "j.endedAt";
-    	classesFieldsAndTypes[4][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[4][2] = "endedAt";
-    	classesFieldsAndTypes[4][3] = "java.time.LocalDateTime";
-    	classesFieldsAndTypes[5][0] = "j.id";
-    	classesFieldsAndTypes[5][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[5][2] = "id";
-    	classesFieldsAndTypes[5][3] = "java.lang.Long";
-    	classesFieldsAndTypes[6][0] = "j.startedAt";
-    	classesFieldsAndTypes[6][1] = "io.coodoo.workhorse.jobengine.entity.JobExecution";
-    	classesFieldsAndTypes[6][2] = "startedAt";
-    	classesFieldsAndTypes[6][3] = "java.time.LocalDateTime";
-    	for (String[] testcase : classesFieldsAndTypes) {
-    	String fieldPath = testcase[0];
-    	String className = testcase[1];
-    	String fieldName = testcase[2];
-    	String fieldType = testcase[3];
-    	try {
-    	Class<?> clazz = Class.forName(className);
-    	if (fieldName != null) {
-    	boolean fieldFound = false;
-    	do {
-    	for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
-    	if (field.getName().equals(fieldName)) {
-    	if (fieldType != null && !field.getType().getName().equals(fieldType)) {
-    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getChainInfoTime: The field " + clazz.getName() + "." + field + " does not have the type " + fieldType + " (anymore)");
-    	}
-    	fieldFound = true;
-    	break;
-    	}
-    	}
-    	clazz = clazz.getSuperclass();
-    	} while (!fieldFound && clazz != null);
-    	if (!fieldFound) {
-    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getChainInfoTime: The field " + className + "." + fieldName + " does not exist (anymore)");
-    	}
-    	}
-    	} catch (ClassNotFoundException e) {
-    	org.junit.Assert.fail("Error checking path " + fieldPath + " in query JobExecution.getChainInfoTime: The class "	+ className + " does not exist (anymore)");
-    	}
-    	}
-    	Object[][] constructors = new Object[1][2];
-    	constructors[0][0] = "io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime";
-    	constructors[0][1] = 3;
-    	for (Object[] constructor : constructors) {
-    	String className = (String)constructor[0];
-    	int paramCount = (int)constructor[1];
-    	try {
-    	boolean foundExpectedSizeConstructor = false;
-    	Class<?> clazz = Class.forName(className);
-    	java.lang.reflect.Constructor<?>[] constrs = clazz.getConstructors();
-    	for (java.lang.reflect.Constructor<?> constr : constrs) {
-    	if (constr.getParameterTypes().length == paramCount) {
-    	foundExpectedSizeConstructor = true;
-    	break;
-    	}
-    	}
-    	if (!foundExpectedSizeConstructor) {
-    	org.junit.Assert.fail("Could not find matching constructor of class " + className + " having " + paramCount + " arguments for query JobExecution.getChainInfoTime");
-    	}
-    	} catch (ClassNotFoundException e) {
-    	org.junit.Assert.fail("Error checking class " + className + " in query JobExecution.getChainInfoTime: The constructed class " + className + " does not exist (anymore)");
     	}
     	}
     }

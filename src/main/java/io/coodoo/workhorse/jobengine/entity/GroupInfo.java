@@ -28,6 +28,8 @@ public class GroupInfo {
 
     private LocalDateTime endedAt;
 
+    private int progress;
+
     private Long duration;
 
     private LocalDateTime expectedEnd;
@@ -38,55 +40,86 @@ public class GroupInfo {
 
     public GroupInfo() {}
 
-    public GroupInfo(Long id, JobExecutionInfoTime batchInfoTime, List<JobExecutionInfo> executionInfos) {
+    public GroupInfo(Long id, List<JobExecutionInfo> executionInfos) {
 
         this.id = id;
-        this.size = executionInfos.size();
-        this.queued = 0;
-        this.running = 0;
-        this.finished = 0;
-        this.failed = 0;
-        this.aborted = 0;
-        this.startedAt = batchInfoTime.getFirstStartedAt();
-        this.endedAt = batchInfoTime.getLastEndedAt();
+        size = executionInfos.size();
+        queued = 0;
+        running = 0;
+        finished = 0;
+        failed = 0;
+        aborted = 0;
+        startedAt = null;
+        endedAt = null;
         this.executionInfos = executionInfos;
         this.duration = 0L;
-        int noDurationCount = 0;
 
         for (JobExecutionInfo execution : executionInfos) {
             switch (execution.getStatus()) {
                 case QUEUED:
-                    this.queued++;
-                    noDurationCount++;
+                    queued++;
                     break;
                 case RUNNING:
-                    this.running++;
-                    noDurationCount++;
+                    if (execution.getStartedAt() != null && (startedAt == null || execution.getStartedAt().isBefore(startedAt))) {
+                        startedAt = execution.getStartedAt();
+                    }
+                    running++;
                     break;
                 case FINISHED:
-                    this.finished++;
-                    this.duration += execution.getDuration();
+                    if (execution.getStartedAt() != null && (startedAt == null || execution.getStartedAt().isBefore(startedAt))) {
+                        startedAt = execution.getStartedAt();
+                    }
+                    if (execution.getEndedAt() != null && (endedAt == null || execution.getEndedAt().isAfter(endedAt))) {
+                        endedAt = execution.getEndedAt();
+                    }
+                    finished++;
+                    duration += execution.getDuration();
                     break;
                 case FAILED:
-                    this.failed++;
-                    this.duration += execution.getDuration();
+                    if (execution.getStartedAt() != null && (startedAt == null || execution.getStartedAt().isBefore(startedAt))) {
+                        startedAt = execution.getStartedAt();
+                    }
+                    if (execution.getEndedAt() != null && (endedAt == null || execution.getEndedAt().isAfter(endedAt))) {
+                        endedAt = execution.getEndedAt();
+                    }
+                    failed++;
+                    duration += execution.getDuration();
                     break;
                 case ABORTED:
-                    this.aborted++;
+                    if (execution.getStartedAt() != null && (startedAt == null || execution.getStartedAt().isBefore(startedAt))) {
+                        startedAt = execution.getStartedAt();
+                    }
+                    aborted++;
+                    if (execution.getDuration() != null) {
+                        duration += execution.getDuration();
+                    }
                     break;
             }
         }
-        if (batchInfoTime.getAvgDuration() != null && this.startedAt != null && this.endedAt == null) {
-            this.expectedDuration = this.duration + (long) (batchInfoTime.getAvgDuration() * noDurationCount);
-            this.expectedEnd = this.startedAt.plusSeconds(this.expectedDuration / 1000);
-        }
-        this.status = JobExecutionStatus.QUEUED;
-        if (this.running > 0) {
-            this.status = JobExecutionStatus.RUNNING;
-        } else if (this.queued == 0 && this.running == 0) {
-            this.status = JobExecutionStatus.FINISHED;
-            if (this.aborted > 0) {
-                this.status = JobExecutionStatus.ABORTED;
+
+        if (size > 0) {
+            int doneCount = finished + failed + aborted;
+            progress = (int) ((doneCount * 100.0f) / size);
+            if (progress > 0 && progress < 100) {
+                expectedDuration = (duration / doneCount) * size;
+                if (endedAt != null) {
+                    int togoCount = size - doneCount;
+                    if (togoCount > 0) {
+                        expectedEnd = endedAt.plusSeconds(((duration / doneCount) * togoCount) / 1000);
+                    }
+                }
+            }
+            if (queued == size) {
+                status = JobExecutionStatus.QUEUED;
+            } else if (doneCount == size) {
+                status = JobExecutionStatus.FINISHED;
+                if (aborted > 0) {
+                    // when a chain execution fails, the remaining queued executions get aborted // FIXME: also a batch will be in state ABORTED...
+                    status = JobExecutionStatus.ABORTED;
+                }
+            } else if (queued < size) {
+                status = JobExecutionStatus.RUNNING;
+                endedAt = null;
             }
         }
     }
@@ -171,6 +204,14 @@ public class GroupInfo {
         this.endedAt = endedAt;
     }
 
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
     public Long getDuration() {
         return duration;
     }
@@ -206,10 +247,39 @@ public class GroupInfo {
     @Override
     public String toString() {
         final int maxLen = 10;
-        return "BatchInfo [id=" + id + ", status=" + status + ", size=" + size + ", queued=" + queued + ", running=" + running + ", finished=" + finished
-                        + ", failed=" + failed + ", aborted=" + aborted + ", startedAt=" + startedAt + ", endedAt=" + endedAt + ", duration=" + duration
-                        + ", expectedEnd=" + expectedEnd + ", expectedDuration=" + expectedDuration + ", executionInfos="
-                        + (executionInfos != null ? executionInfos.subList(0, Math.min(executionInfos.size(), maxLen)) : null) + "]";
+        StringBuilder builder = new StringBuilder();
+        builder.append("GroupInfo [id=");
+        builder.append(id);
+        builder.append(", status=");
+        builder.append(status);
+        builder.append(", size=");
+        builder.append(size);
+        builder.append(", queued=");
+        builder.append(queued);
+        builder.append(", running=");
+        builder.append(running);
+        builder.append(", finished=");
+        builder.append(finished);
+        builder.append(", failed=");
+        builder.append(failed);
+        builder.append(", aborted=");
+        builder.append(aborted);
+        builder.append(", startedAt=");
+        builder.append(startedAt);
+        builder.append(", endedAt=");
+        builder.append(endedAt);
+        builder.append(", progress=");
+        builder.append(progress);
+        builder.append(", duration=");
+        builder.append(duration);
+        builder.append(", expectedEnd=");
+        builder.append(expectedEnd);
+        builder.append(", expectedDuration=");
+        builder.append(expectedDuration);
+        builder.append(", executionInfos=");
+        builder.append(executionInfos != null ? executionInfos.subList(0, Math.min(executionInfos.size(), maxLen)) : null);
+        builder.append("]");
+        return builder.toString();
     }
 
 }

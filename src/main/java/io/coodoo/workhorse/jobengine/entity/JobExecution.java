@@ -42,18 +42,14 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
                 // Batch
                 @NamedQuery(name = "JobExecution.getBatch", query = "SELECT j FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
                 @NamedQuery(name = "JobExecution.getBatchInfo",
-                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
-                @NamedQuery(name = "JobExecution.getBatchInfoTime",
-                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
+                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.startedAt, j.endedAt, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
                 @NamedQuery(name = "JobExecution.countBatchByStatus",
                                 query = "SELECT COUNT(j) FROM JobExecution j WHERE j.batchId = :batchId AND j.status = :status"),
 
                 // Chained
                 @NamedQuery(name = "JobExecution.getChain", query = "SELECT j FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id"),
                 @NamedQuery(name = "JobExecution.getChainInfo",
-                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id"),
-                @NamedQuery(name = "JobExecution.getChainInfoTime",
-                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfoTime(MIN(j.startedAt), MAX(j.endedAt), AVG(j.duration)) FROM JobExecution j WHERE j.chainId = :batchId ORDER BY j.createdAt, j.id"),
+                                query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.startedAt, j.endedAt, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id"),
                 @NamedQuery(name = "JobExecution.getNextInChain",
                                 query = "SELECT j FROM JobExecution j WHERE j.chainId = :chainId AND j.chainPreviousExecutionId = :jobExecutionId"),
                 @NamedQuery(name = "JobExecution.abortChain",
@@ -605,44 +601,6 @@ public class JobExecution extends RevisionDatesEntity {
         Query query = entityManager.createNamedQuery("JobExecution.getChainInfo");
         query = query.setParameter("chainId", chainId);
         return query.getResultList();
-    }
-
-    /**
-     * Executes the query 'JobExecution.getBatchInfoTime' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param batchId the batchId
-     * @return the result
-     */
-    public static JobExecutionInfoTime getBatchInfoTime(EntityManager entityManager, Long batchId) {
-        Query query = entityManager.createNamedQuery("JobExecution.getBatchInfoTime");
-        query = query.setParameter("batchId", batchId);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (JobExecutionInfoTime) results.get(0);
-    }
-
-    /**
-     * Executes the query 'JobExecution.getChainInfoTime' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param batchId the batchId
-     * @return the result
-     */
-    public static JobExecutionInfoTime getChainInfoTime(EntityManager entityManager, Long batchId) {
-        Query query = entityManager.createNamedQuery("JobExecution.getChainInfoTime");
-        query = query.setParameter("batchId", batchId);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (JobExecutionInfoTime) results.get(0);
     }
 
 }
