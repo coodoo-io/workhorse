@@ -169,8 +169,8 @@ public class GroupInfoTest {
         assertNull(groupInfo.getEndedAt());
         assertEquals(60, groupInfo.getProgress());
 
-        assertEquals(1835, groupInfo.getDuration().longValue());
-        assertEquals(3055, groupInfo.getExpectedDuration().longValue());
+        assertEquals(2335, groupInfo.getDuration().longValue());
+        assertEquals(3890, groupInfo.getExpectedDuration().longValue());
         assertEquals(time, groupInfo.getExpectedEnd());
 
         assertEquals(executionInfos, groupInfo.getExecutionInfos());
