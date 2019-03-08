@@ -20,8 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
+import io.coodoo.workhorse.jobengine.boundary.JobWorker;
+import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
+import io.coodoo.workhorse.jobengine.entity.JobSchedule;
 import io.coodoo.workhorse.jobengine.entity.JobType;
 
 /**
@@ -35,6 +38,11 @@ public final class JobEngineUtil {
 
     private JobEngineUtil() {}
 
+    /**
+     * Gets a map of available JobWorkers
+     * 
+     * @return available {@link BaseJobWorker} implementations, so {@link JobWorker} and {@link JobWorkerWith}
+     */
     @SuppressWarnings("serial")
     public static Map<Class<?>, JobType> getAvailableWorkers() {
 
@@ -55,10 +63,20 @@ public final class JobEngineUtil {
         return workers;
     }
 
+    /**
+     * @return Current Time by zone defined in {@link JobEngineConfig#TIME_ZONE}
+     */
     public static LocalDateTime timestamp() {
         return LocalDateTime.now(JobEngineConfig.TIME_ZONE);
     }
 
+    /**
+     * Calculates the timestamp of the given delay from now ({@link #timestamp()})
+     * 
+     * @param delayValue delay value, e.g. <tt>30</tt>
+     * @param delayUnit delay unit, e.g. {@link ChronoUnit#MINUTES}
+     * @return delay as timestamp
+     */
     public static LocalDateTime delayToMaturity(Long delayValue, ChronoUnit delayUnit) {
 
         LocalDateTime maturity = null;
@@ -68,6 +86,14 @@ public final class JobEngineUtil {
         return maturity;
     }
 
+    /**
+     * Maps a JSON to the corresponding Java class
+     * 
+     * @param <T> corresponding Java class
+     * @param parametersJson JSON string
+     * @param parametersClass corresponding Java class
+     * @return Java class <tt>T</tt> object as defined in JSON string
+     */
     public static <T> T jsonToParameters(String parametersJson, Class<T> parametersClass) {
         if (parametersJson == null || parametersJson.isEmpty()) {
             return null;
@@ -79,6 +105,12 @@ public final class JobEngineUtil {
         }
     }
 
+    /**
+     * Maps a Java object to JSON
+     * 
+     * @param parametersObject Java object
+     * @return JSON string
+     */
     public static String parametersToJson(Object parametersObject) {
         if (parametersObject == null) {
             return null;
@@ -90,18 +122,67 @@ public final class JobEngineUtil {
         }
     }
 
-    public static String stacktraceToString(Exception e) {
+    /**
+     * Parses the stack trace of an exception into as String
+     * 
+     * @param exception Exception
+     * @return Stack trace as String (using line breaks)
+     */
+    public static String stacktraceToString(Exception exception) {
         String stacktraceString = null;
         try (StringWriter stringWriter = new StringWriter(); PrintWriter printWriter = new PrintWriter(stringWriter, true)) {
-            e.printStackTrace(printWriter);
+            exception.printStackTrace(printWriter);
             printWriter.flush();
             stringWriter.flush();
             stacktraceString = stringWriter.toString();
-        } catch (IOException e1) {
+        } catch (IOException iOException) {
             stacktraceString = "Couldn't write exception!";
-            logger.error(stacktraceString, e);
+            logger.error(stacktraceString, exception);
         }
         return stacktraceString;
     }
 
+    /**
+     * Creates a CRON expression for a {@link JobSchedule} including seconds but without years
+     * 
+     * @param jobSchedule JobSchedule containing the CRON expression parts
+     * @return CRON expression
+     */
+    public static String toCronExpression(JobSchedule jobSchedule) {
+        return toCronExpression(jobSchedule, true, false);
+    }
+
+    /**
+     * Creates a CRON expression for a {@link JobSchedule}
+     * 
+     * @param jobSchedule JobSchedule containing the CRON expression parts
+     * @param withSeconds <tt>true</tt> if seconds should be added to the CRON expression
+     * @param withYears <tt>true</tt> if years should be added to the CRON expression
+     * @return CRON expression
+     */
+    public static String toCronExpression(JobSchedule jobSchedule, boolean withSeconds, boolean withYears) {
+
+        if (jobSchedule == null) {
+            return null;
+        }
+        StringBuffer cronExpression = new StringBuffer();
+        if (withSeconds) {
+            cronExpression.append(jobSchedule.getSecond());
+            cronExpression.append(" ");
+        }
+        cronExpression.append(jobSchedule.getMinute());
+        cronExpression.append(" ");
+        cronExpression.append(jobSchedule.getHour());
+        cronExpression.append(" ");
+        cronExpression.append(jobSchedule.getDayOfWeek());
+        cronExpression.append(" ");
+        cronExpression.append(jobSchedule.getDayOfMonth());
+        cronExpression.append(" ");
+        cronExpression.append(jobSchedule.getMonth());
+        if (withYears) {
+            cronExpression.append(" ");
+            cronExpression.append(jobSchedule.getYear());
+        }
+        return cronExpression.toString();
+    }
 }

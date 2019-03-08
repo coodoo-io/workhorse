@@ -1,6 +1,7 @@
 package io.coodoo.workhorse.jobengine.boundary;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -15,8 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
+import io.coodoo.workhorse.jobengine.control.CronExpression;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
+import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
@@ -300,6 +303,85 @@ public class JobEngineService {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public long currentJobExecutions(Long jobId, JobExecutionStatus jobExecutionStatus) {
         return JobExecution.countByJobIdAndStatus(entityManager, jobId, jobExecutionStatus);
+    }
+
+    /**
+     * Get the next execution times of a scheduled job
+     * 
+     * @param jobId ID of the scheduled job
+     * @param times amount of future execution times
+     * @param startTime start time for this request (if <tt>null</tt> then current time is used)
+     * @return List of {@link LocalDateTime} representing the next execution times of a scheduled job
+     */
+    public List<LocalDateTime> getNextScheduledTimes(Long jobId, int times, LocalDateTime startTime) {
+
+        JobSchedule schedule = getScheduleByJobId(jobId);
+        return getNextScheduledTimes(schedule, times, startTime);
+    }
+
+    /**
+     * Get the next execution times defined by {@link JobSchedule}
+     * 
+     * @param schedule JobSchedule instance
+     * @param times amount of future execution times
+     * @param startTime start time for this request (if <tt>null</tt> then current time is used)
+     * @return List of {@link LocalDateTime} representing the next execution times of a scheduled job
+     */
+    public List<LocalDateTime> getNextScheduledTimes(JobSchedule schedule, int times, LocalDateTime startTime) {
+
+        List<LocalDateTime> nextScheduledTimes = new ArrayList<>();
+        if (schedule == null) {
+            return nextScheduledTimes;
+        }
+
+        CronExpression cronExpression = new CronExpression(JobEngineUtil.toCronExpression(schedule));
+        LocalDateTime nextScheduledTime = startTime != null ? startTime : JobEngineUtil.timestamp();
+
+        for (int i = 0; i < times; i++) {
+            nextScheduledTime = cronExpression.nextTimeAfter(nextScheduledTime);
+            nextScheduledTimes.add(nextScheduledTime);
+        }
+        return nextScheduledTimes;
+    }
+
+    /**
+     * Get the execution times of a scheduled job
+     * 
+     * @param jobId ID of the scheduled job
+     * @param startTime start time for this request (if <tt>null</tt> then current time is used)
+     * @param endTime end time for this request (if <tt>null</tt> then current time plus 1 day is used)
+     * @return List of {@link LocalDateTime} representing the execution times of a scheduled job between the <tt>startTime</tt> and <tt>endTime</tt>
+     */
+    public List<LocalDateTime> getScheduledTimes(Long jobId, LocalDateTime startTime, LocalDateTime endTime) {
+
+        JobSchedule schedule = getScheduleByJobId(jobId);
+        return getScheduledTimes(schedule, startTime, endTime);
+    }
+
+    /**
+     * Get the execution times defined by {@link JobSchedule}
+     * 
+     * @param schedule JobSchedule instance
+     * @param startTime start time for this request (if <tt>null</tt> then current time is used)
+     * @param endTime end time for this request (if <tt>null</tt> then current time plus 1 day is used)
+     * @return List of {@link LocalDateTime} representing the execution times of a scheduled job between the <tt>startTime</tt> and <tt>endTime</tt>
+     */
+    public List<LocalDateTime> getScheduledTimes(JobSchedule schedule, LocalDateTime startTime, LocalDateTime endTime) {
+
+        List<LocalDateTime> scheduledTimes = new ArrayList<>();
+        if (schedule == null) {
+            return scheduledTimes;
+        }
+
+        CronExpression cronExpression = new CronExpression(JobEngineUtil.toCronExpression(schedule));
+        LocalDateTime scheduledTime = startTime != null ? startTime : JobEngineUtil.timestamp();
+        LocalDateTime endOfTimes = endTime != null ? endTime : scheduledTime.plusDays(1);
+
+        while (scheduledTime.isBefore(endOfTimes)) {
+            scheduledTime = cronExpression.nextTimeAfter(scheduledTime);
+            scheduledTimes.add(scheduledTime);
+        }
+        return scheduledTimes;
     }
 
 }

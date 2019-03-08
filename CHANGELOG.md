@@ -6,7 +6,16 @@
 ### BREAKING CHANGES
 -->
 
-<a name="1.2.0"></a>
+<a name="1.2.1"></a>
+
+## 1.2.1 (2019-03-08)
+
+### Features
+
+* Get the scheduled times by the CRON expression
+
+
+<a name="1.1.2"></a>
 
 ## 1.2.0 (2019-03-08)
 
