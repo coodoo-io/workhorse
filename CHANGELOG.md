@@ -8,7 +8,7 @@
 
 <a name="1.2.0"></a>
 
-## 1.2.0 (2019-02-18)
+## 1.2.0 (2019-03-08)
 
 ### Features
 
@@ -18,7 +18,6 @@
   * `onFailedBatch()`/`onFailedChain()` gets called after a batch/chain failed
 * Limit throughput by defining the `maxPerMinute` attribute in the job  
 * Basic configuration that can be changed in the implementation, see `JobEngineConfig`
-* Lists of simple Java types can now be used as JobExecution parameters
 * Yet some other logging convenience methods
 * Access to the parameters object via `getParameters()` in `JobWorkerWith`
 * Questionable possibility to get a `JobWorker` instance via `JobEngineService.getJobWorker(Job)`
