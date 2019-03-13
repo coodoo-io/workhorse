@@ -48,7 +48,7 @@ public class JobSchedule extends RevisionDatesOccEntity {
     @Column(name = "year")
     private String year;
 
-    JobSchedule() {}
+    public JobSchedule() {}
 
     public JobSchedule(Long jobId, JobScheduleConfig jobScheduleConfig) {
         super();
