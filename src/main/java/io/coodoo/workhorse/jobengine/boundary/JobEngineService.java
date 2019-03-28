@@ -121,7 +121,7 @@ public class JobEngineService {
     }
 
     public Job updateJob(Long jobId, String name, String description, String workerClassName, JobStatus status, int threads, Integer maxPerMinute,
-                    int failRetries) {
+                    int failRetries, int retryDelay, int daysUntilCleanUp, boolean uniqueInQueue) {
         Job job = getJobById(jobId);
         job.setName(name);
         job.setDescription(description);
@@ -130,6 +130,10 @@ public class JobEngineService {
         job.setThreads(threads);
         job.setMaxPerMinute(maxPerMinute);
         job.setFailRetries(failRetries);
+        job.setRetryDelay(retryDelay);
+        job.setDaysUntilCleanUp(daysUntilCleanUp);
+        job.setUniqueInQueue(uniqueInQueue);
+
         logger.debug("Job updated: {}", job);
         return job;
     }

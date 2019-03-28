@@ -8,11 +8,21 @@
 
 <a name="1.2.1"></a>
 
-## 1.2.1 (2019-03-08)
+## 1.2.1 (2019-03-28)
 
 ### Features
 
 * Get the scheduled times by the CRON expression
+* `logError` now also accepts a throwable for the server log
+* Reworked system job `JobExecutionCleanupWorker` to clear old execution for all jobs in one execution
+
+### BREAKING CHANGES
+
+* `JobEngineService.updateJob()` added parameters `retryDelay`, `daysUntilCleanUp` and `uniqueInQueue`
+
+### Bug Fixes
+
+* Made system job `JobExecutionCleanupWorker` follow its schedule (it never ran before...)
 
 
 <a name="1.1.2"></a>

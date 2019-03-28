@@ -39,7 +39,7 @@ public class JobScheduler {
 
     public void start(Job job) {
 
-        if (JobType.SCHEDULED.equals(job.getType()) && JobStatus.ACTIVE.equals(job.getStatus())) {
+        if ((JobType.SCHEDULED.equals(job.getType()) || JobType.SCHEDULED.equals(job.getType())) && JobStatus.ACTIVE.equals(job.getStatus())) {
 
             JobSchedule jobSchedule = jobEngineService.getScheduleByJobId(job.getId());
 

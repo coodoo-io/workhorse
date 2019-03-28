@@ -18,7 +18,6 @@ import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
-import io.coodoo.workhorse.jobengine.control.job.JobExecutionCleanupParameter;
 import io.coodoo.workhorse.jobengine.control.job.JobExecutionCleanupWorker;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
@@ -174,17 +173,6 @@ public class JobEngineController {
             job.setStatus(JobStatus.ERROR);
 
             throw exception;
-        }
-    }
-
-    /**
-     * Erstellt für alle konfigurierten
-     */
-    public void deleteOlderJobExecutions() {
-        for (Job job : Job.getAll(entityManager)) {
-            if (job.getDaysUntilCleanUp() > 0) {
-                jobExecutionCleanupWorker.createJobExecution(new JobExecutionCleanupParameter(job.getId(), job.getName(), job.getDaysUntilCleanUp()));
-            }
         }
     }
 

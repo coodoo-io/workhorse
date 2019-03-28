@@ -67,6 +67,18 @@ public class JobContext {
     }
 
     /**
+     * Adds a timestamp followed by an info marker and the info message text in as a new line to the executions log<br>
+     * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
+     * Info marker: Only if defined in {@link JobEngineConfig#LOG_INFO_MARKER}<br>
+     * Example: <code>[22:06:42.680] Step 3 complete</code>
+     * 
+     * @param message text to log
+     */
+    public void logInfo(String message) {
+        appendLog(message, true, "i");
+    }
+
+    /**
      * Adds a timestamp followed by an info marker and the info message text in as a new line to the executions log and also adds the message in severity INFO
      * to the server log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
@@ -82,15 +94,15 @@ public class JobContext {
     }
 
     /**
-     * Adds a timestamp followed by an info marker and the info message text in as a new line to the executions log<br>
+     * Adds a timestamp followed by an warn marker and the warn message as a new line to the executions log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
-     * Info marker: Only if defined in {@link JobEngineConfig#LOG_INFO_MARKER}<br>
-     * Example: <code>[22:06:42.680] Step 3 complete</code>
+     * Error marker: <code>[WARN]</code> or as defined in {@link JobEngineConfig#LOG_WARN_MARKER}<br>
+     * Example: <code>[22:06:42.680] [WARN] Well thats suspicious...</code>
      * 
      * @param message text to log
      */
-    public void logInfo(String message) {
-        appendLog(message, true, "i");
+    public void logWarn(String message) {
+        appendLog(message, true, "w");
     }
 
     /**
@@ -109,15 +121,15 @@ public class JobContext {
     }
 
     /**
-     * Adds a timestamp followed by an warn marker and the warn message as a new line to the executions log<br>
+     * Adds a timestamp followed by an error marker and the error message as a new line to the executions log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
-     * Error marker: <code>[WARN]</code> or as defined in {@link JobEngineConfig#LOG_WARN_MARKER}<br>
-     * Example: <code>[22:06:42.680] [WARN] Well thats suspicious...</code>
+     * Error marker: <code>[ERROR]</code> or as defined in {@link JobEngineConfig#LOG_ERROR_MARKER}<br>
+     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code>
      * 
      * @param message text to log
      */
-    public void logWarn(String message) {
-        appendLog(message, true, "w");
+    public void logError(String message) {
+        appendLog(message, true, "e");
     }
 
     /**
@@ -136,15 +148,19 @@ public class JobContext {
     }
 
     /**
-     * Adds a timestamp followed by an error marker and the error message as a new line to the executions log<br>
+     * Adds a timestamp followed by an error marker and the error message as a new line to the executions log. It also adds the message in severity ERROR and
+     * the throwable to the server log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Error marker: <code>[ERROR]</code> or as defined in {@link JobEngineConfig#LOG_ERROR_MARKER}<br>
      * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code>
      * 
+     * @param logger server log logger
      * @param message text to log
+     * @param throwable cause of error
      */
-    public void logError(String message) {
-        appendLog(message, true, "e");
+    public void logError(Logger logger, String message, Throwable throwable) {
+        logger.error(message, throwable);
+        logError(message);
     }
 
     private void appendLog(String message, boolean timestamp, String mode) {
