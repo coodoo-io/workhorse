@@ -303,6 +303,7 @@ public abstract class BaseJobWorker {
      * Use <code>createJobExecution(Object parameters)</code> to add single JobExecutions!
      * </p>
      */
+    @Deprecated // TODO "OnSchedule" umsetzen
     public void scheduledJobExecutionCreation() {
         createJobExecution();
     }

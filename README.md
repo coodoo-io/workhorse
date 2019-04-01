@@ -82,10 +82,11 @@ public class BackupJob extends JobWorkerWith<String> {
 }
 ```
 
-Everybody knows backups should be made on a regular basis, so lets tell this job to run every night half past three by adding `@JobScheduleConfig` annotation. In this case we overwrite the method `scheduledJobExecutionCreation()` witch triggers the job to add some parameters.
+Everybody knows backups should be made on a regular basis, so lets tell this job to run every night half past three by initially adding `@InitialJobConfig` annotation. Many other job configuration can initially defined by this annotation, have a [look](https://github.com/coodoo-io/workhorse/blob/master/src/main/java/io/coodoo/workhorse/jobengine/boundary/annotation/InitialJobConfig.java "@InitialJobConfig")!
+In this case we overwrite the method `scheduledJobExecutionCreation()` witch triggers the job to add some parameters.
 
 ```java
-@JobScheduleConfig(hour = "3", minute = "30")
+@InitialJobConfig(schedule = "0 30 3 0 0 0")
 public class BackupJob extends JobWorkerWith<String> {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
@@ -136,7 +137,6 @@ public void start() {
    ```xml
     <class>io.coodoo.workhorse.jobengine.entity.Job</class>
     <class>io.coodoo.workhorse.jobengine.entity.JobExecution</class>
-    <class>io.coodoo.workhorse.jobengine.entity.JobSchedule</class>
    ```
 3. To provide the EntityManager you have to implement a `@JobEngineEntityManagerProducer` CDI producer.
 

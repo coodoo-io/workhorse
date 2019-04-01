@@ -12,17 +12,38 @@
 
 ### Features
 
+* New optional annotation `@InitialJobConfig` to provide initial job configuration. This annotation can be used to provide initial configuration to the resulting job. This also leaves `@JobConfig` and `@JobScheduleConfig` as deprecated!
 * Get the scheduled times by the CRON expression
 * `logError` now also accepts a throwable for the server log
 * Reworked system job `JobExecutionCleanupWorker` to clear old execution for all jobs in one execution
 
 ### BREAKING CHANGES
 
-* `JobEngineService.updateJob()` added parameters `retryDelay`, `daysUntilCleanUp` and `uniqueInQueue`
+* Table `jobengine_schedule` is no more! RIP
+   * The schedule cron expression is from now a plain string, available in the job
+   * There is no part for the year anymore
+* Table `jobengine_job` got new columns `schedule` and `tags` - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
+* `JobEngineService.updateJob()` added parameters `type`, `schedule`, `tags`, `retryDelay`, `daysUntilCleanUp` and `uniqueInQueue`
 
 ### Bug Fixes
 
 * Made system job `JobExecutionCleanupWorker` follow its schedule (it never ran before...)
+
+
+### Database migration
+
+MySQL
+
+```
+ALTER TABLE jobengine_job 
+ADD COLUMN tags VARCHAR(1024) NULL DEFAULT NULL AFTER description,
+ADD COLUMN schedule VARCHAR(128) NULL DEFAULT NULL AFTER type;
+
+UPDATE jobengine_job j INNER JOIN jobengine_schedule s ON j.id = s.job_id
+SET schedule = CONCAT(s.second, ' ', s.minute, ' ', s.hour, ' ', s.day_of_month, ' ', s.month, ' ', s.day_of_week);
+
+DROP TABLE jobengine_schedule;
+```
 
 
 <a name="1.1.2"></a>

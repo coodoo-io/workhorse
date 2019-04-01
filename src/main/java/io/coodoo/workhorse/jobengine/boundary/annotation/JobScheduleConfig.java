@@ -9,7 +9,10 @@ import java.lang.annotation.Target;
  * Initial / default job schedule settings
  * 
  * @author coodoo GmbH (coodoo.io)
+ * 
+ * @deprecated use {@link InitialJobConfig}
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface JobScheduleConfig {

@@ -5,22 +5,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import io.coodoo.workhorse.jobengine.boundary.JobWorker;
+import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
+import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
+import io.coodoo.workhorse.jobengine.entity.JobType;
 
 /**
- * Initial / default job settings
+ * <strong>Initial job configuration.</strong> An new {@link JobWorker} or {@link JobWorkerWith} implementation will be detected while initialization and gets
+ * written into the database. This annotation can be used to provide initial configuration to the resulting {@link Job}.
  * 
  * @author coodoo GmbH (coodoo.io)
- * 
- * @deprecated use {@link InitialJobConfig}
  */
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface JobConfig {
+public @interface InitialJobConfig {
 
-    public static final String JOB_CONFIG_DESCRIPTION = "";
     public static final int JOB_CONFIG_THREADS = 1;
+    public static final int JOB_CONFIG_MAX_PER_MINUTE = 0;
     public static final int JOB_CONFIG_FAIL_RETRIES = 0;
     public static final int JOB_CONFIG_RETRY_DELAY = 4000;
     public static final int JOB_CONFIG_DAYS_UNTIL_CLEANUP = 30;
@@ -29,12 +31,17 @@ public @interface JobConfig {
     /**
      * @return Unique name of the job
      */
-    String name();
+    String name() default "";
 
     /**
      * @return A readable description of the job purpose.
      */
-    String description() default JOB_CONFIG_DESCRIPTION;
+    String description() default "";
+
+    /**
+     * @return A comma-separated tag list to help organize the jobs.
+     */
+    String tags() default "";
 
     /**
      * @return Initial Status of the Job. Default is ACTIVE.
@@ -42,9 +49,19 @@ public @interface JobConfig {
     JobStatus status() default JobStatus.ACTIVE;
 
     /**
+     * @return Unix-like CRON expressions to provide scheduled job executions. If this is set, the job will be automatically of type {@link JobType#SCHEDULED}
+     */
+    String schedule() default "";
+
+    /**
      * @return Number of threads for processing parallel work. Default is 1.
      */
     int threads() default JOB_CONFIG_THREADS;
+
+    /**
+     * @return Limit of execution throughput per minute. Default is null (no limitation)
+     */
+    int maxPerMinute() default JOB_CONFIG_MAX_PER_MINUTE;
 
     /**
      * @return Number of retries after the job faild by an exception. Default value is 0 (no retries).

@@ -14,9 +14,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.entity.Job;
-import io.coodoo.workhorse.jobengine.entity.JobSchedule;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.JobType;
 
@@ -39,33 +39,29 @@ public class JobScheduler {
 
     public void start(Job job) {
 
-        if ((JobType.SCHEDULED.equals(job.getType()) || JobType.SCHEDULED.equals(job.getType())) && JobStatus.ACTIVE.equals(job.getStatus())) {
-
-            JobSchedule jobSchedule = jobEngineService.getScheduleByJobId(job.getId());
-
-            if (jobSchedule == null) {
-                throw new RuntimeException("No schedule found for job " + job.getName());
-            }
+        if ((JobType.SCHEDULED.equals(job.getType()) || JobType.SYSTEM.equals(job.getType())) && JobStatus.ACTIVE.equals(job.getStatus())
+                        && job.getSchedule() != null) {
 
             stop(job);
+
+            ScheduleExpression scheduleExpression = createScheduledExpression(job);
 
             TimerConfig timerConfig = new TimerConfig();
             timerConfig.setInfo(job);
             timerConfig.setPersistent(false);
 
-            ScheduleExpression scheduleExpression = toScheduleExpression(jobSchedule);
             timerService.createCalendarTimer(scheduleExpression, timerConfig);
 
-            logger.info("Schedule {} started for Job {}", toString(scheduleExpression), job.getName());
+            logger.info("Schedule started for Job {}", job.getName());
         }
     }
 
     public void stop(Job job) {
-        if (JobType.SCHEDULED.equals(job.getType())) {
+        if (JobType.SCHEDULED.equals(job.getType()) || JobType.SYSTEM.equals(job.getType())) {
             for (Timer timer : timerService.getTimers()) {
                 if (job.equals(timer.getInfo())) {
 
-                    logger.info("Schedule {} stopped for Job {}", toString(timer.getSchedule()), job.getName());
+                    logger.info("Schedule stopped for Job {}", job.getName());
                     timer.cancel();
                 }
             }
@@ -87,38 +83,28 @@ public class JobScheduler {
         }
     }
 
-    public ScheduleExpression toScheduleExpression(JobSchedule jobSchedule) {
+    // TODO test da fuck outta this!
+    protected ScheduleExpression createScheduledExpression(Job job) {
+
+        final String[] parts = job.getSchedule().split("\\s+");
+
+        if (parts.length < 5 || parts.length > 7) {
+            throw new RuntimeException("Invalid schedule in " + job);
+        }
+        boolean withSeconds = parts.length > 5;
+        int ix = withSeconds ? 1 : 0;
 
         ScheduleExpression scheduleExpression = new ScheduleExpression();
-        scheduleExpression.second(jobSchedule.getSecond());
-        scheduleExpression.minute(jobSchedule.getMinute());
-        scheduleExpression.hour(jobSchedule.getHour());
-        scheduleExpression.dayOfWeek(jobSchedule.getDayOfWeek());
-        scheduleExpression.dayOfMonth(jobSchedule.getDayOfMonth());
-        scheduleExpression.month(jobSchedule.getMonth());
-        scheduleExpression.year(jobSchedule.getYear());
+        scheduleExpression.second(withSeconds ? parts[0] : "0");
+        scheduleExpression.minute(parts[ix++]);
+        scheduleExpression.hour(parts[ix++]);
+        scheduleExpression.dayOfMonth(parts[ix++]);
+        scheduleExpression.month(parts[ix++]);
+        scheduleExpression.dayOfWeek(parts[ix++]);
+        if (parts.length > ix)
+            scheduleExpression.year(parts[ix++]);
+        scheduleExpression.timezone(JobEngineConfig.TIME_ZONE.toString());
         return scheduleExpression;
-    }
-
-    public String toString(ScheduleExpression scheduleExpression) {
-
-        StringBuilder expression = new StringBuilder();
-        expression.append("[");
-        expression.append(scheduleExpression.getSecond());
-        expression.append(" ");
-        expression.append(scheduleExpression.getMinute());
-        expression.append(" ");
-        expression.append(scheduleExpression.getHour());
-        expression.append(" ");
-        expression.append(scheduleExpression.getDayOfWeek());
-        expression.append(" ");
-        expression.append(scheduleExpression.getDayOfMonth());
-        expression.append(" ");
-        expression.append(scheduleExpression.getMonth());
-        expression.append(" ");
-        expression.append(scheduleExpression.getYear());
-        expression.append("]");
-        return expression.toString();
     }
 
 }

@@ -1,7 +1,7 @@
 package io.coodoo.workhorse.jobengine.control;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -15,16 +15,18 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
+import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.control.job.JobExecutionCleanupWorker;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
-import io.coodoo.workhorse.jobengine.entity.JobSchedule;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.JobType;
+import io.coodoo.workhorse.jobengine.entity.StringListConverter;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -53,56 +55,16 @@ public class JobEngineController {
     public void checkJobConfiguration() {
 
         logger.info("Checking JobWorker classes...");
-        Map<Class<?>, JobType> availableWorkers = JobEngineUtil.getAvailableWorkers();
+        List<Class<?>> availableWorkers = JobEngineUtil.getAvailableWorkers();
 
-        for (Map.Entry<Class<?>, JobType> availableWorker : availableWorkers.entrySet()) {
+        for (Class<?> availableWorker : availableWorkers) {
 
-            Class<?> workerClass = availableWorker.getKey();
+            Class<?> workerClass = availableWorker;
             logger.info("Found JobWorker class {}", workerClass.getSimpleName());
 
             Job job = jobEngineService.getJobByClassName(workerClass.getName());
-
             if (job == null) {
-                job = new Job();
-
-                if (workerClass.isAnnotationPresent(JobConfig.class)) {
-                    // Use initial worker informations from annotation if available
-                    JobConfig jobConfig = workerClass.getAnnotation(JobConfig.class);
-                    job.setName(jobConfig.name().isEmpty() ? workerClass.getSimpleName() : jobConfig.name());
-                    job.setDescription(jobConfig.description().isEmpty() ? null : jobConfig.description());
-                    job.setWorkerClassName(workerClass.getName());
-                    job.setType(availableWorker.getValue());
-                    job.setStatus(jobConfig.status());
-                    job.setThreads(jobConfig.threads());
-                    job.setFailRetries(jobConfig.failRetries());
-                    job.setRetryDelay(jobConfig.retryDelay());
-                    job.setDaysUntilCleanUp(jobConfig.daysUntilCleanUp());
-                    job.setUniqueInQueue(jobConfig.uniqueInQueue());
-                } else {
-                    // Use initial default worker informations
-                    job.setName(workerClass.getSimpleName());
-                    job.setWorkerClassName(workerClass.getName());
-                    job.setType(availableWorker.getValue());
-                    job.setStatus(JobStatus.ACTIVE);
-                    job.setThreads(JobConfig.JOB_CONFIG_THREADS);
-                    job.setFailRetries(JobConfig.JOB_CONFIG_FAIL_RETRIES);
-                    job.setRetryDelay(JobConfig.JOB_CONFIG_RETRY_DELAY);
-                    job.setDaysUntilCleanUp(JobConfig.JOB_CONFIG_DAYS_UNTIL_CLEANUP);
-                    job.setUniqueInQueue(JobConfig.JOB_CONFIG_UNIQUE_IN_QUEUE);
-                }
-                entityManager.persist(job);
-
-                logger.info("Set up job {} for JobWorker {}", job.getName(), workerClass.getSimpleName());
-
-                if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {
-                    JobScheduleConfig jobScheduleConfig = workerClass.getAnnotation(JobScheduleConfig.class);
-
-                    JobSchedule jobSchedule = new JobSchedule(job.getId(), jobScheduleConfig);
-                    entityManager.persist(jobSchedule);
-
-                    logger.info("Set up schedule {} for JobWorker {}", jobScheduler.toString(jobScheduler.toScheduleExpression(jobSchedule)),
-                                    workerClass.getSimpleName());
-                }
+                job = createJob(workerClass);
             }
         }
 
@@ -111,7 +73,7 @@ public class JobEngineController {
 
             try {
                 Class<?> workerClass = Class.forName(job.getWorkerClassName());
-                if (availableWorkers.get(workerClass) == null) {
+                if (!availableWorkers.contains(workerClass)) {
                     throw new ClassNotFoundException();
                 }
                 if (JobStatus.NO_WORKER == job.getStatus()) {
@@ -125,6 +87,87 @@ public class JobEngineController {
                 logger.error("No JobWorker class found for {}", job);
             }
         }
+    }
+
+    private Job createJob(Class<?> workerClass) {
+
+        Job job = new Job();
+
+        if (workerClass.isAnnotationPresent(InitialJobConfig.class)) {
+
+            // Use initial worker informations from annotation if available
+            InitialJobConfig initialJobConfig = workerClass.getAnnotation(InitialJobConfig.class);
+            job.setName(initialJobConfig.name().isEmpty() ? workerClass.getSimpleName() : initialJobConfig.name());
+            job.setDescription(initialJobConfig.description().isEmpty() ? null : initialJobConfig.description());
+
+            if (!initialJobConfig.tags().isEmpty()) {
+                StringListConverter stringListConverter = new StringListConverter();
+                job.setTags(stringListConverter.convertToEntityAttribute(initialJobConfig.tags()));
+            }
+            job.setWorkerClassName(workerClass.getName());
+
+            if (initialJobConfig.schedule().isEmpty()) {
+                job.setType(JobType.ON_DEMAND);
+            } else {
+                job.setType(JobType.SCHEDULED);
+                job.setSchedule(initialJobConfig.schedule());
+            }
+            job.setStatus(initialJobConfig.status());
+            job.setThreads(initialJobConfig.threads());
+
+            if (initialJobConfig.maxPerMinute() != InitialJobConfig.JOB_CONFIG_MAX_PER_MINUTE) {
+                job.setMaxPerMinute(initialJobConfig.maxPerMinute());
+            }
+            job.setFailRetries(initialJobConfig.failRetries());
+            job.setRetryDelay(initialJobConfig.retryDelay());
+            job.setDaysUntilCleanUp(initialJobConfig.daysUntilCleanUp());
+            job.setUniqueInQueue(initialJobConfig.uniqueInQueue());
+
+        } else if (workerClass.isAnnotationPresent(JobConfig.class)) {
+
+            // Use initial worker informations from annotation if available
+            JobConfig jobConfig = workerClass.getAnnotation(JobConfig.class);
+            job.setName(jobConfig.name().isEmpty() ? workerClass.getSimpleName() : jobConfig.name());
+            job.setDescription(jobConfig.description().isEmpty() ? null : jobConfig.description());
+            job.setWorkerClassName(workerClass.getName());
+            job.setType(JobType.ON_DEMAND);
+            job.setStatus(jobConfig.status());
+            job.setThreads(jobConfig.threads());
+            job.setFailRetries(jobConfig.failRetries());
+            job.setRetryDelay(jobConfig.retryDelay());
+            job.setDaysUntilCleanUp(jobConfig.daysUntilCleanUp());
+            job.setUniqueInQueue(jobConfig.uniqueInQueue());
+
+            if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {
+                JobScheduleConfig jobScheduleConfig = workerClass.getAnnotation(JobScheduleConfig.class);
+                job.setType(JobType.SCHEDULED);
+                job.setSchedule(jobScheduleConfig.second() + " " + jobScheduleConfig.minute() + " " + jobScheduleConfig.hour() + " "
+                                + jobScheduleConfig.dayOfMonth() + " " + jobScheduleConfig.month() + " " + jobScheduleConfig.dayOfWeek() + " "
+                                + jobScheduleConfig.year());
+            }
+
+        } else {
+
+            // Use initial default worker informations
+            job.setName(workerClass.getSimpleName());
+            job.setWorkerClassName(workerClass.getName());
+            job.setType(JobType.ON_DEMAND);
+            job.setStatus(JobStatus.ACTIVE);
+            job.setThreads(InitialJobConfig.JOB_CONFIG_THREADS);
+            job.setFailRetries(InitialJobConfig.JOB_CONFIG_FAIL_RETRIES);
+            job.setRetryDelay(InitialJobConfig.JOB_CONFIG_RETRY_DELAY);
+            job.setDaysUntilCleanUp(InitialJobConfig.JOB_CONFIG_DAYS_UNTIL_CLEANUP);
+            job.setUniqueInQueue(InitialJobConfig.JOB_CONFIG_UNIQUE_IN_QUEUE);
+        }
+
+        if (workerClass.isAnnotationPresent(SystemJob.class)) {
+            // maybe its one of ours...
+            job.setType(JobType.SYSTEM);
+        }
+
+        entityManager.persist(job);
+        logger.info("Set up job {}", job.getName());
+        return job;
     }
 
     public void syncJobExecutionQueue() {

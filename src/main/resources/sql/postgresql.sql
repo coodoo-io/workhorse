@@ -5,8 +5,10 @@ CREATE TABLE jobengine_job (
   id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_job_seq'),
   name varchar(128) NOT NULL,
   description varchar(2028) DEFAULT NULL,
+  tags varchar(1024) DEFAULT NULL,
   worker_class_name varchar(512) NOT NULL,
-  type varchar(32) NOT NULL DEFAULT 'ADHOC',
+  type varchar(32) NOT NULL DEFAULT 'ON_DEMAND',
+  schedule varchar(128) DEFAULT NULL,
   status varchar(32) NOT NULL DEFAULT 'ACTIVE',
   threads int NOT NULL DEFAULT '1',
   max_per_minute int DEFAULT NULL,
@@ -19,30 +21,7 @@ CREATE TABLE jobengine_job (
   version int NOT NULL DEFAULT '0',
   PRIMARY KEY (id),
   CONSTRAINT worker_class_name UNIQUE  (worker_class_name)
-)  ;
-
-CREATE SEQUENCE jobengine_schedule_seq;
-
-CREATE TABLE jobengine_schedule (
-  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_schedule_seq'),
-  job_id bigint NOT NULL,
-  second varchar(128) NOT NULL DEFAULT '0',
-  minute varchar(128) NOT NULL DEFAULT '0',
-  hour varchar(128) NOT NULL DEFAULT '0',
-  day_of_week varchar(128) NOT NULL DEFAULT '*',
-  day_of_month varchar(128) NOT NULL DEFAULT '*',
-  month varchar(128) NOT NULL DEFAULT '*',
-  year varchar(128) NOT NULL DEFAULT '*',
-  created_at timestamp(0) NOT NULL,
-  updated_at timestamp(0) DEFAULT NULL,
-  version int NOT NULL DEFAULT '0',
-  PRIMARY KEY (id),
-  CONSTRAINT job_id UNIQUE  (job_id)
- ,
-  CONSTRAINT fk_jobengine_schedule_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-)  ;
-
-CREATE INDEX fk_jobengine_schedule_job_idx ON jobengine_schedule (job_id);
+);
 
 CREATE SEQUENCE jobengine_execution_seq;
 
@@ -67,10 +46,9 @@ CREATE TABLE jobengine_execution (
   updated_at timestamp(0) DEFAULT NULL,
   fail_message varchar(4096) DEFAULT NULL,
   fail_stacktrace text,
-  PRIMARY KEY (id)
- ,
-  CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-)  ;
+  PRIMARY KEY (id),
+ CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
 
 CREATE INDEX fk_jobengine_job_execution_job_idx ON jobengine_execution (job_id);
 CREATE INDEX idx_jobengine_job_execution_jobid_status ON jobengine_execution (job_id,status);

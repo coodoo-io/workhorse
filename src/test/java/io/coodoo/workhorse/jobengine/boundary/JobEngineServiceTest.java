@@ -7,8 +7,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.fail;
+import static org.mockito.BDDMockito.given;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,8 +28,8 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
 import io.coodoo.workhorse.jobengine.entity.AnquGenericMockUtil;
+import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
-import io.coodoo.workhorse.jobengine.entity.JobSchedule;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JobEngineServiceTest {
@@ -116,7 +116,7 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         int times = 5;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getNextScheduledTimes(jobId, times, startTime);
 
@@ -133,10 +133,9 @@ public class JobEngineServiceTest {
     @Test
     public void testGetNextScheduledTimes_schedule() throws Exception {
 
-        Long jobId = 1L;
         int times = 5;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        JobSchedule schedule = prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        String schedule = "30 20 7,19 * * *";
 
         List<LocalDateTime> result = classUnderTest.getNextScheduledTimes(schedule, times, startTime);
 
@@ -156,12 +155,13 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         int times = 5;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        AnquGenericMockUtil.mockAnyActionAnyQuery(entityManager, null);
+        given(entityManager.find(Job.class, jobId)).willReturn(null);
 
-        List<LocalDateTime> result = classUnderTest.getNextScheduledTimes(jobId, times, startTime);
-
-        assertNotNull(result);
-        assertEquals(0, result.size());
+        try {
+            classUnderTest.getNextScheduledTimes(jobId, times, startTime);
+            fail();
+        } catch (NullPointerException expected) {
+        }
     }
 
     @Test
@@ -169,7 +169,7 @@ public class JobEngineServiceTest {
 
         Long jobId = 1L;
         int times = 5;
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getNextScheduledTimes(jobId, times, null);
 
@@ -183,7 +183,7 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         int times = -5;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getNextScheduledTimes(jobId, times, startTime);
 
@@ -197,7 +197,7 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         int times = 0;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getNextScheduledTimes(jobId, times, startTime);
 
@@ -211,7 +211,7 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
         LocalDateTime endTime = LocalDateTime.of(2019, 3, 11, 12, 0, 0, 0);
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getScheduledTimes(jobId, startTime, endTime);
 
@@ -228,10 +228,9 @@ public class JobEngineServiceTest {
     @Test
     public void testGetScheduledTimes_schedule() throws Exception {
 
-        Long jobId = 1L;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
         LocalDateTime endTime = LocalDateTime.of(2019, 3, 11, 12, 0, 0, 0);
-        JobSchedule schedule = prepareSchedule(jobId, "33", "22", "1,23", "*", "*", "*", "*");
+        String schedule = "33 22 1,23 * * *";
 
         List<LocalDateTime> result = classUnderTest.getScheduledTimes(schedule, startTime, endTime);
 
@@ -251,12 +250,13 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
         LocalDateTime endTime = LocalDateTime.of(2019, 3, 11, 12, 0, 0, 0);
-        AnquGenericMockUtil.mockAnyActionAnyQuery(entityManager, null);
+        given(entityManager.find(Job.class, jobId)).willReturn(null);
 
-        List<LocalDateTime> result = classUnderTest.getScheduledTimes(jobId, startTime, endTime);
-
-        assertNotNull(result);
-        assertEquals(0, result.size());
+        try {
+            classUnderTest.getScheduledTimes(jobId, startTime, endTime);
+            fail();
+        } catch (NullPointerException expected) {
+        }
     }
 
     @Test
@@ -264,7 +264,7 @@ public class JobEngineServiceTest {
 
         Long jobId = 1L;
         LocalDateTime endTime = JobEngineUtil.timestamp().plusDays(1);
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getScheduledTimes(jobId, null, endTime);
 
@@ -277,7 +277,7 @@ public class JobEngineServiceTest {
 
         Long jobId = 1L;
         LocalDateTime startTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getScheduledTimes(jobId, startTime, null);
 
@@ -295,7 +295,7 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         LocalDateTime startTime = LocalDateTime.of(2018, 3, 9, 12, 0, 0, 0);
         LocalDateTime endTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        prepareSchedule(jobId, "30", "20", "7,19", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 7,19 * * *");
 
         List<LocalDateTime> result = classUnderTest.getScheduledTimes(jobId, startTime, endTime);
 
@@ -312,7 +312,7 @@ public class JobEngineServiceTest {
         Long jobId = 1L;
         LocalDateTime startTime = LocalDateTime.of(2018, 3, 9, 12, 0, 0, 0);
         LocalDateTime endTime = LocalDateTime.of(2019, 3, 9, 12, 0, 0, 0);
-        prepareSchedule(jobId, "30", "20", "*", "*", "*", "*", "*");
+        prepareSchedule(jobId, "30 20 * * * *");
 
         List<LocalDateTime> result = classUnderTest.getScheduledTimes(jobId, startTime, endTime);
 
@@ -323,19 +323,12 @@ public class JobEngineServiceTest {
         assertEquals(LocalDateTime.parse("2019-03-09T12:20:30"), result.get(8760));
     }
 
-    private JobSchedule prepareSchedule(Long jobId, String second, String minute, String hour, String dayOfWeek, String dayOfMonth, String month, String year) {
+    private void prepareSchedule(Long jobId, String schedule) {
 
-        JobSchedule jobSchedule = mock(JobSchedule.class);
-        when(jobSchedule.getSecond()).thenReturn(second);
-        when(jobSchedule.getMinute()).thenReturn(minute);
-        when(jobSchedule.getHour()).thenReturn(hour);
-        when(jobSchedule.getDayOfWeek()).thenReturn(dayOfWeek);
-        when(jobSchedule.getDayOfMonth()).thenReturn(dayOfMonth);
-        when(jobSchedule.getMonth()).thenReturn(month);
-        when(jobSchedule.getYear()).thenReturn(year);
+        Job job = new Job();
+        job.setSchedule(schedule);
 
-        AnquGenericMockUtil.mockAnyActionAnyQuery(entityManager, jobSchedule);
-
-        return jobSchedule;
+        given(entityManager.find(Job.class, jobId)).willReturn(job);
     }
+
 }

@@ -5,8 +5,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
@@ -22,10 +22,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
-import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
-import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
-import io.coodoo.workhorse.jobengine.entity.JobSchedule;
-import io.coodoo.workhorse.jobengine.entity.JobType;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -39,26 +35,19 @@ public final class JobEngineUtil {
     private JobEngineUtil() {}
 
     /**
-     * Gets a map of available JobWorkers
+     * Gets a list of available JobWorkers
      * 
      * @return available {@link BaseJobWorker} implementations, so {@link JobWorker} and {@link JobWorkerWith}
      */
     @SuppressWarnings("serial")
-    public static Map<Class<?>, JobType> getAvailableWorkers() {
+    public static List<Class<?>> getAvailableWorkers() {
 
-        Map<Class<?>, JobType> workers = new HashMap<>();
+        List<Class<?>> workers = new ArrayList<>();
 
         for (Bean<?> workerBean : CDI.current().getBeanManager().getBeans(BaseJobWorker.class, new AnnotationLiteral<Any>() {})) {
 
             Class<?> workerClass = workerBean.getBeanClass();
-
-            if (workerClass.isAnnotationPresent(SystemJob.class)) {
-                workers.put(workerClass, JobType.SYSTEM);
-            } else if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {
-                workers.put(workerClass, JobType.SCHEDULED);
-            } else {
-                workers.put(workerClass, JobType.ON_DEMAND);
-            }
+            workers.add(workerClass);
         }
         return workers;
     }
@@ -140,49 +129,5 @@ public final class JobEngineUtil {
             logger.error(stacktraceString, exception);
         }
         return stacktraceString;
-    }
-
-    /**
-     * Creates a CRON expression for a {@link JobSchedule} including seconds but without years
-     * 
-     * @param jobSchedule JobSchedule containing the CRON expression parts
-     * @return CRON expression
-     */
-    public static String toCronExpression(JobSchedule jobSchedule) {
-        return toCronExpression(jobSchedule, true, false);
-    }
-
-    /**
-     * Creates a CRON expression for a {@link JobSchedule}
-     * 
-     * @param jobSchedule JobSchedule containing the CRON expression parts
-     * @param withSeconds <tt>true</tt> if seconds should be added to the CRON expression
-     * @param withYears <tt>true</tt> if years should be added to the CRON expression
-     * @return CRON expression
-     */
-    public static String toCronExpression(JobSchedule jobSchedule, boolean withSeconds, boolean withYears) {
-
-        if (jobSchedule == null) {
-            return null;
-        }
-        StringBuffer cronExpression = new StringBuffer();
-        if (withSeconds) {
-            cronExpression.append(jobSchedule.getSecond());
-            cronExpression.append(" ");
-        }
-        cronExpression.append(jobSchedule.getMinute());
-        cronExpression.append(" ");
-        cronExpression.append(jobSchedule.getHour());
-        cronExpression.append(" ");
-        cronExpression.append(jobSchedule.getDayOfWeek());
-        cronExpression.append(" ");
-        cronExpression.append(jobSchedule.getDayOfMonth());
-        cronExpression.append(" ");
-        cronExpression.append(jobSchedule.getMonth());
-        if (withYears) {
-            cronExpression.append(" ");
-            cronExpression.append(jobSchedule.getYear());
-        }
-        return cronExpression.toString();
     }
 }

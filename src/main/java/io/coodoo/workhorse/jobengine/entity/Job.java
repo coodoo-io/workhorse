@@ -1,8 +1,10 @@
 package io.coodoo.workhorse.jobengine.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
@@ -33,12 +35,19 @@ public class Job extends RevisionDatesOccEntity {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "tags")
+    @Convert(converter = StringListConverter.class)
+    private List<String> tags = new ArrayList<>();
+
     @Column(name = "worker_class_name")
     private String workerClassName;
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private JobType type;
+
+    @Column(name = "schedule")
+    private String schedule;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -78,6 +87,14 @@ public class Job extends RevisionDatesOccEntity {
         this.description = description;
     }
 
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
     public String getWorkerClassName() {
         return workerClassName;
     }
@@ -92,6 +109,14 @@ public class Job extends RevisionDatesOccEntity {
 
     public void setType(JobType type) {
         this.type = type;
+    }
+
+    public String getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(String schedule) {
+        this.schedule = schedule;
     }
 
     public JobStatus getStatus() {
@@ -152,10 +177,42 @@ public class Job extends RevisionDatesOccEntity {
 
     @Override
     public String toString() {
-        return "Job [id=" + id + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", name=" + name + ", description=" + description
-                        + ", workerClassName=" + workerClassName + ", type=" + type + ", status=" + status + ", threads=" + threads + ", maxPerMinute="
-                        + maxPerMinute + ", failRetries=" + failRetries + ", retryDelay=" + retryDelay + ", daysUntilCleanUp=" + daysUntilCleanUp
-                        + ", uniqueInQueue=" + uniqueInQueue + "]";
+        final int maxLen = 10;
+        StringBuilder builder = new StringBuilder();
+        builder.append("Job [id=");
+        builder.append(id);
+        builder.append(", name=");
+        builder.append(name);
+        builder.append(", description=");
+        builder.append(description);
+        builder.append(", tags=");
+        builder.append(tags != null ? tags.subList(0, Math.min(tags.size(), maxLen)) : null);
+        builder.append(", workerClassName=");
+        builder.append(workerClassName);
+        builder.append(", type=");
+        builder.append(type);
+        builder.append(", schedule=");
+        builder.append(schedule);
+        builder.append(", status=");
+        builder.append(status);
+        builder.append(", threads=");
+        builder.append(threads);
+        builder.append(", maxPerMinute=");
+        builder.append(maxPerMinute);
+        builder.append(", failRetries=");
+        builder.append(failRetries);
+        builder.append(", retryDelay=");
+        builder.append(retryDelay);
+        builder.append(", daysUntilCleanUp=");
+        builder.append(daysUntilCleanUp);
+        builder.append(", uniqueInQueue=");
+        builder.append(uniqueInQueue);
+        builder.append(", createdAt=");
+        builder.append(createdAt);
+        builder.append(", updatedAt=");
+        builder.append(updatedAt);
+        builder.append("]");
+        return builder.toString();
     }
 
     /**

@@ -27,7 +27,6 @@ import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
-import io.coodoo.workhorse.jobengine.entity.JobSchedule;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.JobType;
 
@@ -120,12 +119,15 @@ public class JobEngineService {
         return jobEngineController.getJobWorker(job);
     }
 
-    public Job updateJob(Long jobId, String name, String description, String workerClassName, JobStatus status, int threads, Integer maxPerMinute,
-                    int failRetries, int retryDelay, int daysUntilCleanUp, boolean uniqueInQueue) {
+    public Job updateJob(Long jobId, String name, String description, List<String> tags, String workerClassName, JobType type, String schedule,
+                    JobStatus status, int threads, Integer maxPerMinute, int failRetries, int retryDelay, int daysUntilCleanUp, boolean uniqueInQueue) {
         Job job = getJobById(jobId);
         job.setName(name);
         job.setDescription(description);
+        job.setTags(tags);
         job.setWorkerClassName(workerClassName);
+        job.setType(type);
+        job.setSchedule(schedule);
         job.setStatus(status);
         job.setThreads(threads);
         job.setMaxPerMinute(maxPerMinute);
@@ -141,9 +143,7 @@ public class JobEngineService {
     public void deleteJob(Long jobId) {
         Job job = getJobById(jobId);
         int deletedJobExecutions = JobExecution.deleteAllByJobId(entityManager, jobId);
-        if (JobType.SCHEDULED.equals(job.getType()) && getScheduleByJobId(jobId) != null) {
-            deleteSchedule(jobId);
-        }
+
         entityManager.remove(job);
         logger.debug("Job removed (including {} executions): {}", deletedJobExecutions, job);
     }
@@ -266,44 +266,6 @@ public class JobEngineService {
         jobEngine.clearMemoryQueue(getJobById(jobId));
     }
 
-    public List<JobSchedule> getAllSchedules() {
-        return JobSchedule.getAll(entityManager);
-    }
-
-    public JobSchedule getScheduleById(Long scheduleId) {
-        return entityManager.find(JobSchedule.class, scheduleId);
-    }
-
-    public JobSchedule getScheduleByJobId(Long jobId) {
-        return JobSchedule.getByJobId(entityManager, jobId);
-    }
-
-    public JobSchedule updateSchedule(Long jobId, String second, String minute, String hour, String dayOfWeek, String dayOfMonth, String month, String year) {
-        JobSchedule jobSchedule = getScheduleByJobId(jobId);
-        jobSchedule.setSecond(second);
-        jobSchedule.setMinute(minute);
-        jobSchedule.setHour(hour);
-        jobSchedule.setDayOfWeek(dayOfWeek);
-        jobSchedule.setDayOfMonth(dayOfMonth);
-        jobSchedule.setMonth(month);
-        jobSchedule.setYear(year);
-        logger.debug("Schedule updated: {}", jobSchedule);
-
-        jobScheduler.start(getJobById(jobId));
-
-        return jobSchedule;
-    }
-
-    public void deleteSchedule(Long jobId) {
-        JobSchedule jobSchedule = getScheduleByJobId(jobId);
-
-        Job job = getJobById(jobSchedule.getJobId());
-        jobScheduler.stop(job);
-
-        entityManager.remove(jobSchedule);
-        logger.debug("Schedule removed: {}", jobSchedule);
-    }
-
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public long currentJobExecutions(Long jobId, JobExecutionStatus jobExecutionStatus) {
         return JobExecution.countByJobIdAndStatus(entityManager, jobId, jobExecutionStatus);
@@ -319,26 +281,26 @@ public class JobEngineService {
      */
     public List<LocalDateTime> getNextScheduledTimes(Long jobId, int times, LocalDateTime startTime) {
 
-        JobSchedule schedule = getScheduleByJobId(jobId);
-        return getNextScheduledTimes(schedule, times, startTime);
+        Job job = getJobById(jobId);
+        return getNextScheduledTimes(job.getSchedule(), times, startTime);
     }
 
     /**
      * Get the next execution times defined by {@link JobSchedule}
      * 
-     * @param schedule JobSchedule instance
+     * @param schedule CRON Expression
      * @param times amount of future execution times
      * @param startTime start time for this request (if <tt>null</tt> then current time is used)
      * @return List of {@link LocalDateTime} representing the next execution times of a scheduled job
      */
-    public List<LocalDateTime> getNextScheduledTimes(JobSchedule schedule, int times, LocalDateTime startTime) {
+    public List<LocalDateTime> getNextScheduledTimes(String schedule, int times, LocalDateTime startTime) {
 
         List<LocalDateTime> nextScheduledTimes = new ArrayList<>();
         if (schedule == null) {
             return nextScheduledTimes;
         }
 
-        CronExpression cronExpression = new CronExpression(JobEngineUtil.toCronExpression(schedule));
+        CronExpression cronExpression = new CronExpression(schedule);
         LocalDateTime nextScheduledTime = startTime != null ? startTime : JobEngineUtil.timestamp();
 
         for (int i = 0; i < times; i++) {
@@ -358,26 +320,26 @@ public class JobEngineService {
      */
     public List<LocalDateTime> getScheduledTimes(Long jobId, LocalDateTime startTime, LocalDateTime endTime) {
 
-        JobSchedule schedule = getScheduleByJobId(jobId);
-        return getScheduledTimes(schedule, startTime, endTime);
+        Job job = getJobById(jobId);
+        return getScheduledTimes(job.getSchedule(), startTime, endTime);
     }
 
     /**
      * Get the execution times defined by {@link JobSchedule}
      * 
-     * @param schedule JobSchedule instance
+     * @param schedule CRON Expression
      * @param startTime start time for this request (if <tt>null</tt> then current time is used)
      * @param endTime end time for this request (if <tt>null</tt> then current time plus 1 day is used)
      * @return List of {@link LocalDateTime} representing the execution times of a scheduled job between the <tt>startTime</tt> and <tt>endTime</tt>
      */
-    public List<LocalDateTime> getScheduledTimes(JobSchedule schedule, LocalDateTime startTime, LocalDateTime endTime) {
+    public List<LocalDateTime> getScheduledTimes(String schedule, LocalDateTime startTime, LocalDateTime endTime) {
 
         List<LocalDateTime> scheduledTimes = new ArrayList<>();
         if (schedule == null) {
             return scheduledTimes;
         }
 
-        CronExpression cronExpression = new CronExpression(JobEngineUtil.toCronExpression(schedule));
+        CronExpression cronExpression = new CronExpression(schedule);
         LocalDateTime scheduledTime = startTime != null ? startTime : JobEngineUtil.timestamp();
         LocalDateTime endOfTimes = endTime != null ? endTime : scheduledTime.plusDays(1);
 
