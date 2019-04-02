@@ -63,7 +63,10 @@ public class JobEngineService {
         jobEngineController.checkJobConfiguration();
         jobEngine.initializeMemoryQueues();
         jobQueuePoller.start();
-        getAllScheduledJobs().forEach(job -> jobScheduler.start(job));
+
+        for (Job job : getAllScheduledJobs()) {
+            jobScheduler.start(job);
+        }
     }
 
     public void stop() {
@@ -273,7 +276,7 @@ public class JobEngineService {
     public void triggerScheduledJobExecutionCreation(Job job) throws Exception {
 
         BaseJobWorker jobWorker = getJobWorker(job);
-        jobWorker.scheduledJobExecutionCreation();
+        jobWorker.onSchedule();
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

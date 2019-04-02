@@ -41,6 +41,16 @@ public abstract class BaseJobWorker {
     public abstract void doWork(JobExecution jobExecution) throws Exception;
 
     /**
+     * This method will be called by the schedule timer in order to check if there is stuff to do.<br>
+     * Its goal is to create one (or more) {@link JobExecution} that gets added to the job engine to be executed. <i>If not overwritten, this method will create
+     * a {@link JobExecution} without parameters or specific settings.</i>
+     */
+    public void onSchedule() {
+        // TODO: get rid of this deprecated long ass named method
+        scheduledJobExecutionCreation();
+    }
+
+    /**
      * The job engine will call this callback method after the job execution is finished. <br>
      * <i>If needed, this method can be overwritten to react on a finished job execution.</i>
      * 
@@ -297,11 +307,10 @@ public abstract class BaseJobWorker {
     }
 
     /**
-     * This method will (mainly) be called by the schedule timer in order to check if there is stuff to do.<br>
+     * This method will be called by the schedule timer in order to check if there is stuff to do.<br>
      * Its goal is creating {@link JobExecution} objects that gets added to the job engine to be executed.
-     * <p>
-     * Use <code>createJobExecution(Object parameters)</code> to add single JobExecutions!
-     * </p>
+     * 
+     * @deprecated use {@link #onSchedule()} instead
      */
     @Deprecated // TODO "OnSchedule" umsetzen
     public void scheduledJobExecutionCreation() {

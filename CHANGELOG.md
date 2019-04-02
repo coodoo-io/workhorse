@@ -8,11 +8,12 @@
 
 <a name="1.2.1"></a>
 
-## 1.2.1 (2019-03-28)
+## 1.2.1 (2019-04-02)
 
 ### Features
 
 * New optional annotation `@InitialJobConfig` to provide initial job configuration. This annotation can be used to provide initial configuration to the resulting job. This also leaves `@JobConfig` and `@JobScheduleConfig` as deprecated!
+* Also `scheduledJobExecutionCreation()` is deprecated now and got replaced by `onSchedule()`
 * Get the scheduled times by the CRON expression
 * `logError` now also accepts a throwable for the server log
 * Reworked system job `JobExecutionCleanupWorker` to clear old execution for all jobs in one execution
@@ -20,9 +21,7 @@
 
 ### BREAKING CHANGES
 
-* Table `jobengine_schedule` is no more! RIP
-   * The schedule cron expression is from now a plain string, available in the job
-   * There is no part for the year anymore
+* Table `jobengine_schedule` is no more! The schedule CRON expression is from now a plain string, available in the job
 * Table `jobengine_job` got new columns `schedule` and `tags` - [see](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql)
 * `JobEngineService.updateJob()` added parameters `type`, `schedule`, `tags`, `retryDelay`, `daysUntilCleanUp` and `uniqueInQueue`
 

@@ -45,25 +45,25 @@ public class JobScheduler {
             stop(job);
 
             ScheduleExpression scheduleExpression = createScheduledExpression(job);
+            TimerConfig timerConfig = new TimerConfig(job, false);
 
-            TimerConfig timerConfig = new TimerConfig();
-            timerConfig.setInfo(job);
-            timerConfig.setPersistent(false);
+            try {
+                timerService.createCalendarTimer(scheduleExpression, timerConfig);
+                logger.info("Schedule started for Job {}", job.getName());
 
-            timerService.createCalendarTimer(scheduleExpression, timerConfig);
-
-            logger.info("Schedule started for Job {}", job.getName());
+            } catch (IllegalArgumentException e) {
+                jobEngineController.setJobStatus(job.getId(), JobStatus.ERROR);
+                logger.error("Invalid schedule found for {}", job, e);
+            }
         }
     }
 
     public void stop(Job job) {
-        if (JobType.SCHEDULED.equals(job.getType()) || JobType.SYSTEM.equals(job.getType())) {
-            for (Timer timer : timerService.getTimers()) {
-                if (job.equals(timer.getInfo())) {
+        for (Timer timer : timerService.getTimers()) {
+            if (job.equals(timer.getInfo())) {
 
-                    logger.info("Schedule stopped for Job {}", job.getName());
-                    timer.cancel();
-                }
+                logger.info("Schedule stopped for Job {}", job.getName());
+                timer.cancel();
             }
         }
     }
@@ -74,10 +74,7 @@ public class JobScheduler {
 
         Job job = (Job) currentTimer.getInfo();
         try {
-
-            BaseJobWorker jobWorker = jobEngineController.getJobWorker(job);
-            jobWorker.scheduledJobExecutionCreation();
-
+            jobEngineService.triggerScheduledJobExecutionCreation(job);
         } catch (Exception e) {
             logger.error("Timeout failed for job {}", job.getName(), e);
         }
@@ -101,9 +98,11 @@ public class JobScheduler {
         scheduleExpression.dayOfMonth(parts[ix++]);
         scheduleExpression.month(parts[ix++]);
         scheduleExpression.dayOfWeek(parts[ix++]);
-        if (parts.length > ix)
+        if (parts.length > ix) {
             scheduleExpression.year(parts[ix++]);
+        }
         scheduleExpression.timezone(JobEngineConfig.TIME_ZONE.toString());
+
         return scheduleExpression;
     }
 
