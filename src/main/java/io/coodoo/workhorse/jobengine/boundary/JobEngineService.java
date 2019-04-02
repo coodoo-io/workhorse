@@ -63,7 +63,7 @@ public class JobEngineService {
         jobEngineController.checkJobConfiguration();
         jobEngine.initializeMemoryQueues();
         jobQueuePoller.start();
-        getAllJobs().forEach(job -> jobScheduler.start(job));
+        getAllScheduledJobs().forEach(job -> jobScheduler.start(job));
     }
 
     public void stop() {
@@ -117,6 +117,10 @@ public class JobEngineService {
 
     public BaseJobWorker getJobWorker(Job job) throws Exception {
         return jobEngineController.getJobWorker(job);
+    }
+
+    public List<Job> getAllScheduledJobs() {
+        return Job.getAllScheduled(entityManager);
     }
 
     public Job updateJob(Long jobId, String name, String description, List<String> tags, String workerClassName, JobType type, String schedule,
@@ -264,6 +268,12 @@ public class JobEngineService {
 
     public void clearMemoryQueue(Long jobId) {
         jobEngine.clearMemoryQueue(getJobById(jobId));
+    }
+
+    public void triggerScheduledJobExecutionCreation(Job job) throws Exception {
+
+        BaseJobWorker jobWorker = getJobWorker(job);
+        jobWorker.scheduledJobExecutionCreation();
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

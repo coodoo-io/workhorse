@@ -21,10 +21,17 @@ import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
  */
 @Entity
 @Table(name = "jobengine_job")
-@NamedQueries({@NamedQuery(name = "Job.getAll", query = "SELECT job FROM Job job"),
+@NamedQueries({
+
+                @NamedQuery(name = "Job.getAll", query = "SELECT job FROM Job job"),
                 @NamedQuery(name = "Job.getByName", query = "SELECT job FROM Job job WHERE job.name=:name"),
                 @NamedQuery(name = "Job.getByWorkerClassName", query = "SELECT job FROM Job job WHERE job.workerClassName=:workerClassName"),
-                @NamedQuery(name = "Job.getAllByStatus", query = "SELECT job FROM Job job WHERE job.status=:status")})
+                @NamedQuery(name = "Job.getAllByStatus", query = "SELECT job FROM Job job WHERE job.status=:status"),
+
+                @NamedQuery(name = "Job.getAllScheduled",
+                                query = "SELECT job FROM Job job WHERE job.type=io.coodoo.workhorse.jobengine.entity.JobType.SCHEDULED AND job.schedule IS NOT NULL")
+
+})
 public class Job extends RevisionDatesOccEntity {
 
     private static final long serialVersionUID = 1L;
@@ -276,6 +283,18 @@ public class Job extends RevisionDatesOccEntity {
     @SuppressWarnings("unchecked")
     public static List<Job> getAll(EntityManager entityManager) {
         Query query = entityManager.createNamedQuery("Job.getAll");
+        return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'Job.getAllScheduled' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<Job> getAllScheduled(EntityManager entityManager) {
+        Query query = entityManager.createNamedQuery("Job.getAllScheduled");
         return query.getResultList();
     }
 
