@@ -26,6 +26,7 @@ Just fire jobs on demand when ever from where ever in your code and Workhorse wi
 Lets create a backup job. Therefore you just need to extend the `JobWorker` class that provides you the `doWork` method. And this method is where the magic happens!
 
 ```java
+@Stateless
 public class BackupJob extends JobWorker {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
@@ -70,6 +71,7 @@ public void performBackup() {
 You can access the parameters by changing the `JobWorker` to `JobWorkerWith` and using the parameters object as type.
 
 ```java
+@Stateless
 public class BackupJob extends JobWorkerWith<String> {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
@@ -83,16 +85,17 @@ public class BackupJob extends JobWorkerWith<String> {
 ```
 
 Everybody knows backups should be made on a regular basis, so lets tell this job to run every night half past three by initially adding `@InitialJobConfig` annotation. Many other job configuration can initially defined by this annotation, have a [look](https://github.com/coodoo-io/workhorse/blob/master/src/main/java/io/coodoo/workhorse/jobengine/boundary/annotation/InitialJobConfig.java "@InitialJobConfig")!
-In this case we overwrite the method `scheduledJobExecutionCreation()` witch triggers the job to add some parameters.
+In this case we overwrite the method `onSchedule()` witch triggers the job to add some parameters.
 
 ```java
+@Stateless
 @InitialJobConfig(schedule = "0 30 3 0 0 0")
 public class BackupJob extends JobWorkerWith<String> {
 
     private final Logger log = LoggerFactory.getLogger(BackupJob.class);
 
     @Override
-    public void scheduledJobExecutionCreation() {
+    public void onSchedule() {
 
         createJobExecution("STAGE-2");
     }
@@ -141,6 +144,7 @@ public void start() {
 3. To provide the EntityManager you have to implement a `@JobEngineEntityManagerProducer` CDI producer.
 
    ```java
+    @Stateless
     public class JobEngineEntityManagerProducer {
     
         @PersistenceContext

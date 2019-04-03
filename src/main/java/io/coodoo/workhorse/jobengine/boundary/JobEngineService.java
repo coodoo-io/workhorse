@@ -299,7 +299,7 @@ public class JobEngineService {
     }
 
     /**
-     * Get the next execution times defined by {@link JobSchedule}
+     * Get the next execution times defined by {@link Job#getSchedule()}
      * 
      * @param schedule CRON Expression
      * @param times amount of future execution times
@@ -338,7 +338,7 @@ public class JobEngineService {
     }
 
     /**
-     * Get the execution times defined by {@link JobSchedule}
+     * Get the execution times defined by {@link Job#getSchedule()}
      * 
      * @param schedule CRON Expression
      * @param startTime start time for this request (if <tt>null</tt> then current time is used)
