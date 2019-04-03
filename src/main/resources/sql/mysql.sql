@@ -38,14 +38,15 @@ CREATE TABLE jobengine_execution (
   log mediumtext COLLATE utf8_bin,
   fail_retry int(4) NOT NULL DEFAULT '0',
   fail_retry_execution_id bigint(20) DEFAULT NULL,
-  created_at datetime NOT NULL,
-  updated_at datetime DEFAULT NULL,
   fail_message varchar(4096) COLLATE utf8_bin DEFAULT NULL,
   fail_stacktrace mediumtext COLLATE utf8_bin,
+  created_at datetime NOT NULL,
+  updated_at datetime DEFAULT NULL,
   PRIMARY KEY (id),
   KEY fk_jobengine_job_execution_job_idx (job_id),
   KEY idx_jobengine_job_execution__jobid__status (job_id,status),
   KEY idx_jobengine_job_execution__poller (job_id,status,parameters_hash),
   KEY idx_jobengine_job_execution__chain_id__chain_prev_exec_id (chain_id,chain_previous_execution_id),
+  KEY idx_jobengine_job_execution__batch_id_status (batch_id,status),
   CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

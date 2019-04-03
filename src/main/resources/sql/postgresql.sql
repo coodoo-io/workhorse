@@ -1,8 +1,13 @@
 
-CREATE SEQUENCE jobengine_job_seq;
+CREATE SEQUENCE jobengine_job_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 CREATE TABLE jobengine_job (
-  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_job_seq'),
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_job_id_seq'),
   name varchar(128) NOT NULL,
   description varchar(2028) DEFAULT NULL,
   tags varchar(1024) DEFAULT NULL,
@@ -23,10 +28,15 @@ CREATE TABLE jobengine_job (
   CONSTRAINT worker_class_name UNIQUE  (worker_class_name)
 );
 
-CREATE SEQUENCE jobengine_execution_seq;
+CREATE SEQUENCE jobengine_execution_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 CREATE TABLE jobengine_execution (
-  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_execution_seq'),
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_execution_id_seq'),
   job_id bigint NOT NULL,
   status varchar(32) NOT NULL DEFAULT 'QUEUED',
   started_at timestamp(0) DEFAULT NULL,
@@ -42,10 +52,10 @@ CREATE TABLE jobengine_execution (
   log text,
   fail_retry int NOT NULL DEFAULT '0',
   fail_retry_execution_id bigint DEFAULT NULL,
-  created_at timestamp(0) NOT NULL,
-  updated_at timestamp(0) DEFAULT NULL,
   fail_message varchar(4096) DEFAULT NULL,
   fail_stacktrace text,
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
   PRIMARY KEY (id),
  CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
@@ -53,4 +63,5 @@ CREATE TABLE jobengine_execution (
 CREATE INDEX fk_jobengine_job_execution_job_idx ON jobengine_execution (job_id);
 CREATE INDEX idx_jobengine_job_execution_jobid_status ON jobengine_execution (job_id,status);
 CREATE INDEX idx_jobengine_job_execution_poller ON jobengine_execution (job_id,status,parameters_hash);
-CREATE INDEX idx_jobengine_job_execution__chain_id__chain_prev_exec_id (chain_id,chain_previous_execution_id);
+CREATE INDEX idx_jobengine_job_execution__chain_id__chain_prev_exec_id ON jobengine_execution (chain_id,chain_previous_execution_id);
+CREATE INDEX idx_jobengine_job_execution__batch_id_status ON jobengine_execution (batch_id,status);
