@@ -3,6 +3,8 @@ package io.coodoo.workhorse.jobengine.boundary;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
+
 /**
  * Basic configuration that can be changed in the implementation<br>
  * If for example you want to change the error log marker, just call<br>
@@ -33,6 +35,16 @@ public final class JobEngineConfig {
      * Min amount of executions in memory queue before the poller gets to add more
      */
     public static int JOB_QUEUE_MIN = 100;
+
+    /**
+     * A zombie is an execution that is stuck in status {@link JobExecutionStatus#RUNNING} for this amount of minutes
+     */
+    public static int ZOMBIE_RECOGNITION_TIME = 120;
+
+    /**
+     * If an execution is stuck in status {@link JobExecutionStatus#RUNNING} and doesn't change, it has became a zombie! Once found we have a cure!
+     */
+    public static JobExecutionStatus ZOMBIE_CURE_STATUS = JobExecutionStatus.ABORTED;
 
     /**
      * Log timestamp pattern. Default is <code>[HH:mm:ss.SSS]</code>

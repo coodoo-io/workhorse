@@ -59,6 +59,8 @@ import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
                 @NamedQuery(name = "JobExecution.deleteOlderJobExecutions",
                                 query = "DELETE FROM JobExecution j WHERE j.jobId = :jobId AND j.createdAt < :preDate"),
                 @NamedQuery(name = "JobExecution.selectDuration", query = "SELECT j.duration FROM JobExecution j WHERE j.id = :jobExecutionId"),
+                @NamedQuery(name = "JobExecution.findZombies",
+                                query = "SELECT j FROM JobExecution j WHERE j.startedAt < :time AND j.status = io.coodoo.workhorse.jobengine.entity.JobExecutionStatus.RUNNING"),
 
                 // Status
                 @NamedQuery(name = "JobExecution.updateStatusRunning",
@@ -600,6 +602,20 @@ public class JobExecution extends RevisionDatesEntity {
     public static List<JobExecutionInfo> getChainInfo(EntityManager entityManager, Long chainId) {
         Query query = entityManager.createNamedQuery("JobExecution.getChainInfo");
         query = query.setParameter("chainId", chainId);
+        return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'JobExecution.findZombies' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param time the time
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<JobExecution> findZombies(EntityManager entityManager, LocalDateTime time) {
+        Query query = entityManager.createNamedQuery("JobExecution.findZombies");
+        query = query.setParameter("time", time);
         return query.getResultList();
     }
 

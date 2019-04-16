@@ -3,6 +3,7 @@ package io.coodoo.workhorse.jobengine.control;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -232,27 +233,8 @@ public class JobEngineController {
         JobExecution retryExecution = null;
 
         if (failedExecution.getFailRetry() < job.getFailRetries()) {
-
-            // create a new execution to retry the work of the failed one
-            retryExecution = new JobExecution();
-            retryExecution.setJobId(failedExecution.getJobId());
-            retryExecution.setStatus(failedExecution.getStatus());
-            retryExecution.setStartedAt(JobEngineUtil.timestamp());
-            retryExecution.setPriority(failedExecution.isPriority());
-            retryExecution.setMaturity(failedExecution.getMaturity());
-            retryExecution.setChainId(failedExecution.getChainId());
-            retryExecution.setChainPreviousExecutionId(failedExecution.getChainPreviousExecutionId());
-            retryExecution.setParameters(failedExecution.getParameters());
-            retryExecution.setParametersHash(failedExecution.getParametersHash());
-
-            // increase failure number
-            retryExecution.setFailRetry(failedExecution.getFailRetry() + 1);
-            if (retryExecution.getFailRetryExecutionId() == null) {
-                retryExecution.setFailRetryExecutionId(jobExecutionId);
-            }
-
-            entityManager.persist(retryExecution);
-
+            // retry
+            retryExecution = createRetryExecution(failedExecution);
         } else if (failedExecution.getChainId() != null) {
             JobExecution.abortChain(entityManager, failedExecution.getChainId());
         }
@@ -273,6 +255,62 @@ public class JobEngineController {
             jobWorker.onRetry(jobExecutionId, retryExecution.getId());
         }
         return retryExecution;
+    }
+
+    private JobExecution createRetryExecution(JobExecution failedExecution) {
+
+        // create a new execution to retry the work of the failed one
+        JobExecution retryExecution = new JobExecution();
+        retryExecution.setJobId(failedExecution.getJobId());
+        retryExecution.setStatus(failedExecution.getStatus());
+        retryExecution.setStartedAt(JobEngineUtil.timestamp());
+        retryExecution.setPriority(failedExecution.isPriority());
+        retryExecution.setMaturity(failedExecution.getMaturity());
+        retryExecution.setChainId(failedExecution.getChainId());
+        retryExecution.setChainPreviousExecutionId(failedExecution.getChainPreviousExecutionId());
+        retryExecution.setParameters(failedExecution.getParameters());
+        retryExecution.setParametersHash(failedExecution.getParametersHash());
+
+        // increase failure number
+        retryExecution.setFailRetry(failedExecution.getFailRetry() + 1);
+        if (retryExecution.getFailRetryExecutionId() == null) {
+            retryExecution.setFailRetryExecutionId(failedExecution.getId());
+        }
+
+        entityManager.persist(retryExecution);
+        return retryExecution;
+    }
+
+    @Asynchronous
+    public void huntJobExecutionZombies() {
+
+        LocalDateTime time = JobEngineUtil.timestamp().minusMinutes(JobEngineConfig.ZOMBIE_RECOGNITION_TIME);
+        List<JobExecution> zombies = JobExecution.findZombies(entityManager, time);
+
+        if (!zombies.isEmpty()) {
+
+            for (JobExecution zombie : zombies) {
+
+                logger.warn("Zombie found! {}", zombie);
+                JobExecutionStatus cure = JobEngineConfig.ZOMBIE_CURE_STATUS;
+
+                // how to cure it?
+                switch (cure) {
+                    case QUEUED:
+                        JobExecution retryExecution = createRetryExecution(zombie);
+                        zombie.setStatus(JobExecutionStatus.FAILED);
+                        logger.info("Zombie killed and risen from the death! Now it is {}", retryExecution);
+                        break;
+                    case RUNNING:
+                        logger.warn("Zombie will still walk free with status {}", cure);
+                        break;
+                    default:
+                        zombie.setStatus(cure);
+                        logger.info("Zombie is cured with status {}", cure);
+                        break;
+                }
+            }
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

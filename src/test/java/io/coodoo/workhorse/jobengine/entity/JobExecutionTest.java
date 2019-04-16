@@ -1184,4 +1184,59 @@ public class JobExecutionTest {
     	}
     }
 
+    /**
+     * Tests that query 'JobExecution.findZombies' has not changed since this test had been created. If this test fails, you should consider re-generating ALL methods created from that query as they may be out-dated.
+     *
+     */
+    @SuppressWarnings({"unchecked", "rawtypes", "null"})
+    @org.junit.Test 
+    public void testFindZombiesQueryUnchanged()
+    {
+    	List annotations = new ArrayList();
+    	NamedQuery namedQueryAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQuery.class);
+    	if (namedQueryAnnotation == null) {
+    	NamedQueries namedQueriesAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQueries.class);
+    	if (namedQueriesAnnotation != null) {
+    	annotations.addAll(Arrays.asList(namedQueriesAnnotation.value())); }
+    	} else { annotations.add(namedQueryAnnotation); }
+    	NamedQuery queryUnderTest = null;
+    	for (Object obj : annotations) {
+    	NamedQuery query = (NamedQuery) obj;
+    	if (query.name().equals("JobExecution.findZombies")) {
+    	queryUnderTest = query;
+    	break;
+    	}
+    	}
+    	if (queryUnderTest == null) {
+    	org.junit.Assert.fail("Query JobExecution.findZombies does not exist anymore.");
+    	}
+    	String queryText = queryUnderTest.query();
+    	// Minor changes with whitespace are ignored
+    	queryText = queryText.trim().replace('\t', ' ').replace('\n', ' ').replace('\r', ' ');
+    	while (queryText.contains("  ")) {
+    	queryText = queryText.replace("  ", " ");
+    	}
+    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'SELECT j FROM JobExecution j WHERE j.startedAt < :time AND j.status = io.coodoo.workhorse.jobengine.entity.JobExecutionStatus.RUNNING' to '" + queryText + "'", "SELECT j FROM JobExecution j WHERE j.startedAt < :time AND j.status = io.coodoo.workhorse.jobengine.entity.JobExecutionStatus.RUNNING", queryText);
+    }
+
+    /**
+     * Tests that call and query are consistent for query 'JobExecution.findZombies'.
+     *
+     */
+    @org.junit.Test 
+    public void testFindZombies()
+    {
+    	Query query = org.mockito.Mockito.mock(Query.class);
+    	EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
+    	org.mockito.BDDMockito.given(entityManager.createNamedQuery("JobExecution.findZombies")).willReturn(query);
+    	LocalDateTime time = null;
+    	org.mockito.BDDMockito.given(query.setParameter("time", time)).willReturn(query);
+    	// Call
+    	io.coodoo.workhorse.jobengine.entity.JobExecution.findZombies(entityManager,time);
+    	// Verification
+    	org.mockito.BDDMockito.verify(entityManager, org.mockito.Mockito.times(1)).createNamedQuery("JobExecution.findZombies");
+    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("time",time);
+    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).getResultList();
+    }
+
 }

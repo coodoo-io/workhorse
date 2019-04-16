@@ -21,6 +21,7 @@ import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 public class JobQueuePoller {
 
     private static final String JOB_QUEUE_POLLER = "JobQueuePoller";
+    private static final int ZOMBIE_HUNT_INTERVAL = 300;
 
     private static Logger logger = LoggerFactory.getLogger(JobQueuePoller.class);
 
@@ -30,9 +31,23 @@ public class JobQueuePoller {
     @Resource
     protected TimerService timerService;
 
+    // look out for zombies on startup
+    private int zombieWatch = ZOMBIE_HUNT_INTERVAL;
+
     @Timeout
     public void poll() {
+
         jobEngineController.syncJobExecutionQueue();
+        huntZombies();
+    }
+
+    private void huntZombies() {
+        zombieWatch += JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL;
+        if (zombieWatch > ZOMBIE_HUNT_INTERVAL) { // watch for zombies every 5 minutes
+            // go, hunt down zombies!
+            jobEngineController.huntJobExecutionZombies();
+            zombieWatch = 0;
+        }
     }
 
     public void start() {
