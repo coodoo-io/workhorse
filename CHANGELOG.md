@@ -18,7 +18,7 @@
 * `logError` now also accepts a throwable for the server log
 * Reworked system job `JobExecutionCleanupWorker` to clear old execution for all jobs in one execution
 * Dubious way to manually trigger `JobWorkerWith.scheduledJobExecutionCreation`: `JobEngineService.triggerScheduledJobExecutionCreation()`
-* If an execution is stuck in status RUNNING and doesn't change, it has became a zombie! Now we found a cure, see `@JobScheduleConfig`!
+* If an execution is stuck in status RUNNING and doesn't change, it has became a zombie! Now we found a cure, see `JobEngineConfig`!
 
 ### BREAKING CHANGES
 
