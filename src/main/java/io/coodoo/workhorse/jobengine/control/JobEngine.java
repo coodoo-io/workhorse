@@ -168,7 +168,7 @@ public class JobEngine implements Serializable {
         final JobThread jobThread = new JobThread() {
 
             boolean stopMe;
-            JobExecution activeJob;
+            JobExecution activeJobExecution;
 
             @Override
             public void run(Job job) {
@@ -179,11 +179,9 @@ public class JobEngine implements Serializable {
                     final BaseJobWorker jobWorker = jobEngineController.getJobWorker(job);
 
                     while (true) {
-                        activeJob = null;
                         if (this.stopMe) {
                             break;
                         }
-
                         if (JobEngine.this.pausedJobs.get(jobId)) {
                             logger.info("Job thread shall be paused: {}", job);
                             while (JobEngine.this.pausedJobs.get(jobId) && !stopMe) {
@@ -201,12 +199,9 @@ public class JobEngine implements Serializable {
                         try {
                             lock.lock();
                             jobExecution = priorityJobExecutions.get(jobId).poll();
-                            activeJob = jobExecution;
-
                             if (jobExecution == null) {
                                 jobExecution = jobExecutions.get(jobId).poll();
                             }
-
                             if (jobExecution == null) {
                                 logger.debug("No further job execution available for {} - removing this thread", job);
 
@@ -220,6 +215,8 @@ public class JobEngine implements Serializable {
                                 }
                                 return;
                             }
+                            activeJobExecution = jobExecution;
+
                         } finally {
                             lock.unlock();
                         }
@@ -279,6 +276,7 @@ public class JobEngine implements Serializable {
                                     JobExecution nextInChain = jobEngineController.getNextInChain(jobExecution.getChainId(), jobExecutionId);
                                     if (nextInChain != null) {
                                         jobExecution = nextInChain;
+                                        activeJobExecution = jobExecution;
                                         continue jobExecutionLoop;
                                     }
                                     jobWorker.onFinishedChain(jobExecution.getChainId(), jobExecutionId);
@@ -296,6 +294,7 @@ public class JobEngine implements Serializable {
                                 if (jobExecution == null) {
                                     break jobExecutionLoop; // no retry
                                 }
+                                activeJobExecution = jobExecution;
                                 jobExecutionId = jobExecution.getId();
 
                                 logger.info("{}. Error '{}' - next try in {} seconds", jobExecution.getFailRetry(), exception.getMessage(),
@@ -331,7 +330,7 @@ public class JobEngine implements Serializable {
 
             @Override
             public JobExecution getActiveJobExecution() {
-                return activeJob;
+                return activeJobExecution;
             }
         };
 

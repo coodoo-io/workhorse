@@ -13,6 +13,7 @@
 ### Bug Fixes
 
 * Made logging via `JobContext` null-save
+* Fixed long overseen `JobThread.getActiveJobExecution()` so in any case the actual JobExecution is given back
 
 
 
