@@ -18,12 +18,14 @@ public class JobContext {
 
     protected JobExecution jobExecution;
 
-    private StringBuffer logBuffer;
+    private StringBuffer logBuffer = new StringBuffer();
 
     public void init(JobExecution jobExecution) {
 
         this.jobExecution = jobExecution;
-        this.logBuffer = jobExecution.getLog() == null ? new StringBuffer() : new StringBuffer(jobExecution.getLog());
+        if (jobExecution != null && jobExecution.getLog() != null) {
+            this.logBuffer = new StringBuffer(jobExecution.getLog());
+        }
     }
 
     public JobExecution getJobExecution() {

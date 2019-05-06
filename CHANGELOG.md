@@ -6,6 +6,16 @@
 ### BREAKING CHANGES
 -->
 
+<a name="1.3.1"></a>
+
+## 1.3.1 (2019-05-06)
+
+### Bug Fixes
+
+* Made logging via `JobContext` null-save
+
+
+
 <a name="1.3.0"></a>
 
 ## 1.3.0 (2019-04-17)
