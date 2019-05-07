@@ -8,7 +8,15 @@
 
 <a name="1.3.1"></a>
 
-## 1.3.1 (2019-05-06)
+## 1.3.1 (2019-05-07)
+
+### Features
+
+* Gave insight to the memory queues via `JobEngineService.getJobEngineInfo()` to see what's going on there
+
+### BREAKING CHANGES
+
+* Removed `JobEngineStatisticsService` since it was not needed anymore
 
 ### Bug Fixes
 

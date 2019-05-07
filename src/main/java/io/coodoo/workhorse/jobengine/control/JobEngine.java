@@ -1,8 +1,9 @@
 package io.coodoo.workhorse.jobengine.control;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,12 +31,15 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import io.coodoo.workhorse.jobengine.boundary.JobContext;
+import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.control.event.AllJobExecutionsDoneEvent;
 import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
+import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
 /**
@@ -96,16 +100,16 @@ public class JobEngine implements Serializable {
         }
     }
 
-    public ReentrantLock getLock(Job job) {
-        ReentrantLock keyLock = jobLocks.get(job.getId());
+    public ReentrantLock getLock(Long jobId) {
+        ReentrantLock keyLock = jobLocks.get(jobId);
 
         if (keyLock == null) {
             myLock.lock();
             try {
-                keyLock = jobLocks.get(job.getId());
+                keyLock = jobLocks.get(jobId);
                 if (keyLock == null) {
                     keyLock = new ReentrantLock();
-                    jobLocks.put(job.getId(), keyLock);
+                    jobLocks.put(jobId, keyLock);
                 }
             } finally {
                 myLock.unlock();
@@ -114,19 +118,17 @@ public class JobEngine implements Serializable {
         return keyLock;
     }
 
-    public boolean isJobActive(Job job) {
-        return !jobExecutions.get(job.getId()).isEmpty();
-    }
-
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public boolean addJobExecution(JobExecution jobExecution) {
 
-        final Job job = jobEngineService.getJobById(jobExecution.getJobId());
-        final Long jobId = job.getId();
+        if (jobExecution == null || jobExecution.getStatus() != JobExecutionStatus.QUEUED) {
+            return false;
+        }
+
+        Long jobId = jobExecution.getJobId();
 
         if ((runningJobExecutions.get(jobId).contains(jobExecution)) || (priorityJobExecutions.get(jobId).contains(jobExecution))
                         || (jobExecutions.get(jobId).contains(jobExecution))) {
-            // log.info("JobExecution already exists in queue: {}", job);
             return false;
         }
         final int numberOfJobs = getNumberOfJobExecutionsInQueue(jobId);
@@ -142,11 +144,11 @@ public class JobEngine implements Serializable {
         logger.debug("Added JobExecution: {} (Current queued JobExecutions: {})", jobExecution, numberOfJobs);
 
         if (jobThreadCounts.get(jobId) > jobThreads.get(jobId).size()) {
-            final ReentrantLock lock = getLock(job);
+            final ReentrantLock lock = getLock(jobId);
             try {
                 lock.lock();
                 for (int i = jobThreads.get(jobId).size(); i < jobThreadCounts.get(jobId); i++) {
-                    startJobThread(job);
+                    startJobThread(jobId);
                     if (logger.isTraceEnabled()) {
                         logger.trace("Job thread started.");
                     }
@@ -163,7 +165,9 @@ public class JobEngine implements Serializable {
         return true;
     }
 
-    private void startJobThread(Job job) {
+    private void startJobThread(Long jobId) {
+
+        Job job = jobEngineService.getJobById(jobId);
 
         final JobThread jobThread = new JobThread() {
 
@@ -195,7 +199,7 @@ public class JobEngine implements Serializable {
 
                         JobExecution jobExecution;
 
-                        ReentrantLock lock = getLock(job);
+                        ReentrantLock lock = getLock(jobId);
                         try {
                             lock.lock();
                             jobExecution = priorityJobExecutions.get(jobId).poll();
@@ -377,57 +381,30 @@ public class JobEngine implements Serializable {
 
     }
 
-    public String getInfo(Job job) {
-        return getInfo(Arrays.asList(job));
-    }
+    public JobEngineInfo getInfo(Long jobId) {
 
-    public String getInfo() {
-        return getInfo(jobEngineService.getAllJobs());
-    }
+        JobEngineInfo info = new JobEngineInfo();
+        info.setJobId(jobId);
 
-    private String getInfo(List<Job> jobs) {
-
-        final StringBuilder info = new StringBuilder();
-
-        for (Job job : jobs) {
-
-            Set<JobThread> jobThreadSet = jobThreads.get(job.getId());
-
-            info.append("Job: ");
-            info.append(job.getName());
-            info.append(System.lineSeparator());
-
-            info.append("Status: ");
-            info.append(job.getStatus());
-            if (this.pausedJobs.get(job.getId())) {
-                info.append(" -paused-");
-            }
-            info.append(System.lineSeparator());
-
-            info.append("Threads aktive: ");
-            info.append(jobThreadSet.size());
-            info.append("/");
-            info.append(this.jobThreadCounts.get(job.getId()));
-            info.append(System.lineSeparator());
-
-            for (JobThread jobThread : jobThreadSet) {
-
-                info.append("Active execution: ");
-                JobExecution activeJobExecution = jobThread.getActiveJobExecution();
-                if (activeJobExecution == null) {
-                    info.append("-");
-                } else {
-                    info.append(activeJobExecution);// da keine description für execution gegeben ist eben toString...
-                }
-                info.append(System.lineSeparator());
-            }
-
-            info.append("Queued executions: ");
-            info.append(getNumberOfJobExecutionsInQueue(job.getId()));
-            info.append(System.lineSeparator());
-            info.append(System.lineSeparator());
+        if (jobExecutions != null && jobExecutions.get(jobId) != null) {
+            info.setQueuedExecutions(jobExecutions.get(jobId).size());
         }
-        return info.toString();
+        if (priorityJobExecutions != null && priorityJobExecutions.get(jobId) != null) {
+            info.setQueuedPriorityExecutions(priorityJobExecutions.get(jobId).size());
+        }
+        if (runningJobExecutions != null && runningJobExecutions.get(jobId) != null) {
+            info.getRunningExecutions().addAll(runningJobExecutions.get(jobId));
+        }
+        if (jobThreadCounts != null && jobThreadCounts.get(jobId) != null) {
+            info.setThreadCount(jobThreadCounts.get(jobId));
+        }
+        if (jobStartTimes != null && jobStartTimes.get(jobId) != null) {
+            info.setThreadStartTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(jobStartTimes.get(jobId)), JobEngineConfig.TIME_ZONE));
+        }
+        if (pausedJobs != null && pausedJobs.get(jobId) != null) {
+            info.setPaused(pausedJobs.get(jobId));
+        }
+        return info;
     }
 
     public boolean hasNoMoreJobs(Job job) {

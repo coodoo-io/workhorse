@@ -18,13 +18,15 @@ public class JobContext {
 
     protected JobExecution jobExecution;
 
-    private StringBuffer logBuffer = new StringBuffer();
+    private StringBuffer logBuffer;
 
     public void init(JobExecution jobExecution) {
 
         this.jobExecution = jobExecution;
         if (jobExecution != null && jobExecution.getLog() != null) {
             this.logBuffer = new StringBuffer(jobExecution.getLog());
+        } else {
+            this.logBuffer = new StringBuffer();
         }
     }
 
@@ -167,36 +169,38 @@ public class JobContext {
 
     private void appendLog(String message, boolean timestamp, String mode) {
 
-        if (logBuffer.length() > 0) {
-            logBuffer.append(System.lineSeparator());
+        if (logBuffer != null) {
+            if (logBuffer.length() > 0) {
+                logBuffer.append(System.lineSeparator());
+            }
+            if (timestamp) {
+                logBuffer.append(JobEngineUtil.timestamp().format(JobEngineConfig.LOG_TIME_FORMATTER));
+                logBuffer.append(" ");
+            }
+            switch (mode) {
+                case "i":
+                    if (JobEngineConfig.LOG_INFO_MARKER != null) {
+                        logBuffer.append(JobEngineConfig.LOG_INFO_MARKER);
+                        logBuffer.append(" ");
+                    }
+                    break;
+                case "w":
+                    if (JobEngineConfig.LOG_WARN_MARKER != null) {
+                        logBuffer.append(JobEngineConfig.LOG_WARN_MARKER);
+                        logBuffer.append(" ");
+                    }
+                    break;
+                case "e":
+                    if (JobEngineConfig.LOG_ERROR_MARKER != null) {
+                        logBuffer.append(JobEngineConfig.LOG_ERROR_MARKER);
+                        logBuffer.append(" ");
+                    }
+                    break;
+                default:
+                    break;
+            }
+            logBuffer.append(message);
         }
-        if (timestamp) {
-            logBuffer.append(JobEngineUtil.timestamp().format(JobEngineConfig.LOG_TIME_FORMATTER));
-            logBuffer.append(" ");
-        }
-        switch (mode) {
-            case "i":
-                if (JobEngineConfig.LOG_INFO_MARKER != null) {
-                    logBuffer.append(JobEngineConfig.LOG_INFO_MARKER);
-                    logBuffer.append(" ");
-                }
-                break;
-            case "w":
-                if (JobEngineConfig.LOG_WARN_MARKER != null) {
-                    logBuffer.append(JobEngineConfig.LOG_WARN_MARKER);
-                    logBuffer.append(" ");
-                }
-                break;
-            case "e":
-                if (JobEngineConfig.LOG_ERROR_MARKER != null) {
-                    logBuffer.append(JobEngineConfig.LOG_ERROR_MARKER);
-                    logBuffer.append(" ");
-                }
-                break;
-            default:
-                break;
-        }
-        logBuffer.append(message);
     }
 
 }

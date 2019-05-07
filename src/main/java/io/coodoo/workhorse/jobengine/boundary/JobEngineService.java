@@ -24,6 +24,7 @@ import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
+import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
@@ -102,8 +103,22 @@ public class JobEngineService {
         jobEngine.clearMemoryQueue(job);
     }
 
+    private void updateJobStatus(Long jobId, JobStatus status) {
+        Job job = getJobById(jobId);
+        job.setStatus(status);
+        logger.info("Job status updated to: {}", status);
+    }
+
+    public void clearMemoryQueue(Long jobId) {
+        jobEngine.clearMemoryQueue(getJobById(jobId));
+    }
+
     public boolean isRunning() {
         return jobQueuePoller.isRunning();
+    }
+
+    public JobEngineInfo getJobEngineInfo(Long jobId) {
+        return jobEngine.getInfo(jobId);
     }
 
     public List<Job> getAllJobs() {
@@ -128,7 +143,12 @@ public class JobEngineService {
 
     public Job updateJob(Long jobId, String name, String description, List<String> tags, String workerClassName, JobType type, String schedule,
                     JobStatus status, int threads, Integer maxPerMinute, int failRetries, int retryDelay, int daysUntilCleanUp, boolean uniqueInQueue) {
+
         Job job = getJobById(jobId);
+
+        jobScheduler.stop(job);
+        jobEngine.clearMemoryQueue(job);
+
         job.setName(name);
         job.setDescription(description);
         job.setTags(tags);
@@ -143,16 +163,23 @@ public class JobEngineService {
         job.setDaysUntilCleanUp(daysUntilCleanUp);
         job.setUniqueInQueue(uniqueInQueue);
 
-        logger.debug("Job updated: {}", job);
+        logger.info("Job updated: {}", job);
+
+        jobScheduler.start(job);
         return job;
     }
 
     public void deleteJob(Long jobId) {
+
         Job job = getJobById(jobId);
+
+        jobScheduler.stop(job);
+        jobEngine.clearMemoryQueue(job);
+
         int deletedJobExecutions = JobExecution.deleteAllByJobId(entityManager, jobId);
 
         entityManager.remove(job);
-        logger.debug("Job removed (including {} executions): {}", deletedJobExecutions, job);
+        logger.info("Job removed (including {} executions): {}", deletedJobExecutions, job);
     }
 
     public JobExecution getJobExecutionById(Long jobExecutionId) {
@@ -253,24 +280,14 @@ public class JobEngineService {
         jobExecution.setPriority(priority);
         jobExecution.setMaturity(maturity);
         jobExecution.setFailRetry(fails);
-        logger.debug("JobExecution updated: {}", jobExecution);
+        logger.info("JobExecution updated: {}", jobExecution);
         return jobExecution;
     }
 
     public void deleteJobExecution(Long jobExecutionId) {
         JobExecution jobExecution = getJobExecutionById(jobExecutionId);
         entityManager.remove(jobExecution);
-        logger.debug("JobExecution removed: {}", jobExecution);
-    }
-
-    public void updateJobStatus(Long jobId, JobStatus status) {
-        Job job = getJobById(jobId);
-        job.setStatus(status);
-        logger.debug("Job status updated to: {}", status);
-    }
-
-    public void clearMemoryQueue(Long jobId) {
-        jobEngine.clearMemoryQueue(getJobById(jobId));
+        logger.info("JobExecution removed: {}", jobExecution);
     }
 
     public void triggerScheduledJobExecutionCreation(Job job) throws Exception {
