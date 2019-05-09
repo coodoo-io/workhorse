@@ -8,7 +8,7 @@
 
 <a name="1.3.1"></a>
 
-## 1.3.1 (2019-05-07)
+## 1.3.1 (2019-05-10)
 
 ### Features
 
@@ -20,6 +20,7 @@
 
 ### Bug Fixes
 
+* JobExecutions now get removed from memory queue in case their status change or they get deleted
 * Made logging via `JobContext` null-save
 * Fixed long overseen `JobThread.getActiveJobExecution()` so in any case the actual JobExecution is given back
 

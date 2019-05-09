@@ -274,7 +274,12 @@ public class JobEngineService {
 
     public JobExecution updateJobExecution(Long jobExecutionId, JobExecutionStatus status, String parameters, boolean priority, LocalDateTime maturity,
                     int fails) {
+
         JobExecution jobExecution = getJobExecutionById(jobExecutionId);
+
+        if (JobExecutionStatus.QUEUED == jobExecution.getStatus() && JobExecutionStatus.QUEUED != status) {
+            jobEngine.removeFromMemoryQueue(jobExecution);
+        }
         jobExecution.setStatus(status);
         jobExecution.setParameters(parameters);
         jobExecution.setPriority(priority);
@@ -285,7 +290,13 @@ public class JobEngineService {
     }
 
     public void deleteJobExecution(Long jobExecutionId) {
+
         JobExecution jobExecution = getJobExecutionById(jobExecutionId);
+
+        if (JobExecutionStatus.QUEUED == jobExecution.getStatus()) {
+            jobEngine.removeFromMemoryQueue(jobExecution);
+        }
+
         entityManager.remove(jobExecution);
         logger.info("JobExecution removed: {}", jobExecution);
     }

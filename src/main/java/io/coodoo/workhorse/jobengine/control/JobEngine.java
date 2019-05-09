@@ -435,7 +435,7 @@ public class JobEngine implements Serializable {
     public void clearMemoryQueue(Job job) {
 
         if (!jobExecutions.containsKey(job.getId()) || !priorityJobExecutions.containsKey(job.getId())) {
-            logger.warn("Job execution queue is missing for job {}", job);
+            logger.warn("Memory queue is missing for job {}", job);
             return;
         }
 
@@ -451,4 +451,20 @@ public class JobEngine implements Serializable {
             priorityJobExecutions.get(job.getId()).clear();
         }
     }
+
+    public void removeFromMemoryQueue(JobExecution jobExecution) {
+
+        Long jobId = jobExecution.getJobId();
+
+        if (runningJobExecutions.containsKey(jobId) && runningJobExecutions.get(jobId).contains(jobExecution)) {
+            logger.warn("Can't remove running job execution from memory queue: {}", jobExecution);
+
+        } else if (jobExecutions.containsKey(jobId) && jobExecutions.get(jobId).remove(jobExecution)) {
+            logger.info("Removed from memory queue: {}", jobExecution);
+
+        } else if (priorityJobExecutions.containsKey(jobId) && priorityJobExecutions.get(jobId).remove(jobExecution)) {
+            logger.info("Removed from priority memory queue: {}", jobExecution);
+        }
+    }
+
 }
