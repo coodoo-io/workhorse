@@ -19,7 +19,7 @@ public class JobExecutionViewDTO extends RevisionDatesEntityDTO {
     public JobType jobType;
     public JobStatus jobStatus;
     public int jobThreads;
-    public int jobMaxFails;
+    public int jobFailRetries;
     public JobExecutionStatus status;
     public LocalDateTime startedAt;
     public LocalDateTime endedAt;
@@ -45,7 +45,7 @@ public class JobExecutionViewDTO extends RevisionDatesEntityDTO {
         this.jobType = jobExecutionView.getJobType();
         this.jobStatus = jobExecutionView.getJobStatus();
         this.jobThreads = jobExecutionView.getJobThreads();
-        this.jobMaxFails = jobExecutionView.getJobFailRetries();
+        this.jobFailRetries = jobExecutionView.getJobFailRetries();
         this.status = jobExecutionView.getStatus();
         this.startedAt = jobExecutionView.getStartedAt();
         this.endedAt = jobExecutionView.getEndedAt();
