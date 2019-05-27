@@ -27,7 +27,7 @@ import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
                 @NamedQuery(name = "Job.getByName", query = "SELECT job FROM Job job WHERE job.name=:name"),
                 @NamedQuery(name = "Job.getByWorkerClassName", query = "SELECT job FROM Job job WHERE job.workerClassName=:workerClassName"),
                 @NamedQuery(name = "Job.getAllByStatus", query = "SELECT job FROM Job job WHERE job.status=:status"),
-
+                @NamedQuery(name = "Job.countAllByStatus", query = "SELECT COUNT(job) FROM Job job WHERE job.status=:status"),
                 @NamedQuery(name = "Job.getAllScheduled",
                                 query = "SELECT job FROM Job job WHERE job.type=io.coodoo.workhorse.jobengine.entity.JobType.SCHEDULED AND job.schedule IS NOT NULL")
 
@@ -296,6 +296,25 @@ public class Job extends RevisionDatesOccEntity {
     public static List<Job> getAllScheduled(EntityManager entityManager) {
         Query query = entityManager.createNamedQuery("Job.getAllScheduled");
         return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'Job.countAllByStatus' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param status the status
+     * @return the result
+     */
+    public static Long countAllByStatus(EntityManager entityManager, JobStatus status) {
+        Query query = entityManager.createNamedQuery("Job.countAllByStatus");
+        query = query.setParameter("status", status);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (Long) results.get(0);
     }
 
 }

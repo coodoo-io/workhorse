@@ -6,6 +6,23 @@
 ### BREAKING CHANGES
 -->
 
+<a name="1.3.2"></a>
+
+## 1.3.2 (2019-XX-XX)
+
+### Features
+
+* 
+
+### BREAKING CHANGES
+
+* 
+
+### Bug Fixes
+
+* 
+
+
 <a name="1.3.1"></a>
 
 ## 1.3.1 (2019-05-15)

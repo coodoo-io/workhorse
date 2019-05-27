@@ -1,4 +1,7 @@
 
+-- TODO: jobengine_job_count_view
+-- TODO: jobengine_execution_view
+
 CREATE SEQUENCE jobengine_job_id_seq
     START WITH 1
     INCREMENT BY 1

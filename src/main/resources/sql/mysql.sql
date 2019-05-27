@@ -50,3 +50,40 @@ CREATE TABLE jobengine_execution (
   KEY idx_jobengine_job_execution__batch_id_status (batch_id,status),
   CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+CREATE VIEW jobengine_execution_view AS
+SELECT ex.id,
+  ex.job_id,
+  job.name AS job_name,
+  job.description AS job_description,
+  job.type AS job_type,
+  job.status AS job_status,
+  job.fail_retries AS job_fail_retries,
+  job.threads AS job_threads,
+  ex.status,
+  ex.started_at,
+  ex.ended_at,
+  ex.priority,
+  ex.maturity,
+  ex.batch_id,
+  ex.chain_id,
+  ex.chain_previous_execution_id,
+  ex.duration,
+  ex.parameters,
+  ex.fail_retry,
+  ex.fail_retry_execution_id,
+  ex.fail_message,
+  ex.updated_at,
+  ex.created_at
+FROM jobengine_execution ex
+LEFT JOIN jobengine_job job ON ex.job_id = job.id;
+
+CREATE VIEW jobengine_job_count_view AS
+SELECT 
+	j.*,
+	COUNT(*) total,
+    SUM(CASE WHEN e.status = 'QUEUED'   THEN 1 ELSE 0 END) queued,
+    SUM(CASE WHEN e.status = 'RUNNING'  THEN 1 ELSE 0 END) running
+FROM jobengine_job j
+LEFT OUTER JOIN jobengine_execution e ON j.id = e.job_id
+GROUP BY j.id;
