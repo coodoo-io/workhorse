@@ -11,7 +11,7 @@
  *
  * Note: rewritten to standard Java 8 DateTime by zemiak (c) 2016
  */
-package io.coodoo.workhorse.jobengine.control;
+package io.coodoo.workhorse.util;
 
 import java.time.DayOfWeek;
 import java.time.Duration;

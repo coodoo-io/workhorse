@@ -19,7 +19,6 @@ import io.coodoo.framework.listing.boundary.ListingParameters;
 import io.coodoo.framework.listing.boundary.ListingResult;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
-import io.coodoo.workhorse.jobengine.control.CronExpression;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
 import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
@@ -36,6 +35,7 @@ import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.JobType;
+import io.coodoo.workhorse.util.CronExpression;
 
 /**
  * Provides basically CRUD and management functionality
@@ -413,6 +413,10 @@ public class JobEngineService {
         return Listing.getListingResult(entityManager, JobCountView.class, listingParameters);
     }
 
+    /**
+     * @deprecated to heavy!
+     */
+    @Deprecated
     public ListingResult<JobExecution> listJobExecutions(ListingParameters listingParameters) {
         return Listing.getListingResult(entityManager, JobExecution.class, listingParameters);
     }

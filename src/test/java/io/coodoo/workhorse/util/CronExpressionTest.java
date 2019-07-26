@@ -9,7 +9,7 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-package io.coodoo.workhorse.jobengine.control;
+package io.coodoo.workhorse.util;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -23,10 +23,11 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import io.coodoo.workhorse.jobengine.control.CronExpression.CronFieldType;
-import io.coodoo.workhorse.jobengine.control.CronExpression.DayOfMonthField;
-import io.coodoo.workhorse.jobengine.control.CronExpression.DayOfWeekField;
-import io.coodoo.workhorse.jobengine.control.CronExpression.SimpleField;
+import io.coodoo.workhorse.util.CronExpression;
+import io.coodoo.workhorse.util.CronExpression.CronFieldType;
+import io.coodoo.workhorse.util.CronExpression.DayOfMonthField;
+import io.coodoo.workhorse.util.CronExpression.DayOfWeekField;
+import io.coodoo.workhorse.util.CronExpression.SimpleField;
 
 public class CronExpressionTest {
 
