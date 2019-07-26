@@ -284,6 +284,10 @@ public class JobEngineController {
     @Asynchronous
     public void huntJobExecutionZombies() {
 
+        if (JobEngineConfig.ZOMBIE_RECOGNITION_TIME <= 0) {
+            return;
+        }
+
         LocalDateTime time = JobEngineUtil.timestamp().minusMinutes(JobEngineConfig.ZOMBIE_RECOGNITION_TIME);
         List<JobExecution> zombies = JobExecution.findZombies(entityManager, time);
 

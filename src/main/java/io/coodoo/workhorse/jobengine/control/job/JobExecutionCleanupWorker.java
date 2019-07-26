@@ -24,7 +24,7 @@ import io.coodoo.workhorse.jobengine.entity.Job;
  */
 @RequestScoped
 @SystemJob
-@InitialJobConfig(name = "Job Execution Cleanup", schedule = "0 17 4 * * *", failRetries = 1, description = "Deletes old job executions from the database")
+@InitialJobConfig(name = "Job Execution Cleanup", schedule = "0 0 3 * * *", failRetries = 1, description = "Deletes old job executions from the database")
 public class JobExecutionCleanupWorker extends JobWorker {
 
     private final Logger logger = LoggerFactory.getLogger(JobExecutionCleanupWorker.class);
@@ -55,7 +55,6 @@ public class JobExecutionCleanupWorker extends JobWorker {
                 logInfo(logger, String.format("      - |    - | %6d | %s", job.getId(), job.getName()));
             }
         }
-
         logInfo(logger, "Deleted " + deletedSum + " job executions");
     }
 }

@@ -37,7 +37,7 @@ public final class JobEngineConfig {
     public static int JOB_QUEUE_MIN = 100;
 
     /**
-     * A zombie is an execution that is stuck in status {@link JobExecutionStatus#RUNNING} for this amount of minutes
+     * A zombie is an execution that is stuck in status {@link JobExecutionStatus#RUNNING} for this amount of minutes (if set to 0 there the hunt is off)
      */
     public static int ZOMBIE_RECOGNITION_TIME = 120;
 

@@ -12,7 +12,7 @@
 
 ### Features
 
-* 
+* The zombie cure mechanism can be deactivated: `JobEngineConfig.ZOMBIE_RECOGNITION_TIME = 0`
 
 ### BREAKING CHANGES
 
