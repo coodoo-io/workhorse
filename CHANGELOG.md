@@ -12,12 +12,14 @@
 
 ### Features
 
+* A REST-API to support the brand new UI! Yes it comes with many dependencies and some ugly database stuff, but it is finally here! We will clean up this mess in the future we promise...
 * The zombie cure mechanism can be deactivated: `JobEngineConfig.ZOMBIE_RECOGNITION_TIME = 0`
 
 ### BREAKING CHANGES
 
 * Removed the `type` attribute from the job since it is not necessary at all.
 * Removed all deprecated stuff: `@JobConfig`, `@JobScheduleConfig`, `JobEngineService.listJobExecutions()` & `BaseJobWorker.scheduledJobExecutionCreation()`
+* Some more [database stuff](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql) is needed
 
 ### Bug Fixes
 
