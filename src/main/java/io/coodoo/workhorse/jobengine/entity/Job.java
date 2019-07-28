@@ -29,8 +29,7 @@ import io.coodoo.framework.listing.boundary.annotation.ListingFilterAsString;
                 @NamedQuery(name = "Job.getByWorkerClassName", query = "SELECT job FROM Job job WHERE job.workerClassName=:workerClassName"),
                 @NamedQuery(name = "Job.getAllByStatus", query = "SELECT job FROM Job job WHERE job.status=:status"),
                 @NamedQuery(name = "Job.countAllByStatus", query = "SELECT COUNT(job) FROM Job job WHERE job.status=:status"),
-                @NamedQuery(name = "Job.getAllScheduled",
-                                query = "SELECT job FROM Job job WHERE job.type=io.coodoo.workhorse.jobengine.entity.JobType.SCHEDULED AND job.schedule IS NOT NULL")
+                @NamedQuery(name = "Job.getAllScheduled", query = "SELECT job FROM Job job WHERE job.schedule IS NOT NULL")
 
 })
 public class Job extends RevisionDatesOccEntity {
@@ -289,18 +288,6 @@ public class Job extends RevisionDatesOccEntity {
     }
 
     /**
-     * Executes the query 'Job.getAllScheduled' returning a list of result objects.
-     *
-     * @param entityManager the entityManager
-     * @return List of result objects
-     */
-    @SuppressWarnings("unchecked")
-    public static List<Job> getAllScheduled(EntityManager entityManager) {
-        Query query = entityManager.createNamedQuery("Job.getAllScheduled");
-        return query.getResultList();
-    }
-
-    /**
      * Executes the query 'Job.countAllByStatus' returning one/the first object or null if nothing has been found.
      *
      * @param entityManager the entityManager
@@ -317,6 +304,18 @@ public class Job extends RevisionDatesOccEntity {
             return null;
         }
         return (Long) results.get(0);
+    }
+
+    /**
+     * Executes the query 'Job.getAllScheduled' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<Job> getAllScheduled(EntityManager entityManager) {
+        Query query = entityManager.createNamedQuery("Job.getAllScheduled");
+        return query.getResultList();
     }
 
 }

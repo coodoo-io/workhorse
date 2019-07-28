@@ -20,7 +20,7 @@
 
 ### Bug Fixes
 
-* 
+* Made `JobExecutionCleanupWorker` finally doing his job!
 
 
 <a name="1.3.1"></a>
