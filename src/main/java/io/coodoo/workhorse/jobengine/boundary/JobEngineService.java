@@ -411,14 +411,6 @@ public class JobEngineService {
         return Listing.getListingResult(entityManager, JobCountView.class, listingParameters);
     }
 
-    /**
-     * @deprecated to heavy!
-     */
-    @Deprecated
-    public ListingResult<JobExecution> listJobExecutions(ListingParameters listingParameters) {
-        return Listing.getListingResult(entityManager, JobExecution.class, listingParameters);
-    }
-
     public ListingResult<JobExecutionView> listJobExecutionViews(ListingParameters listingParameters) {
         return Listing.getListingResult(entityManager, JobExecutionView.class, listingParameters);
     }

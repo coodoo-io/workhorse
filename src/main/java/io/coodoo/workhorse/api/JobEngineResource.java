@@ -36,7 +36,6 @@ import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobCountView;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
-import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
@@ -126,16 +125,6 @@ public class JobEngineResource {
         List<JobCountViewDTO> results = jobsListing.getResults().stream().map(JobCountViewDTO::new).collect(Collectors.toList());
 
         return new ListingResult<JobCountViewDTO>(results, jobsListing.getMetadata());
-    }
-
-    @GET
-    @Path("/executions")
-    public ListingResult<JobExecutionDTO> getJobExecutions(@BeanParam ListingParameters listingParameters) {
-
-        ListingResult<JobExecution> jobsListing = jobEngineService.listJobExecutions(listingParameters);;
-        List<JobExecutionDTO> results = jobsListing.getResults().stream().map(JobExecutionDTO::new).collect(Collectors.toList());
-
-        return new ListingResult<JobExecutionDTO>(results, jobsListing.getMetadata());
     }
 
     @GET

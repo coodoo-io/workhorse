@@ -17,6 +17,7 @@
 ### BREAKING CHANGES
 
 * Removed the `type` attribute from the job since it is not necessary at all.
+* Removed all deprecated stuff: `@JobConfig`, `@JobScheduleConfig`, `JobEngineService.listJobExecutions()` & `BaseJobWorker.scheduledJobExecutionCreation()`
 
 ### Bug Fixes
 

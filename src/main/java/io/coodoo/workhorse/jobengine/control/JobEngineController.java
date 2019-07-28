@@ -17,9 +17,7 @@ import org.slf4j.LoggerFactory;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
-import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
-import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
 import io.coodoo.workhorse.jobengine.control.job.JobExecutionCleanupWorker;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
@@ -115,27 +113,6 @@ public class JobEngineController {
             job.setRetryDelay(initialJobConfig.retryDelay());
             job.setDaysUntilCleanUp(initialJobConfig.daysUntilCleanUp());
             job.setUniqueInQueue(initialJobConfig.uniqueInQueue());
-
-        } else if (workerClass.isAnnotationPresent(JobConfig.class)) {
-
-            // Use initial worker informations from annotation if available
-            JobConfig jobConfig = workerClass.getAnnotation(JobConfig.class);
-            job.setName(jobConfig.name().isEmpty() ? workerClass.getSimpleName() : jobConfig.name());
-            job.setDescription(jobConfig.description().isEmpty() ? null : jobConfig.description());
-            job.setWorkerClassName(workerClass.getName());
-            job.setStatus(jobConfig.status());
-            job.setThreads(jobConfig.threads());
-            job.setFailRetries(jobConfig.failRetries());
-            job.setRetryDelay(jobConfig.retryDelay());
-            job.setDaysUntilCleanUp(jobConfig.daysUntilCleanUp());
-            job.setUniqueInQueue(jobConfig.uniqueInQueue());
-
-            if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {
-                JobScheduleConfig jobScheduleConfig = workerClass.getAnnotation(JobScheduleConfig.class);
-                job.setSchedule(jobScheduleConfig.second() + " " + jobScheduleConfig.minute() + " " + jobScheduleConfig.hour() + " "
-                                + jobScheduleConfig.dayOfMonth() + " " + jobScheduleConfig.month() + " " + jobScheduleConfig.dayOfWeek() + " "
-                                + jobScheduleConfig.year());
-            }
 
         } else {
 

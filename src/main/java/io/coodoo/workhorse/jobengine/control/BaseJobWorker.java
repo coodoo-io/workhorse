@@ -46,8 +46,7 @@ public abstract class BaseJobWorker {
      * a {@link JobExecution} without parameters or specific settings.</i>
      */
     public void onSchedule() {
-        // TODO: get rid of this deprecated long ass named method
-        scheduledJobExecutionCreation();
+        createJobExecution();
     }
 
     /**
@@ -304,17 +303,6 @@ public abstract class BaseJobWorker {
      */
     public JobContext getJobContext() {
         return jobContext;
-    }
-
-    /**
-     * This method will be called by the schedule timer in order to check if there is stuff to do.<br>
-     * Its goal is creating {@link JobExecution} objects that gets added to the job engine to be executed.
-     * 
-     * @deprecated use {@link #onSchedule()} instead
-     */
-    @Deprecated // TODO "OnSchedule" umsetzen
-    public void scheduledJobExecutionCreation() {
-        createJobExecution();
     }
 
     /**
