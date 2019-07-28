@@ -6,9 +6,9 @@
 ### BREAKING CHANGES
 -->
 
-<a name="1.3.2"></a>
+<a name="1.4.0"></a>
 
-## 1.3.2 (2019-XX-XX)
+## 1.4.0 (2019-07-28)
 
 ### Features
 
@@ -16,7 +16,7 @@
 
 ### BREAKING CHANGES
 
-* 
+* Removed the `type` attribute from the job since it is not necessary at all.
 
 ### Bug Fixes
 
