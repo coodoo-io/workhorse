@@ -50,10 +50,6 @@ public class Job extends RevisionDatesOccEntity {
     @Column(name = "worker_class_name")
     private String workerClassName;
 
-    @Column(name = "type")
-    @Enumerated(EnumType.STRING)
-    private JobType type;
-
     @Column(name = "schedule")
     private String schedule;
 
@@ -109,14 +105,6 @@ public class Job extends RevisionDatesOccEntity {
 
     public void setWorkerClassName(String workerClassName) {
         this.workerClassName = workerClassName;
-    }
-
-    public JobType getType() {
-        return type;
-    }
-
-    public void setType(JobType type) {
-        this.type = type;
     }
 
     public String getSchedule() {
@@ -197,8 +185,6 @@ public class Job extends RevisionDatesOccEntity {
         builder.append(tags != null ? tags.subList(0, Math.min(tags.size(), maxLen)) : null);
         builder.append(", workerClassName=");
         builder.append(workerClassName);
-        builder.append(", type=");
-        builder.append(type);
         builder.append(", schedule=");
         builder.append(schedule);
         builder.append(", status=");

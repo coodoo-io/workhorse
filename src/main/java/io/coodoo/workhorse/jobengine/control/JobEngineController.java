@@ -20,13 +20,11 @@ import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobScheduleConfig;
-import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.control.job.JobExecutionCleanupWorker;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.jobengine.entity.JobType;
 import io.coodoo.workhorse.jobengine.entity.StringListConverter;
 
 /**
@@ -106,13 +104,7 @@ public class JobEngineController {
                 job.setTags(stringListConverter.convertToEntityAttribute(initialJobConfig.tags()));
             }
             job.setWorkerClassName(workerClass.getName());
-
-            if (initialJobConfig.schedule().isEmpty()) {
-                job.setType(JobType.ON_DEMAND);
-            } else {
-                job.setType(JobType.SCHEDULED);
-                job.setSchedule(initialJobConfig.schedule());
-            }
+            job.setSchedule(initialJobConfig.schedule());
             job.setStatus(initialJobConfig.status());
             job.setThreads(initialJobConfig.threads());
 
@@ -131,7 +123,6 @@ public class JobEngineController {
             job.setName(jobConfig.name().isEmpty() ? workerClass.getSimpleName() : jobConfig.name());
             job.setDescription(jobConfig.description().isEmpty() ? null : jobConfig.description());
             job.setWorkerClassName(workerClass.getName());
-            job.setType(JobType.ON_DEMAND);
             job.setStatus(jobConfig.status());
             job.setThreads(jobConfig.threads());
             job.setFailRetries(jobConfig.failRetries());
@@ -141,7 +132,6 @@ public class JobEngineController {
 
             if (workerClass.isAnnotationPresent(JobScheduleConfig.class)) {
                 JobScheduleConfig jobScheduleConfig = workerClass.getAnnotation(JobScheduleConfig.class);
-                job.setType(JobType.SCHEDULED);
                 job.setSchedule(jobScheduleConfig.second() + " " + jobScheduleConfig.minute() + " " + jobScheduleConfig.hour() + " "
                                 + jobScheduleConfig.dayOfMonth() + " " + jobScheduleConfig.month() + " " + jobScheduleConfig.dayOfWeek() + " "
                                 + jobScheduleConfig.year());
@@ -152,18 +142,12 @@ public class JobEngineController {
             // Use initial default worker informations
             job.setName(workerClass.getSimpleName());
             job.setWorkerClassName(workerClass.getName());
-            job.setType(JobType.ON_DEMAND);
             job.setStatus(JobStatus.ACTIVE);
             job.setThreads(InitialJobConfig.JOB_CONFIG_THREADS);
             job.setFailRetries(InitialJobConfig.JOB_CONFIG_FAIL_RETRIES);
             job.setRetryDelay(InitialJobConfig.JOB_CONFIG_RETRY_DELAY);
             job.setDaysUntilCleanUp(InitialJobConfig.JOB_CONFIG_DAYS_UNTIL_CLEANUP);
             job.setUniqueInQueue(InitialJobConfig.JOB_CONFIG_UNIQUE_IN_QUEUE);
-        }
-
-        if (workerClass.isAnnotationPresent(SystemJob.class)) {
-            // maybe its one of ours...
-            job.setType(JobType.SYSTEM);
         }
 
         entityManager.persist(job);

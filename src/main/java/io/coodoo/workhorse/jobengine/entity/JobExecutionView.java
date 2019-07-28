@@ -35,10 +35,6 @@ public class JobExecutionView extends RevisionDatesEntity {
     @Column(name = "job_description")
     private String jobDescription;
 
-    @Column(name = "job_type")
-    @Enumerated(EnumType.STRING)
-    private JobType jobType;
-
     @Column(name = "job_status")
     @Enumerated(EnumType.STRING)
     private JobStatus jobStatus;
@@ -111,14 +107,6 @@ public class JobExecutionView extends RevisionDatesEntity {
 
     public void setJobName(String jobName) {
         this.jobName = jobName;
-    }
-
-    public JobType getJobType() {
-        return jobType;
-    }
-
-    public void setJobType(JobType jobType) {
-        this.jobType = jobType;
     }
 
     public JobStatus getJobStatus() {

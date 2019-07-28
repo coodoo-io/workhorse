@@ -18,7 +18,6 @@ import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.jobengine.entity.JobType;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -39,8 +38,7 @@ public class JobScheduler {
 
     public void start(Job job) {
 
-        if ((JobType.SCHEDULED.equals(job.getType()) || JobType.SYSTEM.equals(job.getType())) && JobStatus.ACTIVE.equals(job.getStatus())
-                        && job.getSchedule() != null) {
+        if (JobStatus.ACTIVE.equals(job.getStatus()) && job.getSchedule() != null && !job.getSchedule().isEmpty()) {
 
             stop(job);
 

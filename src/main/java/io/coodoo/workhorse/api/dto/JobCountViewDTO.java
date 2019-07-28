@@ -6,7 +6,6 @@ import java.util.List;
 import io.coodoo.framework.jpa.boundary.entity.dto.RevisionDatesOccEntityDTO;
 import io.coodoo.workhorse.jobengine.entity.JobCountView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.jobengine.entity.JobType;
 
 public class JobCountViewDTO extends RevisionDatesOccEntityDTO {
 
@@ -14,7 +13,6 @@ public class JobCountViewDTO extends RevisionDatesOccEntityDTO {
     public String description;
     public List<String> tags = new ArrayList<>();
     public String workerClassName;
-    public JobType type;
     public String schedule;
     public JobStatus status;
     public int threads;
@@ -36,7 +34,6 @@ public class JobCountViewDTO extends RevisionDatesOccEntityDTO {
         this.description = jobCountView.getDescription();
         this.tags = jobCountView.getTags();
         this.workerClassName = jobCountView.getWorkerClassName();
-        this.type = jobCountView.getType();
         this.schedule = jobCountView.getSchedule();
         this.status = jobCountView.getStatus();
         this.threads = jobCountView.getThreads();

@@ -30,10 +30,6 @@ public class JobCountView extends RevisionDatesOccEntity {
     @Column(name = "worker_class_name")
     private String workerClassName;
 
-    @Column(name = "type")
-    @Enumerated(EnumType.STRING)
-    private JobType type;
-
     @Column(name = "schedule")
     private String schedule;
 
@@ -98,14 +94,6 @@ public class JobCountView extends RevisionDatesOccEntity {
 
     public void setWorkerClassName(String workerClassName) {
         this.workerClassName = workerClassName;
-    }
-
-    public JobType getType() {
-        return type;
-    }
-
-    public void setType(JobType type) {
-        this.type = type;
     }
 
     public String getSchedule() {

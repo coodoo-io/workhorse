@@ -34,7 +34,6 @@ import io.coodoo.workhorse.jobengine.entity.JobExecutionInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.jobengine.entity.JobType;
 import io.coodoo.workhorse.util.CronExpression;
 
 /**
@@ -155,8 +154,8 @@ public class JobEngineService {
         return Job.getAllScheduled(entityManager);
     }
 
-    public Job updateJob(Long jobId, String name, String description, List<String> tags, String workerClassName, JobType type, String schedule,
-                    JobStatus status, int threads, Integer maxPerMinute, int failRetries, int retryDelay, int daysUntilCleanUp, boolean uniqueInQueue) {
+    public Job updateJob(Long jobId, String name, String description, List<String> tags, String workerClassName, String schedule, JobStatus status, int threads,
+                    Integer maxPerMinute, int failRetries, int retryDelay, int daysUntilCleanUp, boolean uniqueInQueue) {
 
         Job job = getJobById(jobId);
 
@@ -167,7 +166,6 @@ public class JobEngineService {
         job.setDescription(description);
         job.setTags(tags);
         job.setWorkerClassName(workerClassName);
-        job.setType(type);
         job.setSchedule(schedule);
         job.setStatus(status);
         job.setThreads(threads);

@@ -6,7 +6,6 @@ import io.coodoo.framework.jpa.boundary.entity.dto.RevisionDatesEntityDTO;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.jobengine.entity.JobType;
 
 public class JobExecutionViewDTO extends RevisionDatesEntityDTO {
 
@@ -16,7 +15,6 @@ public class JobExecutionViewDTO extends RevisionDatesEntityDTO {
     public Long jobId;
     public String jobName;
     public String jobDescription;
-    public JobType jobType;
     public JobStatus jobStatus;
     public int jobThreads;
     public int jobFailRetries;
@@ -42,7 +40,6 @@ public class JobExecutionViewDTO extends RevisionDatesEntityDTO {
         this.jobId = jobExecutionView.getJobId();
         this.jobName = jobExecutionView.getJobName();
         this.jobDescription = jobExecutionView.getJobDescription();
-        this.jobType = jobExecutionView.getJobType();
         this.jobStatus = jobExecutionView.getJobStatus();
         this.jobThreads = jobExecutionView.getJobThreads();
         this.jobFailRetries = jobExecutionView.getJobFailRetries();

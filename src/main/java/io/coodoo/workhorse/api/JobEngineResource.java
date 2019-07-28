@@ -173,9 +173,8 @@ public class JobEngineResource {
     @Path("/jobs/{jobId}")
     public JobDTO updateJob(@PathParam("jobId") Long jobId, JobDTO jobDto) {
 
-        Job job = jobEngineService.updateJob(jobId, jobDto.name, jobDto.description, jobDto.tags, jobDto.workerClassName, jobDto.type, jobDto.schedule,
-                        jobDto.status, jobDto.threads, jobDto.maxPerMinute, jobDto.failRetries, jobDto.retryDelay, jobDto.daysUntilCleanUp,
-                        jobDto.uniqueInQueue);
+        Job job = jobEngineService.updateJob(jobId, jobDto.name, jobDto.description, jobDto.tags, jobDto.workerClassName, jobDto.schedule, jobDto.status,
+                        jobDto.threads, jobDto.maxPerMinute, jobDto.failRetries, jobDto.retryDelay, jobDto.daysUntilCleanUp, jobDto.uniqueInQueue);
 
         return new JobDTO(job);
     }

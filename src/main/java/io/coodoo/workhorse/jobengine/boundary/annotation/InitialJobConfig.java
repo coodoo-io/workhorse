@@ -9,7 +9,6 @@ import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.jobengine.entity.JobType;
 
 /**
  * <strong>Initial job configuration.</strong> An new {@link JobWorker} or {@link JobWorkerWith} implementation will be detected while initialization and gets
@@ -49,7 +48,7 @@ public @interface InitialJobConfig {
     JobStatus status() default JobStatus.ACTIVE;
 
     /**
-     * @return Unix-like CRON expressions to provide scheduled job executions. If this is set, the job will be automatically of type {@link JobType#SCHEDULED}
+     * @return Unix-like CRON expressions to provide scheduled job executions.
      */
     String schedule() default "";
 

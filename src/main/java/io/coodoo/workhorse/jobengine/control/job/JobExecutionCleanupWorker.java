@@ -12,7 +12,6 @@ import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
-import io.coodoo.workhorse.jobengine.control.annotation.SystemJob;
 import io.coodoo.workhorse.jobengine.entity.Job;
 
 /**
@@ -23,7 +22,6 @@ import io.coodoo.workhorse.jobengine.entity.Job;
  * @author coodoo GmbH (coodoo.io)
  */
 @RequestScoped
-@SystemJob
 @InitialJobConfig(name = "Job Execution Cleanup", schedule = "0 0 3 * * *", failRetries = 1, description = "Deletes old job executions from the database")
 public class JobExecutionCleanupWorker extends JobWorker {
 

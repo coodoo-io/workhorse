@@ -15,7 +15,6 @@ CREATE TABLE jobengine_job (
   description varchar(2028) DEFAULT NULL,
   tags varchar(1024) DEFAULT NULL,
   worker_class_name varchar(512) NOT NULL,
-  type varchar(32) NOT NULL DEFAULT 'ON_DEMAND',
   schedule varchar(128) DEFAULT NULL,
   status varchar(32) NOT NULL DEFAULT 'ACTIVE',
   threads int NOT NULL DEFAULT '1',
