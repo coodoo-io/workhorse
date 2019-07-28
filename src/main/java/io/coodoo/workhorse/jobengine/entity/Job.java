@@ -15,6 +15,7 @@ import javax.persistence.Query;
 import javax.persistence.Table;
 
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
+import io.coodoo.framework.listing.boundary.annotation.ListingFilterAsString;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -44,6 +45,7 @@ public class Job extends RevisionDatesOccEntity {
 
     @Column(name = "tags")
     @Convert(converter = StringListConverter.class)
+    @ListingFilterAsString
     private List<String> tags = new ArrayList<>();
 
     @Column(name = "worker_class_name")

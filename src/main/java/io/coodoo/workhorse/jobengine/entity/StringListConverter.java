@@ -2,6 +2,7 @@ package io.coodoo.workhorse.jobengine.entity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.AttributeConverter;
@@ -17,6 +18,10 @@ public class StringListConverter implements AttributeConverter<List<String>, Str
         if (list == null) {
             return null;
         }
+        removeEmptyValues(list);
+        if (list.isEmpty()) {
+            return null;
+        }
         return String.join(DELIMITER, list);
     }
 
@@ -25,7 +30,13 @@ public class StringListConverter implements AttributeConverter<List<String>, Str
         if (joined == null) {
             return new ArrayList<>();
         }
-        return new ArrayList<>(Arrays.asList(joined.split(DELIMITER)));
+        List<String> list = new ArrayList<>(Arrays.asList(joined.split(DELIMITER)));
+        removeEmptyValues(list);
+        return list;
     }
 
+    private void removeEmptyValues(List<String> list) {
+        list.removeAll(Collections.singleton(null));
+        list.removeAll(Collections.singleton(""));
+    }
 }
