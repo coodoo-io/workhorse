@@ -283,12 +283,15 @@ public class JobEngineResource {
 
         List<JobScheduleExecutionTimeDTO> scheduledTimes = new ArrayList<>();
         for (Job job : jobEngineService.getAllScheduledJobs()) {
-            JobScheduleExecutionTimeDTO dto = new JobScheduleExecutionTimeDTO();
-            dto.jobId = job.getId();
-            dto.jobName = job.getName();
-            dto.schedule = job.getSchedule();
-            dto.executions = jobEngineService.getScheduledTimes(job.getSchedule(), startTime, endTime);
-            scheduledTimes.add(dto);
+            try {
+                JobScheduleExecutionTimeDTO dto = new JobScheduleExecutionTimeDTO();
+                dto.jobId = job.getId();
+                dto.jobName = job.getName();
+                dto.schedule = job.getSchedule();
+                dto.executions = jobEngineService.getScheduledTimes(job.getSchedule(), startTime, endTime);
+                scheduledTimes.add(dto);
+            } catch (RuntimeException e) {
+            }
         }
         return scheduledTimes;
     }

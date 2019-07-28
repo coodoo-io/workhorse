@@ -150,7 +150,7 @@ public class CronExpression {
 
     public CronExpression(final String expr, final boolean withSeconds) {
         if (expr == null) {
-            throw new IllegalArgumentException("expr is null"); //$NON-NLS-1$
+            throw new RuntimeException("expr is null"); //$NON-NLS-1$
         }
 
         this.expr = expr;
@@ -158,7 +158,7 @@ public class CronExpression {
         final int expectedParts = withSeconds ? 6 : 5;
         final String[] parts = expr.split("\\s+"); //$NON-NLS-1$
         if (parts.length != expectedParts) {
-            throw new IllegalArgumentException(String.format("Invalid cron expression [%s], expected %s field, got %s", expr, expectedParts, parts.length));
+            throw new RuntimeException(String.format("Invalid cron expression [%s], expected %s field, got %s", expr, expectedParts, parts.length));
         }
 
         int ix = withSeconds ? 1 : 0;
@@ -240,7 +240,7 @@ public class CronExpression {
 
     private static void checkIfDateTimeBarrierIsReached(LocalDateTime nextTime, LocalDateTime dateTimeBarrier) {
         if (nextTime.isAfter(dateTimeBarrier)) {
-            throw new IllegalArgumentException("No next execution time could be determined that is before the limit of " + dateTimeBarrier);
+            throw new RuntimeException("No next execution time could be determined that is before the limit of " + dateTimeBarrier);
         }
     }
 
@@ -280,7 +280,7 @@ public class CronExpression {
             for (String rangePart : rangeParts) {
                 Matcher m = CRON_FIELD_REGEXP.matcher(rangePart);
                 if (!m.matches()) {
-                    throw new IllegalArgumentException("Invalid cron field '" + rangePart + "' for field [" + fieldType + "]");
+                    throw new RuntimeException("Invalid cron field '" + rangePart + "' for field [" + fieldType + "]");
                 }
                 String startNummer = m.group("start");
                 String modifier = m.group("mod");
@@ -310,7 +310,7 @@ public class CronExpression {
                 } else if (m.group("last") != null) {
                     part.modifier = m.group("last");
                 } else {
-                    throw new IllegalArgumentException("Invalid cron part: " + rangePart);
+                    throw new RuntimeException("Invalid cron part: " + rangePart);
                 }
 
                 if (increment != null) {
@@ -327,18 +327,17 @@ public class CronExpression {
 
         protected void validatePart(FieldPart part) {
             if (part.modifier != null) {
-                throw new IllegalArgumentException(String.format("Invalid modifier [%s]", part.modifier));
+                throw new RuntimeException(String.format("Invalid modifier [%s]", part.modifier));
             } else if (part.incrementModifier != null && !"/".equals(part.incrementModifier)) {
-                throw new IllegalArgumentException(String.format("Invalid increment modifier [%s]", part.incrementModifier));
+                throw new RuntimeException(String.format("Invalid increment modifier [%s]", part.incrementModifier));
             }
         }
 
         private void validateRange(FieldPart part) {
             if ((part.from != null && part.from < fieldType.from) || (part.to != null && part.to > fieldType.to)) {
-                throw new IllegalArgumentException(
-                                String.format("Invalid interval [%s-%s], must be %s<=_<=%s", part.from, part.to, fieldType.from, fieldType.to));
+                throw new RuntimeException(String.format("Invalid interval [%s-%s], must be %s<=_<=%s", part.from, part.to, fieldType.from, fieldType.to));
             } else if (part.from != null && part.to != null && part.from > part.to) {
-                throw new IllegalArgumentException(String.format(
+                throw new RuntimeException(String.format(
                                 "Invalid interval [%s-%s].  Rolling periods are not supported (ex. 5-1, only 1-5) since this won't give a deterministic result. Must be %s<=_<=%s",
                                 part.from, part.to, fieldType.from, fieldType.to));
             }
@@ -415,9 +414,9 @@ public class CronExpression {
         @Override
         protected void validatePart(FieldPart part) {
             if (part.modifier != null && Arrays.asList("L", "?").indexOf(part.modifier) == -1) {
-                throw new IllegalArgumentException(String.format("Invalid modifier [%s]", part.modifier));
+                throw new RuntimeException(String.format("Invalid modifier [%s]", part.modifier));
             } else if (part.incrementModifier != null && Arrays.asList("/", "#").indexOf(part.incrementModifier) == -1) {
-                throw new IllegalArgumentException(String.format("Invalid increment modifier [%s]", part.incrementModifier));
+                throw new RuntimeException(String.format("Invalid increment modifier [%s]", part.incrementModifier));
             }
         }
     }
@@ -452,9 +451,9 @@ public class CronExpression {
         @Override
         protected void validatePart(FieldPart part) {
             if (part.modifier != null && Arrays.asList("L", "W", "?").indexOf(part.modifier) == -1) {
-                throw new IllegalArgumentException(String.format("Invalid modifier [%s]", part.modifier));
+                throw new RuntimeException(String.format("Invalid modifier [%s]", part.modifier));
             } else if (part.incrementModifier != null && !"/".equals(part.incrementModifier)) {
-                throw new IllegalArgumentException(String.format("Invalid increment modifier [%s]", part.incrementModifier));
+                throw new RuntimeException(String.format("Invalid increment modifier [%s]", part.incrementModifier));
             }
         }
 

@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import io.coodoo.workhorse.util.CronExpression;
 import io.coodoo.workhorse.util.CronExpression.CronFieldType;
 import io.coodoo.workhorse.util.CronExpression.DayOfMonthField;
 import io.coodoo.workhorse.util.CronExpression.DayOfWeekField;
@@ -91,24 +90,24 @@ public class CronExpressionTest {
         assertTrue("day of month is ?", field.matches(LocalDateTime.now().toLocalDate()));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void shall_give_error_if_invalid_count_field() throws Exception {
         new CronExpression("* 3 *");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void shall_give_error_if_minute_field_ignored() throws Exception {
         SimpleField field = new SimpleField(CronFieldType.MINUTE, "?");
         field.matches(1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void shall_give_error_if_hour_field_ignored() throws Exception {
         SimpleField field = new SimpleField(CronFieldType.HOUR, "?");
         field.matches(1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void shall_give_error_if_month_field_ignored() throws Exception {
         SimpleField field = new SimpleField(CronFieldType.MONTH, "?");
         field.matches(1);
@@ -144,7 +143,7 @@ public class CronExpressionTest {
         assertTrue(cronExpr.nextTimeAfter(after).equals(expected));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_invalid_input() throws Exception {
         new CronExpression(null);
     }
@@ -250,12 +249,12 @@ public class CronExpressionTest {
         assertTrue(cronExpr.nextTimeAfter(after).equals(expected));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_second_invalid_range() throws Exception {
         new CronExpression("42-63 * * * * *");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_second_invalid_increment_modifier() throws Exception {
         new CronExpression("42#3 * * * * *");
     }
@@ -478,12 +477,12 @@ public class CronExpressionTest {
         assertTrue(cronExpr.nextTimeAfter(after).equals(expected));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_dayOfMonth_invalid_modifier() throws Exception {
         new CronExpression("0 0 0 9X * *");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_dayOfMonth_invalid_increment_modifier() throws Exception {
         new CronExpression("0 0 0 9#2 * *");
     }
@@ -545,7 +544,7 @@ public class CronExpressionTest {
         assertTrue(cronExpr.nextTimeAfter(after).equals(expected));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_month_invalid_modifier() throws Exception {
         new CronExpression("0 0 0 1 ? *");
     }
@@ -647,12 +646,12 @@ public class CronExpressionTest {
         assertTrue(new CronExpression("0 0 0 * * FRIL").nextTimeAfter(after).equals(expected));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_dayOfWeek_invalid_modifier() throws Exception {
         new CronExpression("0 0 0 * * 5W");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void check_dayOfWeek_invalid_increment_modifier() throws Exception {
         new CronExpression("0 0 0 * * 5?3");
     }
@@ -710,12 +709,12 @@ public class CronExpressionTest {
         assertTrue(new CronExpression("0 0 0 * * WED#5").nextTimeAfter(after).equals(expected)); // leapday
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void shall_not_not_support_rolling_period() throws Exception {
         new CronExpression("* * 5-1 * * *");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void non_existing_date_throws_exception() throws Exception {
         // Will check for the next 4 years - no 30th of February is found so a IAE is thrown.
         new CronExpression("* * * 30 2 *").nextTimeAfter(LocalDateTime.now());
@@ -731,22 +730,22 @@ public class CronExpressionTest {
         assertTrue(cronExpr.nextTimeAfter(after).equals(expected));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void test_one_year_barrier() throws Exception {
         LocalDateTime after = LocalDateTime.of(2012, 3, 1, 0, 0, 0, 0);
         LocalDateTime barrier = LocalDateTime.of(2013, 3, 1, 0, 0, 0, 0);
-        // The next leap year is 2016, so an IllegalArgumentException is expected.
+        // The next leap year is 2016, so an RuntimeException is expected.
         new CronExpression("* * * 29 2 *").nextTimeAfter(after, barrier);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void test_two_year_barrier() throws Exception {
         LocalDateTime after = LocalDateTime.of(2012, 3, 1, 0, 0, 0, 0);
-        // The next leap year is 2016, so an IllegalArgumentException is expected.
+        // The next leap year is 2016, so an RuntimeException is expected.
         new CronExpression("* * * 29 2 *").nextTimeAfter(after, 1000 * 60 * 60 * 24 * 356 * 2);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = RuntimeException.class)
     public void test_seconds_specified_but_should_be_omitted() throws Exception {
         CronExpression.createWithoutSeconds("* * * 29 2 *");
     }
