@@ -13,6 +13,7 @@ public class JobCountViewDTO extends RevisionDatesOccEntityDTO {
     public String description;
     public List<String> tags = new ArrayList<>();
     public String workerClassName;
+    public String parametersClassName;
     public String schedule;
     public JobStatus status;
     public int threads;
@@ -34,6 +35,7 @@ public class JobCountViewDTO extends RevisionDatesOccEntityDTO {
         this.description = jobCountView.getDescription();
         this.tags = jobCountView.getTags();
         this.workerClassName = jobCountView.getWorkerClassName();
+        this.parametersClassName = jobCountView.getParametersClassName();
         this.schedule = jobCountView.getSchedule();
         this.status = jobCountView.getStatus();
         this.threads = jobCountView.getThreads();

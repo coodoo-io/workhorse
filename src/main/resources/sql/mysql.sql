@@ -5,6 +5,7 @@ CREATE TABLE jobengine_job (
   description varchar(2028) COLLATE utf8_bin DEFAULT NULL,
   tags varchar(1024) COLLATE utf8_bin DEFAULT NULL,
   worker_class_name varchar(255) COLLATE utf8_bin NOT NULL,
+  parameters_class_name varchar(255) COLLATE utf8_bin DEFAULT NULL,
   schedule varchar(128) COLLATE utf8_bin DEFAULT NULL,
   status varchar(32) COLLATE utf8_bin NOT NULL DEFAULT 'ACTIVE',
   threads int(4) NOT NULL DEFAULT '1',

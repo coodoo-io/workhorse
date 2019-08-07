@@ -30,6 +30,9 @@ public class JobCountView extends RevisionDatesOccEntity {
     @Column(name = "worker_class_name")
     private String workerClassName;
 
+    @Column(name = "parameters_class_name")
+    private String parametersClassName;
+
     @Column(name = "schedule")
     private String schedule;
 
@@ -94,6 +97,14 @@ public class JobCountView extends RevisionDatesOccEntity {
 
     public void setWorkerClassName(String workerClassName) {
         this.workerClassName = workerClassName;
+    }
+
+    public String getParametersClassName() {
+        return parametersClassName;
+    }
+
+    public void setParametersClassName(String parametersClassName) {
+        this.parametersClassName = parametersClassName;
     }
 
     public String getSchedule() {

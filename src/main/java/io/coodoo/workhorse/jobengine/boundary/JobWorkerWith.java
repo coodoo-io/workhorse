@@ -1,6 +1,11 @@
 package io.coodoo.workhorse.jobengine.boundary;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -63,25 +68,42 @@ public abstract class JobWorkerWith<T> extends BaseJobWorker {
         return getParameters(jobExecution);
     }
 
-    private Class<?> getParametersClass() {
+    protected Class<?> getParametersClass() {
 
         if (parametersClass != null) {
             return parametersClass;
         }
-        try {
-            String className = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0].getTypeName();
+        Type type = getWorkerClassType();
+        parametersClass = type2Class(type);
+        return parametersClass;
+    }
 
-            Class<?> clazz = null;
-            if (className.startsWith(List.class.getName())) {
-                clazz = List.class;
-            } else {
-                clazz = Class.forName(className);
-            }
-            parametersClass = clazz;
-            return parametersClass;
+    public String getParametersClassName() {
+        return getWorkerClassType().getTypeName();
+    }
 
-        } catch (Exception e) {
-            throw new IllegalStateException("Class is not parametrized with generic type! Please use extends <> ");
+    private Type getWorkerClassType() {
+        return ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+
+    public static Class<?> type2Class(Type type) { // https://stackoverflow.com/a/48066001/4034100
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        } else if (type instanceof GenericArrayType) {
+            // having to create an array instance to get the class is kinda nasty
+            // but apparently this is a current limitation of java-reflection concerning array classes.
+            // E.g. T[] -> T -> Object.class if <T> or Number.class if <T extends Number & Comparable>
+            return Array.newInstance(type2Class(((GenericArrayType) type).getGenericComponentType()), 0).getClass();
+        } else if (type instanceof ParameterizedType) {
+            return type2Class(((ParameterizedType) type).getRawType()); // Eg. List<T> would return List.class
+        } else if (type instanceof TypeVariable) {
+            Type[] bounds = ((TypeVariable<?>) type).getBounds();
+            return bounds.length == 0 ? Object.class : type2Class(bounds[0]); // erasure is to the left-most bound.
+        } else if (type instanceof WildcardType) {
+            Type[] bounds = ((WildcardType) type).getUpperBounds();
+            return bounds.length == 0 ? Object.class : type2Class(bounds[0]); // erasure is to the left-most upper bound.
+        } else {
+            throw new UnsupportedOperationException("cannot handle type class: " + type.getClass());
         }
     }
 

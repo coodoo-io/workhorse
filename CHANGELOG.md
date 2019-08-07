@@ -14,6 +14,7 @@
 
 * A REST-API to support the brand new UI! Yes it comes with many dependencies and some ugly database stuff, but it is finally here! We will clean up this mess in the future we promise...
 * The zombie cure mechanism can be deactivated: `JobEngineConfig.ZOMBIE_RECOGNITION_TIME = 0`
+* Added the `parameters_class_name` attribute to the job
 
 ### BREAKING CHANGES
 

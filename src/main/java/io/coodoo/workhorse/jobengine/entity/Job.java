@@ -50,6 +50,9 @@ public class Job extends RevisionDatesOccEntity {
     @Column(name = "worker_class_name")
     private String workerClassName;
 
+    @Column(name = "parameters_class_name")
+    private String parametersClassName;
+
     @Column(name = "schedule")
     private String schedule;
 
@@ -105,6 +108,14 @@ public class Job extends RevisionDatesOccEntity {
 
     public void setWorkerClassName(String workerClassName) {
         this.workerClassName = workerClassName;
+    }
+
+    public String getParametersClassName() {
+        return parametersClassName;
+    }
+
+    public void setParametersClassName(String parametersClassName) {
+        this.parametersClassName = parametersClassName;
     }
 
     public String getSchedule() {
@@ -177,6 +188,10 @@ public class Job extends RevisionDatesOccEntity {
         StringBuilder builder = new StringBuilder();
         builder.append("Job [id=");
         builder.append(id);
+        builder.append(", createdAt=");
+        builder.append(createdAt);
+        builder.append(", updatedAt=");
+        builder.append(updatedAt);
         builder.append(", name=");
         builder.append(name);
         builder.append(", description=");
@@ -185,6 +200,8 @@ public class Job extends RevisionDatesOccEntity {
         builder.append(tags != null ? tags.subList(0, Math.min(tags.size(), maxLen)) : null);
         builder.append(", workerClassName=");
         builder.append(workerClassName);
+        builder.append(", parametersClassName=");
+        builder.append(parametersClassName);
         builder.append(", schedule=");
         builder.append(schedule);
         builder.append(", status=");
@@ -201,10 +218,6 @@ public class Job extends RevisionDatesOccEntity {
         builder.append(daysUntilCleanUp);
         builder.append(", uniqueInQueue=");
         builder.append(uniqueInQueue);
-        builder.append(", createdAt=");
-        builder.append(createdAt);
-        builder.append(", updatedAt=");
-        builder.append(updatedAt);
         builder.append("]");
         return builder.toString();
     }

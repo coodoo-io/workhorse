@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class MojoPojo {
+public class Pojo {
 
     public int i;
     public Integer io;
@@ -19,7 +19,7 @@ public class MojoPojo {
     public Date d;
     public LocalTime lt;
     public LocalDateTime ldt;
-    public MojoPojo mp;
+    public Pojo mp;
     public List<String> ls;
     public Map<Long, String> mls;
     public int[] ia;
@@ -75,7 +75,7 @@ public class MojoPojo {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        MojoPojo other = (MojoPojo) obj;
+        Pojo other = (Pojo) obj;
         if (b != other.b)
             return false;
         if (bo == null) {

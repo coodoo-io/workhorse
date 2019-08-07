@@ -2,6 +2,7 @@ package io.coodoo.workhorse.jobengine.control;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.job.JobExecutionCleanupWorker;
@@ -77,11 +79,23 @@ public class JobEngineController {
 
                     setJobStatus(job.getId(), JobStatus.INACTIVE);
                     logger.error("Found JobWorker class and put it in status INACTIVE for {}", job);
+                } else {
+
+                    String parametersClassName = getParametersClassName(job);
+                    if (!Objects.equals(parametersClassName, job.getParametersClassName())) {
+                        logger.warn("Parameters class name of {} changed from {} to {}", job.getWorkerClassName(), job.getParametersClassName(),
+                                        parametersClassName);
+                        job.setParametersClassName(parametersClassName);
+                    }
                 }
             } catch (ClassNotFoundException e) {
 
                 setJobStatus(job.getId(), JobStatus.NO_WORKER);
                 logger.error("No JobWorker class found for {}", job);
+            } catch (Exception e) {
+
+                setJobStatus(job.getId(), JobStatus.ERROR);
+                logger.error("Can't handle JobWorker class found for {}", job, e);
             }
         }
     }
@@ -125,6 +139,11 @@ public class JobEngineController {
             job.setRetryDelay(InitialJobConfig.JOB_CONFIG_RETRY_DELAY);
             job.setDaysUntilCleanUp(InitialJobConfig.JOB_CONFIG_DAYS_UNTIL_CLEANUP);
             job.setUniqueInQueue(InitialJobConfig.JOB_CONFIG_UNIQUE_IN_QUEUE);
+        }
+        try {
+            job.setParametersClassName(getParametersClassName(job));
+        } catch (Exception e) {
+            logger.error("Could not read parameters class name of job {}", job.getName());
         }
 
         entityManager.persist(job);
@@ -179,6 +198,17 @@ public class JobEngineController {
 
             throw exception;
         }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public String getParametersClassName(Job job) throws Exception {
+
+        BaseJobWorker jobWorker = getJobWorker(job);
+
+        if (jobWorker instanceof JobWorkerWith) {
+            return ((JobWorkerWith) jobWorker).getParametersClassName();
+        }
+        return null;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
