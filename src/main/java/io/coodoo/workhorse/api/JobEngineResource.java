@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -33,6 +34,8 @@ import io.coodoo.workhorse.api.dto.JobScheduleExecutionTimeDTO;
 import io.coodoo.workhorse.api.dto.JobStatusCountsDTO;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
+import io.coodoo.workhorse.jobengine.control.MemoryCount;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobCountView;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
@@ -95,6 +98,29 @@ public class JobEngineResource {
     }
 
     @GET
+    @Path("/get-memory-counts/{jobId}")
+    public Object[] getMemoryCounts(@PathParam("jobId") Long jobId) {
+
+        Map<Long, MemoryCount> memoryCounts = jobEngineService.getMemoryCounts();
+        if (memoryCounts != null && memoryCounts.containsKey(jobId)) {
+
+            MemoryCount memoryCount = jobEngineService.getMemoryCounts().get(jobId);
+
+            Object[] data = new Object[memoryCount.size];
+            for (int i = 0; i < memoryCount.size; i++) {
+
+                LocalDateTime time = memoryCount.time[i];
+                if (time == null) {
+                    time = JobEngineUtil.timestamp();
+                }
+                data[i] = new Object[] {time, memoryCount.queued[i], memoryCount.finished[i], memoryCount.failed[i]};
+            }
+            return data;
+        }
+        return null;
+    }
+
+    @GET
     @Path("/job-status-counts")
     public JobStatusCountsDTO getJobStatusCounts() {
 
@@ -112,7 +138,7 @@ public class JobEngineResource {
     public ListingResult<JobDTO> getJobs(@BeanParam ListingParameters listingParameters) {
 
         ListingResult<Job> jobsListing = jobEngineService.listJobs(listingParameters);
-        List<JobDTO> results = jobsListing.getResults().stream().map(JobDTO::new).collect(Collectors.toList());
+        List<JobDTO> results = jobsListing.getResults().stream().map(job -> new JobDTO(job, getMemoryCounts(job.getId()))).collect(Collectors.toList());
 
         return new ListingResult<JobDTO>(results, jobsListing.getMetadata());
     }

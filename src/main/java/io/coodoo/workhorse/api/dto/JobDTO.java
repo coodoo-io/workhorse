@@ -23,6 +23,8 @@ public class JobDTO extends RevisionDatesOccEntityDTO {
     public int daysUntilCleanUp;
     public boolean uniqueInQueue;
 
+    public Object[] memoryCount;
+
     public JobDTO() {}
 
     public JobDTO(Job job) {
@@ -42,4 +44,8 @@ public class JobDTO extends RevisionDatesOccEntityDTO {
         this.uniqueInQueue = job.isUniqueInQueue();
     }
 
+    public JobDTO(Job job, Object[] memoryCount) {
+        this(job);
+        this.memoryCount = memoryCount;
+    }
 }

@@ -3,6 +3,7 @@ package io.coodoo.workhorse.jobengine.boundary;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -24,6 +25,7 @@ import io.coodoo.workhorse.jobengine.control.JobEngineController;
 import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
+import io.coodoo.workhorse.jobengine.control.MemoryCount;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobCountView;
@@ -120,6 +122,10 @@ public class JobEngineService {
 
     public boolean isRunning() {
         return jobQueuePoller.isRunning();
+    }
+
+    public Map<Long, MemoryCount> getMemoryCounts() {
+        return jobEngine.getMemoryCounts();
     }
 
     public JobEngineInfo getJobEngineInfo(Long jobId) {
