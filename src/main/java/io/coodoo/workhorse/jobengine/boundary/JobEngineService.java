@@ -3,7 +3,6 @@ package io.coodoo.workhorse.jobengine.boundary;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,7 +24,6 @@ import io.coodoo.workhorse.jobengine.control.JobEngineController;
 import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
-import io.coodoo.workhorse.jobengine.control.MemoryCount;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobCountView;
@@ -49,10 +47,11 @@ public class JobEngineService {
     private final Logger logger = LoggerFactory.getLogger(JobEngineService.class);
 
     @Inject
-    JobEngine jobEngine;
+    @JobEngineEntityManager
+    EntityManager entityManager;
 
     @Inject
-    JobEngineController jobEngineController;
+    JobEngine jobEngine;
 
     @EJB
     JobQueuePoller jobQueuePoller;
@@ -61,8 +60,10 @@ public class JobEngineService {
     JobScheduler jobScheduler;
 
     @Inject
-    @JobEngineEntityManager
-    EntityManager entityManager;
+    JobEngineController jobEngineController;
+
+    @Inject
+    JobStatisticService jobStatisticService;
 
     public void start() {
 
@@ -122,10 +123,6 @@ public class JobEngineService {
 
     public boolean isRunning() {
         return jobQueuePoller.isRunning();
-    }
-
-    public Map<Long, MemoryCount> getMemoryCounts() {
-        return jobEngine.getMemoryCounts();
     }
 
     public JobEngineInfo getJobEngineInfo(Long jobId) {
@@ -195,9 +192,10 @@ public class JobEngineService {
         jobEngine.clearMemoryQueue(job);
 
         int deletedJobExecutions = JobExecution.deleteAllByJobId(entityManager, jobId);
+        int deletedJobStatisticns = jobStatisticService.deleteAllByJobId(jobId);
 
         entityManager.remove(job);
-        logger.info("Job removed (including {} executions): {}", deletedJobExecutions, job);
+        logger.info("Job removed (including {} executions and {} statistics): {}", deletedJobExecutions, deletedJobStatisticns, job);
     }
 
     public JobExecution getJobExecutionById(Long jobExecutionId) {
@@ -323,6 +321,9 @@ public class JobEngineService {
 
         BaseJobWorker jobWorker = getJobWorker(job);
         jobWorker.onSchedule();
+
+        // count this trigger
+        jobStatisticService.recordTrigger(job.getId());
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

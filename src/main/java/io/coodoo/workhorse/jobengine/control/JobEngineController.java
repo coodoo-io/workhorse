@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.boundary.JobStatisticService;
 import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
@@ -36,17 +37,20 @@ public class JobEngineController {
     private final Logger logger = LoggerFactory.getLogger(JobEngineController.class);
 
     @Inject
+    @JobEngineEntityManager
+    EntityManager entityManager;
+
+    @Inject
     JobEngine jobEngine;
+
+    @Inject
+    JobScheduler jobScheduler;
 
     @Inject
     JobEngineService jobEngineService;
 
     @Inject
-    @JobEngineEntityManager
-    EntityManager entityManager;
-
-    @Inject
-    JobScheduler jobScheduler;
+    JobStatisticService jobStatisticService;
 
     @Inject
     JobExecutionCleanupWorker jobExecutionCleanupWorker;
@@ -245,6 +249,7 @@ public class JobEngineController {
         } else {
             jobWorker.onRetry(jobExecutionId, retryExecution.getId());
         }
+        jobStatisticService.recordFailed(job.getId(), jobExecutionId, duration);
         return retryExecution;
     }
 
@@ -315,9 +320,10 @@ public class JobEngineController {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public synchronized void setJobExecutionFinished(Long jobExecutionId, Long duration, String jobExecutionLog) {
+    public synchronized void setJobExecutionFinished(Job job, Long jobExecutionId, Long duration, String jobExecutionLog) {
 
         JobExecution.updateStatusFinished(entityManager, JobEngineUtil.timestamp(), duration, jobExecutionLog, jobExecutionId);
+        jobStatisticService.recordFinished(job.getId(), jobExecutionId, duration);
     }
 
     public synchronized JobExecution getNextInChain(Long chainId, Long currentJobExecutionId) {

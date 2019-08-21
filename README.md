@@ -140,6 +140,10 @@ public void start() {
    ```xml
     <class>io.coodoo.workhorse.jobengine.entity.Job</class>
     <class>io.coodoo.workhorse.jobengine.entity.JobExecution</class>
+	<class>io.coodoo.workhorse.jobengine.entity.JobStatistic</class>
+	<class>io.coodoo.workhorse.jobengine.entity.JobExecutionCounts</class>
+	<class>io.coodoo.workhorse.jobengine.entity.JobExecutionView</class>
+	<class>io.coodoo.workhorse.jobengine.entity.JobCountView</class>
    ```
 3. To provide the EntityManager you have to implement a `@JobEngineEntityManagerProducer` CDI producer.
 

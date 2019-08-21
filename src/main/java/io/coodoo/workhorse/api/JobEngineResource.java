@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -31,11 +30,11 @@ import io.coodoo.workhorse.api.dto.JobExecutionCountsDTO;
 import io.coodoo.workhorse.api.dto.JobExecutionDTO;
 import io.coodoo.workhorse.api.dto.JobExecutionViewDTO;
 import io.coodoo.workhorse.api.dto.JobScheduleExecutionTimeDTO;
+import io.coodoo.workhorse.api.dto.JobStatisticDTO;
 import io.coodoo.workhorse.api.dto.JobStatusCountsDTO;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
-import io.coodoo.workhorse.jobengine.control.MemoryCount;
+import io.coodoo.workhorse.jobengine.boundary.JobStatisticService;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobCountView;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
@@ -54,6 +53,9 @@ public class JobEngineResource {
 
     @Inject
     JobEngineService jobEngineService;
+
+    @Inject
+    JobStatisticService jobStatisticService;
 
     @GET
     @Path("/infos")
@@ -101,23 +103,7 @@ public class JobEngineResource {
     @Path("/get-memory-counts/{jobId}")
     public Object[] getMemoryCounts(@PathParam("jobId") Long jobId) {
 
-        Map<Long, MemoryCount> memoryCounts = jobEngineService.getMemoryCounts();
-        if (memoryCounts != null && memoryCounts.containsKey(jobId)) {
-
-            MemoryCount memoryCount = jobEngineService.getMemoryCounts().get(jobId);
-
-            Object[] data = new Object[memoryCount.size];
-            for (int i = 0; i < memoryCount.size; i++) {
-
-                LocalDateTime time = memoryCount.time[i];
-                if (time == null) {
-                    time = JobEngineUtil.timestamp();
-                }
-                data[i] = new Object[] {time, memoryCount.queued[i], memoryCount.finished[i], memoryCount.failed[i]};
-            }
-            return data;
-        }
-        return null;
+        return jobStatisticService.getMemoryCounts(jobId);
     }
 
     @GET
@@ -308,6 +294,13 @@ public class JobEngineResource {
             }
         }
         return scheduledTimes;
+    }
+
+    @GET
+    @Path("/statistics")
+    public List<JobStatisticDTO> getJobStatistics(@BeanParam ListingParameters listingParameters) {
+
+        return jobStatisticService.listJobStatistics(listingParameters).stream().map(JobStatisticDTO::new).collect(Collectors.toList());
     }
 
 }

@@ -69,3 +69,22 @@ CREATE INDEX idx_jobengine_job_execution_poller ON jobengine_execution (job_id,s
 CREATE INDEX idx_jobengine_job_execution__chain_id__chain_prev_exec_id ON jobengine_execution (chain_id,chain_previous_execution_id);
 CREATE INDEX idx_jobengine_job_execution__batch_id_status ON jobengine_execution (batch_id,status);
 CREATE INDEX idx_jobengine_job_execution__startet_at_status ON jobengine_execution (started_at,status);
+
+
+CREATE TABLE jobengine_statistic (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_statistic_id_seq'),
+  job_id bigint NOT NULL,
+  duration_avg bigint DEFAULT NULL,
+  duration_median bigint DEFAULT NULL,
+  queued int DEFAULT '0',
+  finished int DEFAULT '0',
+  failed int DEFAULT '0',
+  schedule int DEFAULT '0',
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id),
+ CONSTRAINT fk_jobengine_job_statistic_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE INDEX fk_jobengine_job_statistic_job_idx ON jobengine_statistic (job_id);
+CREATE INDEX idx_jobengine_job_statistic_jobid_status ON jobengine_statistic (job_id,created_at);

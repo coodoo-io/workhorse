@@ -52,6 +52,23 @@ CREATE TABLE jobengine_execution (
   CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+CREATE TABLE jobengine_statistic (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  job_id bigint(20) NOT NULL,
+  duration_avg bigint(20) DEFAULT NULL,
+  duration_median bigint(20) DEFAULT NULL,
+  queued int(4) DEFAULT 0,
+  finished int(4) DEFAULT 0,
+  failed int(4) DEFAULT 0,
+  schedule int(4) DEFAULT 0,
+  created_at datetime NOT NULL,
+  updated_at datetime DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY fk_jobengine_job_statistic_job_idx (job_id),
+  KEY idx_jobengine_job_statistic__jobid__created_at (job_id,created_at),
+  CONSTRAINT fk_jobengine_job_statistic_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 CREATE VIEW jobengine_execution_view AS
 SELECT ex.id,
   ex.job_id,

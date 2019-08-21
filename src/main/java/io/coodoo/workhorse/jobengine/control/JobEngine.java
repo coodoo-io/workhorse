@@ -19,7 +19,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.ejb.Asynchronous;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -80,8 +79,6 @@ public class JobEngine implements Serializable {
     private static Map<Long, ReentrantLock> jobLocks = new ConcurrentHashMap<>();
     private ReentrantLock myLock = new ReentrantLock();
 
-    private Map<Long, MemoryCount> memoryCounts = new ConcurrentHashMap<>();
-
     public void initializeMemoryQueues() {
 
         logger.info("Intitialize memory queue");
@@ -100,20 +97,6 @@ public class JobEngine implements Serializable {
             this.runningJobExecutions.put(job.getId(), new HashSet<>());
             this.pausedJobs.put(job.getId(), Boolean.valueOf(false));
             this.futures.put(job.getId(), new HashMap<Future<Long>, JobThread>());
-
-            if (!memoryCounts.containsKey(job.getId())) { // do not reinitialize
-                memoryCounts.put(job.getId(), new MemoryCount());
-            }
-
-        }
-    }
-
-    @Schedule(hour = "*", minute = "*", persistent = false) // every minute
-    public void iterateMemoryCount() {
-
-        for (Map.Entry<Long, MemoryCount> entry : memoryCounts.entrySet()) {
-            Long jobId = entry.getKey();
-            entry.getValue().iterate(jobExecutions.get(jobId).size() + priorityJobExecutions.get(jobId).size());
         }
     }
 
@@ -270,10 +253,9 @@ public class JobEngine implements Serializable {
                                 }
 
                                 String jobExecutionLog = jobContext.getLog();
-                                jobEngineController.setJobExecutionFinished(jobExecutionId, duration, jobExecutionLog);
-
+                                jobEngineController.setJobExecutionFinished(job, jobExecutionId, duration, jobExecutionLog);
                                 runningJobExecutions.get(jobId).remove(jobExecution);
-                                memoryCounts.get(jobId).incrementFinished();
+
                                 jobWorker.onFinished(jobExecutionId);
 
                                 Long batchId = jobExecution.getBatchId();
@@ -309,7 +291,6 @@ public class JobEngine implements Serializable {
                             } catch (Exception exception) {
 
                                 runningJobExecutions.get(jobId).remove(jobExecution);
-                                memoryCounts.get(jobId).incrementFailed();
 
                                 long duration = System.currentTimeMillis() - millisAtStart;
                                 String jobExecutionLog = jobContext.getLog();
@@ -398,10 +379,6 @@ public class JobEngine implements Serializable {
         }
         this.futures.get(job.getId()).clear();
 
-    }
-
-    public Map<Long, MemoryCount> getMemoryCounts() {
-        return memoryCounts;
     }
 
     public JobEngineInfo getInfo(Long jobId) {

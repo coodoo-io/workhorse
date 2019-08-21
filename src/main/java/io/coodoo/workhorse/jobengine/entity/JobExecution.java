@@ -83,7 +83,7 @@ public class JobExecution extends RevisionDatesEntity {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The reference to the job description.
+     * The reference to the job
      */
     @Column(name = "job_id")
     private Long jobId;
