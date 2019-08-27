@@ -1,10 +1,10 @@
-package io.coodoo.workhorse.api.dto;
+package io.coodoo.workhorse.api.boundary.dto;
 
 import java.time.LocalDateTime;
 
 import io.coodoo.framework.jpa.boundary.entity.dto.RevisionDatesEntityDTO;
+import io.coodoo.workhorse.api.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
-import io.coodoo.workhorse.jobengine.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
 public class JobExecutionViewDTO extends RevisionDatesEntityDTO {

@@ -1,4 +1,4 @@
-package io.coodoo.workhorse.jobengine.entity;
+package io.coodoo.workhorse.api.entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
+import io.coodoo.workhorse.jobengine.entity.JobStatus;
+import io.coodoo.workhorse.jobengine.entity.StringListConverter;
 
 @SuppressWarnings("serial")
 @Entity

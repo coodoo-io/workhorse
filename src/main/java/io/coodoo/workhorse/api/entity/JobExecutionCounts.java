@@ -1,4 +1,4 @@
-package io.coodoo.workhorse.jobengine.entity;
+package io.coodoo.workhorse.api.entity;
 
 import java.time.LocalDateTime;
 
@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Query;
 
 import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
+import io.coodoo.workhorse.jobengine.entity.JobExecution;
 
 // FIXME: this is plain MySQL syntax!!!
 @Entity

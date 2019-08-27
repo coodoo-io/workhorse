@@ -71,9 +71,15 @@ CREATE INDEX idx_jobengine_job_execution__batch_id_status ON jobengine_execution
 CREATE INDEX idx_jobengine_job_execution__startet_at_status ON jobengine_execution (started_at,status);
 
 
-CREATE TABLE jobengine_statistic (
-  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_statistic_id_seq'),
+CREATE TABLE jobengine_statistic_minute (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_statistic_minute_id_seq'),
   job_id bigint NOT NULL,
+  recorded_from datetime NOT NULL,
+  recorded_to datetime NOT NULL,
+  duration_count int NOT NULL,
+  duration_sum bigint DEFAULT NULL,
+  duration_max bigint DEFAULT NULL,
+  duration_min bigint DEFAULT NULL,
   duration_avg bigint DEFAULT NULL,
   duration_median bigint DEFAULT NULL,
   queued int DEFAULT '0',
@@ -83,8 +89,57 @@ CREATE TABLE jobengine_statistic (
   created_at timestamp(0) NOT NULL,
   updated_at timestamp(0) DEFAULT NULL,
   PRIMARY KEY (id),
- CONSTRAINT fk_jobengine_job_statistic_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+ CONSTRAINT fk_jobengine_job_statistic_minute_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
-CREATE INDEX fk_jobengine_job_statistic_job_idx ON jobengine_statistic (job_id);
-CREATE INDEX idx_jobengine_job_statistic_jobid_status ON jobengine_statistic (job_id,created_at);
+CREATE INDEX fk_jobengine_job_statistic_minute_job_idx ON jobengine_statistic_minute (job_id);
+CREATE INDEX idx_jobengine_job_statistic_minute_jobid_status ON jobengine_statistic_minute (job_id,created_at);
+CREATE INDEX idx_jobengine_job_statistic_minute_jobid_status ON jobengine_statistic_minute (job_id,recorded_from,recorded_to);
+
+
+CREATE TABLE jobengine_statistic_hour (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_statistic_hour_id_seq'),
+  job_id bigint NOT NULL,
+  recorded_from datetime NOT NULL,
+  recorded_to datetime NOT NULL,
+  duration_count int NOT NULL,
+  duration_sum bigint DEFAULT NULL,
+  duration_max bigint DEFAULT NULL,
+  duration_min bigint DEFAULT NULL,
+  duration_avg bigint DEFAULT NULL,
+  finished int DEFAULT '0',
+  failed int DEFAULT '0',
+  schedule int DEFAULT '0',
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id),
+ CONSTRAINT fk_jobengine_job_statistic_hour_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE INDEX fk_jobengine_job_statistic_hour_job_idx ON jobengine_statistic_hour (job_id);
+CREATE INDEX idx_jobengine_job_statistic_hour_jobid_status ON jobengine_statistic_hour (job_id,created_at);
+CREATE INDEX idx_jobengine_job_statistic_hour_jobid_status ON jobengine_statistic_hour (job_id,recorded_from,recorded_to);
+
+
+CREATE TABLE jobengine_statistic_day (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_statistic_day_id_seq'),
+  job_id bigint NOT NULL,
+  recorded_from datetime NOT NULL,
+  recorded_to datetime NOT NULL,
+  duration_count int NOT NULL,
+  duration_sum bigint DEFAULT NULL,
+  duration_max bigint DEFAULT NULL,
+  duration_min bigint DEFAULT NULL,
+  duration_avg bigint DEFAULT NULL,
+  finished int DEFAULT '0',
+  failed int DEFAULT '0',
+  schedule int DEFAULT '0',
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id),
+ CONSTRAINT fk_jobengine_job_statistic_day_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE INDEX fk_jobengine_job_statistic_day_job_idx ON jobengine_statistic_day (job_id);
+CREATE INDEX idx_jobengine_job_statistic_day_jobid_status ON jobengine_statistic_day (job_id,created_at);
+CREATE INDEX idx_jobengine_job_statistic_day_jobid_status ON jobengine_statistic_day (job_id,recorded_from,recorded_to);

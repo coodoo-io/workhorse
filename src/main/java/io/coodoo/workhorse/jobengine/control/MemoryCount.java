@@ -1,18 +1,17 @@
 package io.coodoo.workhorse.jobengine.control;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.LongSummaryStatistics;
 import java.util.Map;
-import java.util.OptionalDouble;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.DoubleStream;
 
-import io.coodoo.workhorse.jobengine.entity.JobStatistic;
+import io.coodoo.workhorse.statistic.boundary.StatisticsUtil;
+import io.coodoo.workhorse.statistic.entity.JobStatisticMinute;
 
 public class MemoryCount {
 
-    public int size = 60; // TODO jobengineconfig
+    public int size = 60;
     public AtomicInteger index;
     public LocalDateTime[] time;
     public AtomicInteger[] queued;
@@ -41,10 +40,11 @@ public class MemoryCount {
         }
     }
 
-    public JobStatistic collectAndIterate(Long jobId, int currentlyQueued) {
+    public JobStatisticMinute collectAndIterate(Long jobId, int currentlyQueued) {
 
+        LocalDateTime timestamp = JobEngineUtil.timestamp();
         // set timestamp before leaving this position
-        time[index.get()] = JobEngineUtil.timestamp();
+        time[index.get()] = timestamp;
         queued[index.get()].set(currentlyQueued);
 
         // iterate
@@ -63,36 +63,24 @@ public class MemoryCount {
         if (queued[indexToPersist].get() > 0 || finished[indexToPersist].get() > 0 || failed[indexToPersist].get() > 0
                         || scheduleTriggers[indexToPersist].get() > 0) {
 
-            JobStatistic jobStatistic = new JobStatistic();
-            jobStatistic.setJobId(jobId);
-            jobStatistic.setQueued(queued[indexToPersist].get());
-            jobStatistic.setFinished(finished[indexToPersist].get());
-            jobStatistic.setFailed(failed[indexToPersist].get());
-            jobStatistic.setSchedule(scheduleTriggers[indexToPersist].get());
-            jobStatistic.setDurationAvg(durationAvg(indexToPersist));
-            jobStatistic.setDurationMedian(durationMedian(indexToPersist));
-            return jobStatistic;
-        }
-        return null;
-    }
+            LongSummaryStatistics durationStatistics = durations[indexToPersist].values().stream().mapToLong(d -> d).summaryStatistics();
 
-    private Long durationAvg(int index) {
+            JobStatisticMinute jobStatisticMinute = new JobStatisticMinute();
+            jobStatisticMinute.setJobId(jobId);
+            jobStatisticMinute.setFrom(timestamp.minusSeconds(59));
+            jobStatisticMinute.setTo(timestamp);
+            jobStatisticMinute.setQueued(queued[indexToPersist].get());
+            jobStatisticMinute.setFinished(finished[indexToPersist].get());
+            jobStatisticMinute.setFailed(failed[indexToPersist].get());
+            jobStatisticMinute.setSchedule(scheduleTriggers[indexToPersist].get());
+            jobStatisticMinute.setDurationCount(new Long(durationStatistics.getCount()).intValue());
+            jobStatisticMinute.setDurationSum(durationStatistics.getSum());
+            jobStatisticMinute.setDurationMin(StatisticsUtil.longToLong(durationStatistics.getMin()));
+            jobStatisticMinute.setDurationMax(StatisticsUtil.longToLong(durationStatistics.getMax()));
+            jobStatisticMinute.setDurationAvg(StatisticsUtil.doubleToLong(durationStatistics.getAverage()));
+            jobStatisticMinute.setDurationMedian(StatisticsUtil.median(durations[indexToPersist].values()));
 
-        OptionalDouble average = durations[index].values().stream().mapToLong(d -> d).average();
-        if (average.isPresent()) {
-            return new Double(average.getAsDouble()).longValue();
-        }
-        return null;
-    }
-
-    private Long durationMedian(int index) {
-
-        Collection<Long> values = durations[index].values();
-        if (!values.isEmpty()) {
-            DoubleStream sorted = values.stream().mapToDouble(d -> d).sorted();
-            double median = values.size() % 2 == 0 ? sorted.skip(values.size() / 2 - 1).limit(2).average().getAsDouble()
-                            : sorted.skip(values.size() / 2).findFirst().getAsDouble();
-            return new Double(median).longValue();
+            return jobStatisticMinute;
         }
         return null;
     }

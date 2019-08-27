@@ -47,6 +47,16 @@ public final class JobEngineConfig {
     public static JobExecutionStatus ZOMBIE_CURE_STATUS = JobExecutionStatus.ABORTED;
 
     /**
+     * Days until minute by minute statistic records gets deleted (0 to keep all)
+     */
+    public static int DAYS_UNTIL_STATISTIC_MINUTES_DELETION = 10;
+
+    /**
+     * Days until hourly statistic records gets deleted (0 to keep all)
+     */
+    public static int DAYS_UNTIL_STATISTIC_HOURS_DELETION = 30;
+
+    /**
      * Log timestamp pattern. Default is <code>[HH:mm:ss.SSS]</code>
      */
     public static DateTimeFormatter LOG_TIME_FORMATTER = DateTimeFormatter.ofPattern("'['HH:mm:ss.SSS']'");

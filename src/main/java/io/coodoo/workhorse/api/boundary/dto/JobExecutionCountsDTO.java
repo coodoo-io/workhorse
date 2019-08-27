@@ -1,6 +1,6 @@
-package io.coodoo.workhorse.api.dto;
+package io.coodoo.workhorse.api.boundary.dto;
 
-import io.coodoo.workhorse.jobengine.entity.JobExecutionCounts;
+import io.coodoo.workhorse.api.entity.JobExecutionCounts;
 
 public class JobExecutionCountsDTO {
 

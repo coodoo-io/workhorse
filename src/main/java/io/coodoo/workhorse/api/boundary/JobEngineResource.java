@@ -1,8 +1,9 @@
-package io.coodoo.workhorse.api;
+package io.coodoo.workhorse.api.boundary;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,24 +23,27 @@ import javax.ws.rs.core.Response;
 
 import io.coodoo.framework.listing.boundary.ListingParameters;
 import io.coodoo.framework.listing.boundary.ListingResult;
-import io.coodoo.workhorse.api.dto.GroupInfoDTO;
-import io.coodoo.workhorse.api.dto.JobCountViewDTO;
-import io.coodoo.workhorse.api.dto.JobDTO;
-import io.coodoo.workhorse.api.dto.JobEngineInfoDTO;
-import io.coodoo.workhorse.api.dto.JobExecutionCountsDTO;
-import io.coodoo.workhorse.api.dto.JobExecutionDTO;
-import io.coodoo.workhorse.api.dto.JobExecutionViewDTO;
-import io.coodoo.workhorse.api.dto.JobScheduleExecutionTimeDTO;
-import io.coodoo.workhorse.api.dto.JobStatisticDTO;
-import io.coodoo.workhorse.api.dto.JobStatusCountsDTO;
+import io.coodoo.workhorse.api.boundary.dto.GroupInfoDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobCountViewDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobEngineInfoDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobExecutionCountsDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobExecutionDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobExecutionViewDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobScheduleExecutionTimeDTO;
+import io.coodoo.workhorse.api.boundary.dto.JobStatusCountsDTO;
+import io.coodoo.workhorse.api.entity.JobCountView;
+import io.coodoo.workhorse.api.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobStatisticService;
 import io.coodoo.workhorse.jobengine.entity.Job;
-import io.coodoo.workhorse.jobengine.entity.JobCountView;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
-import io.coodoo.workhorse.jobengine.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
+import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
+import io.coodoo.workhorse.statistic.entity.DurationHeatmap;
+import io.coodoo.workhorse.statistic.entity.JobStatisticDay;
+import io.coodoo.workhorse.statistic.entity.JobStatisticHour;
+import io.coodoo.workhorse.statistic.entity.JobStatisticMinute;
 
 /**
  * Rest interface to the workhorse
@@ -50,6 +54,9 @@ import io.coodoo.workhorse.jobengine.entity.JobStatus;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class JobEngineResource {
+
+    @Inject
+    JobEngineApiService jobEngineApiService;
 
     @Inject
     JobEngineService jobEngineService;
@@ -123,7 +130,7 @@ public class JobEngineResource {
     @Path("/jobs")
     public ListingResult<JobDTO> getJobs(@BeanParam ListingParameters listingParameters) {
 
-        ListingResult<Job> jobsListing = jobEngineService.listJobs(listingParameters);
+        ListingResult<Job> jobsListing = jobEngineApiService.listJobs(listingParameters);
         List<JobDTO> results = jobsListing.getResults().stream().map(job -> new JobDTO(job, getMemoryCounts(job.getId()))).collect(Collectors.toList());
 
         return new ListingResult<JobDTO>(results, jobsListing.getMetadata());
@@ -133,7 +140,7 @@ public class JobEngineResource {
     @Path("/jobs-count")
     public ListingResult<JobCountViewDTO> getJobsWithCounts(@BeanParam ListingParameters listingParameters) {
 
-        ListingResult<JobCountView> jobsListing = jobEngineService.listJobsWithCounts(listingParameters);
+        ListingResult<JobCountView> jobsListing = jobEngineApiService.listJobsWithCounts(listingParameters);
         List<JobCountViewDTO> results = jobsListing.getResults().stream().map(JobCountViewDTO::new).collect(Collectors.toList());
 
         return new ListingResult<JobCountViewDTO>(results, jobsListing.getMetadata());
@@ -152,7 +159,7 @@ public class JobEngineResource {
         if (jobId != null && jobId > 0) {
             listingParameters.addFilterAttributes("jobId", jobId.toString());
         }
-        ListingResult<JobExecutionView> jobListing = jobEngineService.listJobExecutionViews(listingParameters);
+        ListingResult<JobExecutionView> jobListing = jobEngineApiService.listJobExecutionViews(listingParameters);
         List<JobExecutionViewDTO> results = jobListing.getResults().stream().map(JobExecutionViewDTO::new).collect(Collectors.toList());
 
         return new ListingResult<JobExecutionViewDTO>(results, jobListing.getMetadata());
@@ -167,17 +174,15 @@ public class JobEngineResource {
     @GET
     @Path("/jobs/{jobId}/execution-counts/{minutes}")
     public JobExecutionCountsDTO getJobExecutionCountByJob(@PathParam("jobId") Long jobId, @PathParam("minutes") Integer minutes) {
-        return new JobExecutionCountsDTO(jobEngineService.getJobExecutionCounts(jobId, minutes));
+        return new JobExecutionCountsDTO(jobEngineApiService.getJobExecutionCounts(jobId, minutes));
     }
 
     @PUT
     @Path("/jobs/{jobId}")
     public JobDTO updateJob(@PathParam("jobId") Long jobId, JobDTO jobDto) {
-
-        Job job = jobEngineService.updateJob(jobId, jobDto.name, jobDto.description, jobDto.tags, jobDto.workerClassName, jobDto.schedule, jobDto.status,
-                        jobDto.threads, jobDto.maxPerMinute, jobDto.failRetries, jobDto.retryDelay, jobDto.daysUntilCleanUp, jobDto.uniqueInQueue);
-
-        return new JobDTO(job);
+        return new JobDTO(jobEngineService.updateJob(jobId, jobDto.name, jobDto.description, jobDto.tags, jobDto.workerClassName, jobDto.schedule,
+                        jobDto.status, jobDto.threads, jobDto.maxPerMinute, jobDto.failRetries, jobDto.retryDelay, jobDto.daysUntilCleanUp,
+                        jobDto.uniqueInQueue));
     }
 
     @DELETE
@@ -297,10 +302,35 @@ public class JobEngineResource {
     }
 
     @GET
-    @Path("/statistics")
-    public List<JobStatisticDTO> getJobStatistics(@BeanParam ListingParameters listingParameters) {
+    @Path("/statistics/minutes")
+    public List<JobStatisticMinute> getJobStatisticsMinutes(@BeanParam ListingParameters listingParameters) {
 
-        return jobStatisticService.listJobStatistics(listingParameters).stream().map(JobStatisticDTO::new).collect(Collectors.toList());
+        return jobStatisticService.listJobStatisticMinutes(listingParameters);
+    }
+
+    @GET
+    @Path("/statistics/hours")
+    public List<JobStatisticHour> getJobStatisticsHours(@BeanParam ListingParameters listingParameters) {
+        return jobStatisticService.listJobStatisticHours(listingParameters);
+    }
+
+    @GET
+    @Path("/statistics/days")
+    public List<JobStatisticDay> getJobStatisticsDays(@BeanParam ListingParameters listingParameters) {
+        return jobStatisticService.listJobStatisticDays(listingParameters);
+    }
+
+    @GET
+    @Path("/statistics/duration-heatmap")
+    public List<DurationHeatmap> getDurationHeatmap() {
+        return jobStatisticService.getDurationHeatmap(jobEngineService.getAllJobs().stream().map(Job::getId).collect(Collectors.toList()));
+    }
+
+    @GET
+    @Path("/statistics/duration-heatmap/{jobId}")
+    public List<DurationHeatmap> getDurationHeatmap(@PathParam("jobId") Long jobId) {
+
+        return jobStatisticService.getDurationHeatmap(Arrays.asList(jobId));
     }
 
 }

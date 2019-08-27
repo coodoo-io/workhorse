@@ -1,10 +1,10 @@
-package io.coodoo.workhorse.api.dto;
+package io.coodoo.workhorse.api.boundary.dto;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.coodoo.framework.jpa.boundary.entity.dto.RevisionDatesOccEntityDTO;
-import io.coodoo.workhorse.jobengine.entity.JobCountView;
+import io.coodoo.workhorse.api.entity.JobCountView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
 public class JobCountViewDTO extends RevisionDatesOccEntityDTO {

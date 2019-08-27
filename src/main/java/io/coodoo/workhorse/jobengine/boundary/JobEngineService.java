@@ -14,9 +14,6 @@ import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.coodoo.framework.listing.boundary.Listing;
-import io.coodoo.framework.listing.boundary.ListingParameters;
-import io.coodoo.framework.listing.boundary.ListingResult;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
@@ -26,14 +23,12 @@ import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
-import io.coodoo.workhorse.jobengine.entity.JobCountView;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
-import io.coodoo.workhorse.jobengine.entity.JobExecutionCounts;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
-import io.coodoo.workhorse.jobengine.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
+import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
 import io.coodoo.workhorse.util.CronExpression;
 
 /**
@@ -139,10 +134,6 @@ public class JobEngineService {
 
     public Long countJobsByStatus(JobStatus jobStatus) {
         return Job.countAllByStatus(entityManager, jobStatus);
-    }
-
-    public JobExecutionCounts getJobExecutionCounts(Long jobId, Integer consideredLastMinutes) {
-        return JobExecutionCounts.query(entityManager, jobId, consideredLastMinutes);
     }
 
     public Job getJobByClassName(String className) {
@@ -408,18 +399,6 @@ public class JobEngineService {
             scheduledTimes.add(scheduledTime);
         }
         return scheduledTimes;
-    }
-
-    public ListingResult<Job> listJobs(ListingParameters listingParameters) {
-        return Listing.getListingResult(entityManager, Job.class, listingParameters);
-    }
-
-    public ListingResult<JobCountView> listJobsWithCounts(ListingParameters listingParameters) {
-        return Listing.getListingResult(entityManager, JobCountView.class, listingParameters);
-    }
-
-    public ListingResult<JobExecutionView> listJobExecutionViews(ListingParameters listingParameters) {
-        return Listing.getListingResult(entityManager, JobExecutionView.class, listingParameters);
     }
 
 }

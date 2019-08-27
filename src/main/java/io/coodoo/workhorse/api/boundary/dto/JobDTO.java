@@ -1,4 +1,4 @@
-package io.coodoo.workhorse.api.dto;
+package io.coodoo.workhorse.api.boundary.dto;
 
 import java.util.ArrayList;
 import java.util.List;

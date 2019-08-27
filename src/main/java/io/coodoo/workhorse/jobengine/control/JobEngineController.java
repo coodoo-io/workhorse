@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobStatisticService;
 import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
@@ -27,6 +26,7 @@ import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.StringListConverter;
+import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
 
 /**
  * @author coodoo GmbH (coodoo.io)
