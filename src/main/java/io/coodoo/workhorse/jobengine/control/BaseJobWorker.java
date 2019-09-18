@@ -179,7 +179,8 @@ public abstract class BaseJobWorker {
     }
 
     /**
-     * Adds the message text in as a new line to the executions log
+     * Adds the message text in as a new line to the executions log <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param message text to log
      */
@@ -190,11 +191,12 @@ public abstract class BaseJobWorker {
     /**
      * Adds a timestamp followed by the message text in as a new line to the executions log <br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
-     * Example: <code>[22:06:42.680] Step 3 complete</code>
+     * Example: <code>[22:06:42.680] Step 3 complete</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param message text to log
      */
-    public void logLineWithTimestamp(String message) {
+    protected void logLineWithTimestamp(String message) {
         jobContext.logLineWithTimestamp(message);
     }
 
@@ -202,11 +204,12 @@ public abstract class BaseJobWorker {
      * Adds a timestamp followed by an info marker and the info message text in as a new line to the executions log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Info marker: Only if defined in {@link JobEngineConfig#LOG_INFO_MARKER}<br>
-     * Example: <code>[22:06:42.680] Step 3 complete</code>
+     * Example: <code>[22:06:42.680] Step 3 complete</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param message text to log
      */
-    public void logInfo(String message) {
+    protected void logInfo(String message) {
         jobContext.logInfo(message);
     }
 
@@ -215,12 +218,13 @@ public abstract class BaseJobWorker {
      * to the server log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Info marker: Only if defined in {@link JobEngineConfig#LOG_INFO_MARKER}<br>
-     * Example: <code>[22:06:42.680] Step 3 complete</code>
+     * Example: <code>[22:06:42.680] Step 3 complete</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param logger server log logger
      * @param message text to log
      */
-    public void logInfo(Logger logger, String message) {
+    protected void logInfo(Logger logger, String message) {
         jobContext.logInfo(logger, message);
     }
 
@@ -228,11 +232,12 @@ public abstract class BaseJobWorker {
      * Adds a timestamp followed by an warn marker and the warn message as a new line to the executions log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Error marker: <code>[WARN]</code> or as defined in {@link JobEngineConfig#LOG_WARN_MARKER}<br>
-     * Example: <code>[22:06:42.680] [WARN] Well thats suspicious...</code>
+     * Example: <code>[22:06:42.680] [WARN] Well thats suspicious...</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param message text to log
      */
-    public void logWarn(String message) {
+    protected void logWarn(String message) {
         jobContext.logWarn(message);
     }
 
@@ -241,12 +246,13 @@ public abstract class BaseJobWorker {
      * server log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Error marker: <code>[WARN]</code> or as defined in {@link JobEngineConfig#LOG_WARN_MARKER}<br>
-     * Example: <code>[22:06:42.680] [WARN] Well thats suspicious...</code>
+     * Example: <code>[22:06:42.680] [WARN] Well thats suspicious...</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param logger server log logger
      * @param message text to log
      */
-    public void logWarn(Logger logger, String message) {
+    protected void logWarn(Logger logger, String message) {
         jobContext.logWarn(logger, message);
     }
 
@@ -254,11 +260,12 @@ public abstract class BaseJobWorker {
      * Adds a timestamp followed by an error marker and the error message as a new line to the executions log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Error marker: <code>[ERROR]</code> or as defined in {@link JobEngineConfig#LOG_ERROR_MARKER}<br>
-     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code>
+     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param message text to log
      */
-    public void logError(String message) {
+    protected void logError(String message) {
         jobContext.logError(message);
     }
 
@@ -267,12 +274,13 @@ public abstract class BaseJobWorker {
      * server log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Error marker: <code>[ERROR]</code> or as defined in {@link JobEngineConfig#LOG_ERROR_MARKER}<br>
-     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code>
+     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param logger server log logger
      * @param message text to log
      */
-    public void logError(Logger logger, String message) {
+    protected void logError(Logger logger, String message) {
         jobContext.logError(logger, message);
     }
 
@@ -281,13 +289,14 @@ public abstract class BaseJobWorker {
      * the throwable to the server log<br>
      * Timestamp pattern: <code>[HH:mm:ss.SSS]</code> or as defined in {@link JobEngineConfig#LOG_TIME_FORMATTER}<br>
      * Error marker: <code>[ERROR]</code> or as defined in {@link JobEngineConfig#LOG_ERROR_MARKER}<br>
-     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code>
+     * Example: <code>[22:06:42.680] [ERROR] Dafuq was that?!?!</code> <br>
+     * <i>CAUTION: This will only work in the context of the doWork method!</i>
      * 
      * @param logger server log logger
      * @param message text to log
      * @param throwable cause of error
      */
-    public void logError(Logger logger, String message, Throwable throwable) {
+    protected void logError(Logger logger, String message, Throwable throwable) {
         jobContext.logError(logger, message, throwable);
     }
 
