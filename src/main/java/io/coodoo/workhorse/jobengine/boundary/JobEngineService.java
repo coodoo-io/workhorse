@@ -161,51 +161,51 @@ public class JobEngineService {
         jobScheduler.stop(job);
         jobEngine.clearMemoryQueue(job);
 
-        if (Objects.equals(job.getName(), name)) {
+        if (!Objects.equals(job.getName(), name)) {
             jobLogService.logChange(jobId, status, "name", job.getName(), name, null);
             job.setName(name);
         }
-        if (Objects.equals(job.getDescription(), description)) {
+        if (!Objects.equals(job.getDescription(), description)) {
             jobLogService.logChange(jobId, status, "description", job.getDescription(), description, null);
             job.setDescription(description);
         }
-        if (Objects.equals(job.getTags(), tags)) {
+        if (!Objects.equals(job.getTags(), tags)) {
             jobLogService.logChange(jobId, status, "tags", job.getTags().toString(), tags.toString(), null);
             job.setTags(tags);
         }
-        if (Objects.equals(job.getWorkerClassName(), workerClassName)) {
+        if (!Objects.equals(job.getWorkerClassName(), workerClassName)) {
             jobLogService.logChange(jobId, status, "workerClassName", job.getWorkerClassName(), workerClassName, null);
             job.setWorkerClassName(workerClassName);
         }
-        if (Objects.equals(job.getSchedule(), schedule)) {
+        if (!Objects.equals(job.getSchedule(), schedule)) {
             jobLogService.logChange(jobId, status, "schedule", job.getSchedule(), schedule, null);
             job.setSchedule(schedule);
         }
-        if (Objects.equals(job.getStatus(), status)) {
+        if (!Objects.equals(job.getStatus(), status)) {
             jobLogService.logChange(jobId, status, "status", job.getStatus().name(), status.name(), null);
             job.setStatus(status);
         }
-        if (Objects.equals(job.getThreads(), threads)) {
+        if (!Objects.equals(job.getThreads(), threads)) {
             jobLogService.logChange(jobId, status, "threads", "" + job.getThreads(), "" + threads, null);
             job.setThreads(threads);
         }
-        if (Objects.equals(job.getMaxPerMinute(), maxPerMinute)) {
+        if (!Objects.equals(job.getMaxPerMinute(), maxPerMinute)) {
             jobLogService.logChange(jobId, status, "maxPerMinute", "" + job.getMaxPerMinute(), "" + maxPerMinute, null);
             job.setMaxPerMinute(maxPerMinute);
         }
-        if (Objects.equals(job.getFailRetries(), failRetries)) {
+        if (!Objects.equals(job.getFailRetries(), failRetries)) {
             jobLogService.logChange(jobId, status, "failRetries", "" + job.getFailRetries(), "" + failRetries, null);
             job.setFailRetries(failRetries);
         }
-        if (Objects.equals(job.getRetryDelay(), retryDelay)) {
+        if (!Objects.equals(job.getRetryDelay(), retryDelay)) {
             jobLogService.logChange(jobId, status, "retryDelay", "" + job.getRetryDelay(), "" + retryDelay, null);
             job.setRetryDelay(retryDelay);
         }
-        if (Objects.equals(job.getDaysUntilCleanUp(), daysUntilCleanUp)) {
+        if (!Objects.equals(job.getDaysUntilCleanUp(), daysUntilCleanUp)) {
             jobLogService.logChange(jobId, status, "daysUntilCleanUp", "" + job.getDaysUntilCleanUp(), "" + daysUntilCleanUp, null);
             job.setDaysUntilCleanUp(daysUntilCleanUp);
         }
-        if (Objects.equals(job.isUniqueInQueue(), uniqueInQueue)) {
+        if (!Objects.equals(job.isUniqueInQueue(), uniqueInQueue)) {
             jobLogService.logChange(jobId, status, "uniqueInQueue", "" + job.isUniqueInQueue(), "" + uniqueInQueue, null);
             job.setUniqueInQueue(uniqueInQueue);
         }

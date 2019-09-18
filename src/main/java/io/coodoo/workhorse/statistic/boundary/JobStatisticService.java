@@ -3,6 +3,8 @@ package io.coodoo.workhorse.statistic.boundary;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ import io.coodoo.workhorse.statistic.entity.DurationHeatmapDetail;
 import io.coodoo.workhorse.statistic.entity.JobStatisticDay;
 import io.coodoo.workhorse.statistic.entity.JobStatisticHour;
 import io.coodoo.workhorse.statistic.entity.JobStatisticMinute;
+import io.coodoo.workhorse.statistic.entity.MemoryCountData;
 
 /**
  * Provides access to statistics data
@@ -269,21 +272,22 @@ public class JobStatisticService {
         return deleted;
     }
 
-    public Object[] getMemoryCounts(Long jobId) {
+    public List<MemoryCountData> getMemoryCounts(Long jobId) {
 
         if (memoryCounts != null && memoryCounts.containsKey(jobId)) {
 
             MemoryCount memoryCount = memoryCounts.get(jobId);
 
-            Object[] data = new Object[memoryCount.size];
+            List<MemoryCountData> data = new ArrayList<>();
             for (int i = 0; i < memoryCount.size; i++) {
 
                 LocalDateTime time = memoryCount.time[i];
                 if (time == null) {
                     time = JobEngineUtil.timestamp();
                 }
-                data[i] = new Object[] {time, memoryCount.queued[i], memoryCount.finished[i], memoryCount.failed[i]};
+                data.add(new MemoryCountData(time, memoryCount.queued[i].get(), memoryCount.finished[i].get(), memoryCount.failed[i].get()));
             }
+            Collections.sort(data, Comparator.comparing(MemoryCountData::getTime));
             return data;
         }
         return null;

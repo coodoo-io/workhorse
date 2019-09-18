@@ -23,13 +23,8 @@ import javax.ws.rs.core.Response;
 
 import io.coodoo.framework.listing.boundary.ListingParameters;
 import io.coodoo.framework.listing.boundary.ListingResult;
-import io.coodoo.workhorse.api.boundary.dto.GroupInfoDTO;
-import io.coodoo.workhorse.api.boundary.dto.JobCountViewDTO;
 import io.coodoo.workhorse.api.boundary.dto.JobDTO;
-import io.coodoo.workhorse.api.boundary.dto.JobEngineInfoDTO;
 import io.coodoo.workhorse.api.boundary.dto.JobExecutionCountsDTO;
-import io.coodoo.workhorse.api.boundary.dto.JobExecutionDTO;
-import io.coodoo.workhorse.api.boundary.dto.JobExecutionViewDTO;
 import io.coodoo.workhorse.api.boundary.dto.JobScheduleExecutionTimeDTO;
 import io.coodoo.workhorse.api.boundary.dto.JobStatusCountsDTO;
 import io.coodoo.workhorse.api.entity.JobCountView;
@@ -37,8 +32,10 @@ import io.coodoo.workhorse.api.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.boundary.JobLogService;
+import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
+import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobLog;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
@@ -46,6 +43,7 @@ import io.coodoo.workhorse.statistic.entity.DurationHeatmap;
 import io.coodoo.workhorse.statistic.entity.JobStatisticDay;
 import io.coodoo.workhorse.statistic.entity.JobStatisticHour;
 import io.coodoo.workhorse.statistic.entity.JobStatisticMinute;
+import io.coodoo.workhorse.statistic.entity.MemoryCountData;
 
 /**
  * Rest interface to the workhorse
@@ -71,19 +69,14 @@ public class JobEngineResource {
 
     @GET
     @Path("/infos")
-    public List<JobEngineInfoDTO> getJobEngineInfos() {
-
-        return jobEngineService.getAllJobs().stream().map(job -> new JobEngineInfoDTO(jobEngineService.getJobEngineInfo(job.getId())))
-                        .collect(Collectors.toList());
+    public List<JobEngineInfo> getJobEngineInfos() {
+        return jobEngineService.getAllJobs().stream().map(job -> jobEngineService.getJobEngineInfo(job.getId())).collect(Collectors.toList());
     }
 
     @GET
     @Path("/infos/{jobId}")
-    public JobEngineInfoDTO getJobEngineInfo(@PathParam("jobId") Long jobId) {
-
-        JobEngineInfo jobEngineInfo = jobEngineService.getJobEngineInfo(jobId);
-
-        return new JobEngineInfoDTO(jobEngineInfo);
+    public JobEngineInfo getJobEngineInfo(@PathParam("jobId") Long jobId) {
+        return jobEngineService.getJobEngineInfo(jobId);
     }
 
     @GET
@@ -93,7 +86,6 @@ public class JobEngineResource {
         if (interval != null) {
             JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL = interval;
         }
-
         jobEngineService.start();
         return Response.ok().build();
     }
@@ -113,8 +105,7 @@ public class JobEngineResource {
 
     @GET
     @Path("/get-memory-counts/{jobId}")
-    public Object[] getMemoryCounts(@PathParam("jobId") Long jobId) {
-
+    public List<MemoryCountData> getMemoryCounts(@PathParam("jobId") Long jobId) {
         return jobStatisticService.getMemoryCounts(jobId);
     }
 
@@ -143,37 +134,36 @@ public class JobEngineResource {
 
     @GET
     @Path("/jobs-count")
-    public ListingResult<JobCountViewDTO> getJobsWithCounts(@BeanParam ListingParameters listingParameters) {
-
-        ListingResult<JobCountView> jobsListing = jobEngineApiService.listJobsWithCounts(listingParameters);
-        List<JobCountViewDTO> results = jobsListing.getResults().stream().map(JobCountViewDTO::new).collect(Collectors.toList());
-
-        return new ListingResult<JobCountViewDTO>(results, jobsListing.getMetadata());
+    public ListingResult<JobCountView> getJobsWithCounts(@BeanParam ListingParameters listingParameters) {
+        return jobEngineApiService.listJobsWithCounts(listingParameters);
     }
 
     @GET
     @Path("/executions/{jobExecutionId}")
-    public JobExecutionDTO getJobExecution(@PathParam("jobExecutionId") Long jobExecutionId) {
-        return new JobExecutionDTO(jobEngineService.getJobExecutionById(jobExecutionId));
+    public JobExecution getJobExecution(@PathParam("jobExecutionId") Long jobExecutionId) {
+        return jobEngineService.getJobExecutionById(jobExecutionId);
     }
 
     @GET
     @Path("/jobs/{jobId}/execution-views")
-    public ListingResult<JobExecutionViewDTO> getExecutionViews(@PathParam("jobId") Long jobId, @BeanParam ListingParameters listingParameters) {
+    public ListingResult<JobExecutionView> getExecutionViews(@PathParam("jobId") Long jobId, @BeanParam ListingParameters listingParameters) {
 
         if (jobId != null && jobId > 0) {
             listingParameters.addFilterAttributes("jobId", jobId.toString());
         }
-        ListingResult<JobExecutionView> jobListing = jobEngineApiService.listJobExecutionViews(listingParameters);
-        List<JobExecutionViewDTO> results = jobListing.getResults().stream().map(JobExecutionViewDTO::new).collect(Collectors.toList());
-
-        return new ListingResult<JobExecutionViewDTO>(results, jobListing.getMetadata());
+        return jobEngineApiService.listJobExecutionViews(listingParameters);
     }
 
     @GET
     @Path("/jobs/{jobId}")
-    public JobDTO getJob(@PathParam("jobId") Long jobId) {
-        return new JobDTO(jobEngineService.getJobById(jobId));
+    public Job getJob(@PathParam("jobId") Long jobId) {
+        return jobEngineService.getJobById(jobId);
+    }
+
+    @GET
+    @Path("/execution-counts/{minutes}")
+    public JobExecutionCountsDTO getJobExecutionCount(@PathParam("minutes") Integer minutes) {
+        return new JobExecutionCountsDTO(jobEngineApiService.getJobExecutionCounts(null, minutes));
     }
 
     @GET
@@ -184,10 +174,10 @@ public class JobEngineResource {
 
     @PUT
     @Path("/jobs/{jobId}")
-    public JobDTO updateJob(@PathParam("jobId") Long jobId, JobDTO jobDto) {
-        return new JobDTO(jobEngineService.updateJob(jobId, jobDto.name, jobDto.description, jobDto.tags, jobDto.workerClassName, jobDto.schedule,
-                        jobDto.status, jobDto.threads, jobDto.maxPerMinute, jobDto.failRetries, jobDto.retryDelay, jobDto.daysUntilCleanUp,
-                        jobDto.uniqueInQueue));
+    public Job updateJob(@PathParam("jobId") Long jobId, Job job) {
+        return jobEngineService.updateJob(jobId, job.getName(), job.getDescription(), job.getTags(), job.getWorkerClassName(), job.getSchedule(),
+                        job.getStatus(), job.getThreads(), job.getMaxPerMinute(), job.getFailRetries(), job.getRetryDelay(), job.getDaysUntilCleanUp(),
+                        job.isUniqueInQueue());
     }
 
     @DELETE
@@ -216,23 +206,22 @@ public class JobEngineResource {
 
     @GET
     @Path("/jobs/{jobId}/executions/{jobExecutionId}")
-    public JobExecutionDTO getJobExecution(@PathParam("jobId") Long jobId, @PathParam("jobExecutionId") Long jobExecutionId) {
-        return new JobExecutionDTO(jobEngineService.getJobExecutionById(jobExecutionId));
+    public JobExecution getJobExecution(@PathParam("jobId") Long jobId, @PathParam("jobExecutionId") Long jobExecutionId) {
+        return jobEngineService.getJobExecutionById(jobExecutionId);
     }
 
     @POST
     @Path("/jobs/{jobId}/executions")
-    public JobExecutionDTO createJobExecution(@PathParam("jobId") Long jobId, JobExecutionDTO jobExecutionDto) {
-        return new JobExecutionDTO(jobEngineService.createJobExecution(jobId, jobExecutionDto.parameters, jobExecutionDto.priority, jobExecutionDto.maturity,
-                        jobExecutionDto.batchId, jobExecutionDto.chainId, jobExecutionDto.chainPreviousExecutionId, false));
+    public JobExecution createJobExecution(@PathParam("jobId") Long jobId, JobExecution jobExecution) {
+        return jobEngineService.createJobExecution(jobId, jobExecution.getParameters(), jobExecution.isPriority(), jobExecution.getMaturity(),
+                        jobExecution.getBatchId(), jobExecution.getChainId(), jobExecution.getChainPreviousExecutionId(), false);
     }
 
     @PUT
     @Path("/jobs/{jobId}/executions/{jobExecutionId}")
-    public JobExecutionDTO updateJobExecution(@PathParam("jobId") Long jobId, @PathParam("jobExecutionId") Long jobExecutionId,
-                    JobExecutionDTO jobExecutionDto) {
-        return new JobExecutionDTO(jobEngineService.updateJobExecution(jobExecutionDto.id, jobExecutionDto.status, jobExecutionDto.parameters,
-                        jobExecutionDto.priority, jobExecutionDto.maturity, jobExecutionDto.failRetry));
+    public JobExecution updateJobExecution(@PathParam("jobId") Long jobId, @PathParam("jobExecutionId") Long jobExecutionId, JobExecution jobExecution) {
+        return jobEngineService.updateJobExecution(jobExecutionId, jobExecution.getStatus(), jobExecution.getParameters(), jobExecution.isPriority(),
+                        jobExecution.getMaturity(), jobExecution.getFailRetry());
     }
 
     @DELETE
@@ -243,34 +232,34 @@ public class JobEngineResource {
 
     @GET
     @Path("/jobs/{jobId}/batch/{batchId}")
-    public GroupInfoDTO getBatchInfo(@PathParam("jobId") Long jobId, @PathParam("batchId") Long batchId) {
-        return new GroupInfoDTO(jobEngineService.getJobExecutionBatchInfo(batchId));
+    public GroupInfo getBatchInfo(@PathParam("jobId") Long jobId, @PathParam("batchId") Long batchId) {
+        return jobEngineService.getJobExecutionBatchInfo(batchId);
     }
 
     @GET
     @Path("/jobs/{jobId}/batch/{batchId}/executions")
-    public List<JobExecutionDTO> getBatchJobExecutions(@PathParam("jobId") Long jobId, @PathParam("batchId") Long batchId) {
-        return jobEngineService.getJobExecutionBatch(batchId).stream().map(JobExecutionDTO::new).collect(Collectors.toList());
+    public List<JobExecution> getBatchJobExecutions(@PathParam("jobId") Long jobId, @PathParam("batchId") Long batchId) {
+        return jobEngineService.getJobExecutionBatch(batchId);
     }
 
     @GET
     @Path("/jobs/{jobId}/chain/{chainId}")
-    public GroupInfoDTO getChainInfo(@PathParam("jobId") Long jobId, @PathParam("chainId") Long chainId) {
-        return new GroupInfoDTO(jobEngineService.getJobExecutionChainInfo(chainId));
+    public GroupInfo getChainInfo(@PathParam("jobId") Long jobId, @PathParam("chainId") Long chainId) {
+        return jobEngineService.getJobExecutionChainInfo(chainId);
     }
 
     @GET
     @Path("/jobs/{jobId}/chain/{chainId}/executions")
-    public List<JobExecutionDTO> getChainJobExecutions(@PathParam("jobId") Long jobId, @PathParam("chainId") Long chainId) {
-        return jobEngineService.getJobExecutionChain(chainId).stream().map(JobExecutionDTO::new).collect(Collectors.toList());
+    public List<JobExecution> getChainJobExecutions(@PathParam("jobId") Long jobId, @PathParam("chainId") Long chainId) {
+        return jobEngineService.getJobExecutionChain(chainId);
     }
 
     @POST
     @Path("/jobs/{jobId}/scheduled-job-execution")
-    public JobDTO scheduledJobExecutionCreation(@PathParam("jobId") Long jobId, JobDTO jobDto) throws Exception {
+    public Job scheduledJobExecutionCreation(@PathParam("jobId") Long jobId, Job job) throws Exception {
 
         jobEngineService.triggerScheduledJobExecutionCreation(jobEngineService.getJobById(jobId));
-        return jobDto;
+        return job;
     }
 
     @GET
