@@ -139,6 +139,7 @@ public void start() {
    
    ```xml
     <class>io.coodoo.workhorse.jobengine.entity.Job</class>
+    <class>io.coodoo.workhorse.jobengine.entity.JobLog</class>
     <class>io.coodoo.workhorse.jobengine.entity.JobExecution</class>
 	<class>io.coodoo.workhorse.statistic.entity.JobStatisticMinute</class>
 	<class>io.coodoo.workhorse.statistic.entity.JobStatisticHour</class>

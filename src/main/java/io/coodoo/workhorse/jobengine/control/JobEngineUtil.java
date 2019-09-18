@@ -3,6 +3,8 @@ package io.coodoo.workhorse.jobengine.control;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -130,4 +132,19 @@ public final class JobEngineUtil {
         }
         return stacktraceString;
     }
+
+    /**
+     * yes yes, doesn't seem to make any sense (yet), but try figuring out what's going on in your dev team...
+     * 
+     * @return hostname of the running system
+     */
+    public static String getHostName() {
+        try {
+            InetAddress ip = InetAddress.getLocalHost();
+            return ip.getHostName();
+        } catch (UnknownHostException e) {
+            return null;
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ package io.coodoo.workhorse.jobengine.boundary;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -60,6 +61,9 @@ public class JobEngineService {
     @Inject
     JobStatisticService jobStatisticService;
 
+    @Inject
+    JobLogService jobLogService;
+
     public void start() {
 
         logger.info("Starting job engine...");
@@ -108,6 +112,7 @@ public class JobEngineService {
 
     private void updateJobStatus(Long jobId, JobStatus status) {
         Job job = getJobById(jobId);
+        jobLogService.logChange(jobId, status, "status", job.getStatus().name(), status.name(), null);
         job.setStatus(status);
         logger.info("Job status updated to: {}", status);
     }
@@ -156,18 +161,54 @@ public class JobEngineService {
         jobScheduler.stop(job);
         jobEngine.clearMemoryQueue(job);
 
-        job.setName(name);
-        job.setDescription(description);
-        job.setTags(tags);
-        job.setWorkerClassName(workerClassName);
-        job.setSchedule(schedule);
-        job.setStatus(status);
-        job.setThreads(threads);
-        job.setMaxPerMinute(maxPerMinute);
-        job.setFailRetries(failRetries);
-        job.setRetryDelay(retryDelay);
-        job.setDaysUntilCleanUp(daysUntilCleanUp);
-        job.setUniqueInQueue(uniqueInQueue);
+        if (Objects.equals(job.getName(), name)) {
+            jobLogService.logChange(jobId, status, "name", job.getName(), name, null);
+            job.setName(name);
+        }
+        if (Objects.equals(job.getDescription(), description)) {
+            jobLogService.logChange(jobId, status, "description", job.getDescription(), description, null);
+            job.setDescription(description);
+        }
+        if (Objects.equals(job.getTags(), tags)) {
+            jobLogService.logChange(jobId, status, "tags", job.getTags().toString(), tags.toString(), null);
+            job.setTags(tags);
+        }
+        if (Objects.equals(job.getWorkerClassName(), workerClassName)) {
+            jobLogService.logChange(jobId, status, "workerClassName", job.getWorkerClassName(), workerClassName, null);
+            job.setWorkerClassName(workerClassName);
+        }
+        if (Objects.equals(job.getSchedule(), schedule)) {
+            jobLogService.logChange(jobId, status, "schedule", job.getSchedule(), schedule, null);
+            job.setSchedule(schedule);
+        }
+        if (Objects.equals(job.getStatus(), status)) {
+            jobLogService.logChange(jobId, status, "status", job.getStatus().name(), status.name(), null);
+            job.setStatus(status);
+        }
+        if (Objects.equals(job.getThreads(), threads)) {
+            jobLogService.logChange(jobId, status, "threads", "" + job.getThreads(), "" + threads, null);
+            job.setThreads(threads);
+        }
+        if (Objects.equals(job.getMaxPerMinute(), maxPerMinute)) {
+            jobLogService.logChange(jobId, status, "maxPerMinute", "" + job.getMaxPerMinute(), "" + maxPerMinute, null);
+            job.setMaxPerMinute(maxPerMinute);
+        }
+        if (Objects.equals(job.getFailRetries(), failRetries)) {
+            jobLogService.logChange(jobId, status, "failRetries", "" + job.getFailRetries(), "" + failRetries, null);
+            job.setFailRetries(failRetries);
+        }
+        if (Objects.equals(job.getRetryDelay(), retryDelay)) {
+            jobLogService.logChange(jobId, status, "retryDelay", "" + job.getRetryDelay(), "" + retryDelay, null);
+            job.setRetryDelay(retryDelay);
+        }
+        if (Objects.equals(job.getDaysUntilCleanUp(), daysUntilCleanUp)) {
+            jobLogService.logChange(jobId, status, "daysUntilCleanUp", "" + job.getDaysUntilCleanUp(), "" + daysUntilCleanUp, null);
+            job.setDaysUntilCleanUp(daysUntilCleanUp);
+        }
+        if (Objects.equals(job.isUniqueInQueue(), uniqueInQueue)) {
+            jobLogService.logChange(jobId, status, "uniqueInQueue", "" + job.isUniqueInQueue(), "" + uniqueInQueue, null);
+            job.setUniqueInQueue(uniqueInQueue);
+        }
 
         logger.info("Job updated: {}", job);
 
@@ -183,10 +224,11 @@ public class JobEngineService {
         jobEngine.clearMemoryQueue(job);
 
         int deletedJobExecutions = JobExecution.deleteAllByJobId(entityManager, jobId);
+        int deletedJobLogs = jobLogService.deleteAllByJobId(jobId);
         int deletedJobStatisticns = jobStatisticService.deleteAllByJobId(jobId);
 
         entityManager.remove(job);
-        logger.info("Job removed (including {} executions and {} statistics): {}", deletedJobExecutions, deletedJobStatisticns, job);
+        logger.info("Job removed (including {} executions, {} logs and {} statistics): {}", deletedJobExecutions, deletedJobLogs, deletedJobStatisticns, job);
     }
 
     public JobExecution getJobExecutionById(Long jobExecutionId) {

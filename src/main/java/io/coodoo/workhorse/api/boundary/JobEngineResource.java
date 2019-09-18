@@ -36,8 +36,10 @@ import io.coodoo.workhorse.api.entity.JobCountView;
 import io.coodoo.workhorse.api.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.boundary.JobLogService;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
+import io.coodoo.workhorse.jobengine.entity.JobLog;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
 import io.coodoo.workhorse.statistic.entity.DurationHeatmap;
@@ -63,6 +65,9 @@ public class JobEngineResource {
 
     @Inject
     JobStatisticService jobStatisticService;
+
+    @Inject
+    JobLogService jobLogService;
 
     @GET
     @Path("/infos")
@@ -333,4 +338,15 @@ public class JobEngineResource {
         return jobStatisticService.getDurationHeatmap(Arrays.asList(jobId));
     }
 
+    @GET
+    @Path("/logs")
+    public ListingResult<JobLog> getJobLogs(@BeanParam ListingParameters listingParameters) {
+        return jobLogService.listJobLogs(listingParameters);
+    }
+
+    @POST
+    @Path("/logs/{jobId}/message")
+    public JobLog createJobLogMessage(@PathParam("jobId") Long jobId, String message) {
+        return jobLogService.logMessage(jobId, message);
+    }
 }

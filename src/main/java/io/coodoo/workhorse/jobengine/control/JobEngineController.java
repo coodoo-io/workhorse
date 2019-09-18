@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.boundary.JobLogService;
 import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
@@ -53,6 +54,9 @@ public class JobEngineController {
     JobStatisticService jobStatisticService;
 
     @Inject
+    JobLogService jobLogService;
+
+    @Inject
     JobExecutionCleanupWorker jobExecutionCleanupWorker;
 
     public void checkJobConfiguration() {
@@ -83,12 +87,17 @@ public class JobEngineController {
 
                     setJobStatus(job.getId(), JobStatus.INACTIVE);
                     logger.error("Found JobWorker class and put it in status INACTIVE for {}", job);
+                    jobLogService.logChange(job.getId(), job.getStatus(), "status", JobStatus.NO_WORKER.name(), JobStatus.INACTIVE.name(),
+                                    "Worker class found" + hostNameLogPart());
+
                 } else {
 
                     String parametersClassName = getParametersClassName(job);
                     if (!Objects.equals(parametersClassName, job.getParametersClassName())) {
                         logger.warn("Parameters class name of {} changed from {} to {}", job.getWorkerClassName(), job.getParametersClassName(),
                                         parametersClassName);
+                        jobLogService.logChange(job.getId(), job.getStatus(), "parametersClass", job.getParametersClassName(), parametersClassName,
+                                        hostNameLogPart());
                         job.setParametersClassName(parametersClassName);
                     }
                 }
@@ -96,10 +105,12 @@ public class JobEngineController {
 
                 setJobStatus(job.getId(), JobStatus.NO_WORKER);
                 logger.error("No JobWorker class found for {}", job);
+                jobLogService.logException(job.getId(), job.getStatus(), e, "No JobWorker class found" + hostNameLogPart());
             } catch (Exception e) {
 
                 setJobStatus(job.getId(), JobStatus.ERROR);
                 logger.error("Can't handle JobWorker class found for {}", job, e);
+                jobLogService.logException(job.getId(), job.getStatus(), e, null);
             }
         }
     }
@@ -152,7 +163,14 @@ public class JobEngineController {
 
         entityManager.persist(job);
         logger.info("Set up job {}", job.getName());
+        jobLogService.logMessage(job.getId(), "Job Added" + hostNameLogPart());
+
         return job;
+    }
+
+    private String hostNameLogPart() {
+        String hostName = JobEngineUtil.getHostName();
+        return hostName != null ? (" by " + hostName) : "";
     }
 
     public void syncJobExecutionQueue() {
@@ -191,6 +209,7 @@ public class JobEngineController {
             job = jobEngineService.getJobById(job.getId());
             job.setStatus(JobStatus.NO_WORKER);
 
+            jobLogService.logException(job.getId(), job.getStatus(), exception, "No JobWorker class found" + hostNameLogPart());
             throw exception;
 
         } catch (Exception exception) {
@@ -200,6 +219,7 @@ public class JobEngineController {
             job = jobEngineService.getJobById(job.getId());
             job.setStatus(JobStatus.ERROR);
 
+            jobLogService.logException(job.getId(), job.getStatus(), exception, "JobWorker could not be instanciated" + hostNameLogPart());
             throw exception;
         }
     }
@@ -300,13 +320,16 @@ public class JobEngineController {
                         JobExecution retryExecution = createRetryExecution(zombie);
                         zombie.setStatus(JobExecutionStatus.FAILED);
                         logger.info("Zombie killed and risen from the death! Now it is {}", retryExecution);
+                        jobLogService.logMessage(zombie.getJobId(), "Zombie execution found: Marked as failed and queued a clone");
                         break;
                     case RUNNING:
                         logger.warn("Zombie will still walk free with status {}", cure);
+                        jobLogService.logMessage(zombie.getJobId(), "Zombie execution found: No action is taken");
                         break;
                     default:
                         zombie.setStatus(cure);
                         logger.info("Zombie is cured with status {}", cure);
+                        jobLogService.logMessage(zombie.getJobId(), "Zombie execution found: Put in status " + cure);
                         break;
                 }
             }

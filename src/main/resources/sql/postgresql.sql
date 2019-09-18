@@ -31,6 +31,32 @@ CREATE TABLE jobengine_job (
   CONSTRAINT worker_class_name UNIQUE  (worker_class_name)
 );
 
+CREATE SEQUENCE jobengine_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE jobengine_log (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_log_id_seq'),
+  job_id bigint NOT NULL,
+  status varchar(32) NOT NULL DEFAULT 'QUEUED',
+  change_parameter varchar(128) DEFAULT NULL,
+  change_old varchar(1024) DEFAULT NULL,
+  change_new varchar(1024) DEFAULT NULL,
+  message text,
+  stacktrace text,
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id),
+ CONSTRAINT fk_jobengine_job_log_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE INDEX fk_jobengine_job_log_job_idx ON jobengine_log (job_id);
+CREATE INDEX idx_jobengine_job_log_jobid_status ON jobengine_log (job_id,status);
+
+
 CREATE SEQUENCE jobengine_execution_id_seq
     START WITH 1
     INCREMENT BY 1

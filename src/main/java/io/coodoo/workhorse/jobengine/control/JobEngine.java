@@ -33,6 +33,7 @@ import org.slf4j.MDC;
 import io.coodoo.workhorse.jobengine.boundary.JobContext;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
+import io.coodoo.workhorse.jobengine.boundary.JobLogService;
 import io.coodoo.workhorse.jobengine.control.event.AllJobExecutionsDoneEvent;
 import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
@@ -61,6 +62,9 @@ public class JobEngine implements Serializable {
 
     @Inject
     private JobExecutor jobExecutor;
+
+    @Inject
+    private JobLogService jobLogService;
 
     @Inject
     private Event<AllJobExecutionsDoneEvent> allJobsDoneEvent;
@@ -312,12 +316,13 @@ public class JobEngine implements Serializable {
                 } catch (Exception exception) {
 
                     logger.error("Error in job thread - Process gets cancelled", exception);
+                    jobLogService.logException(jobId, JobStatus.ERROR, exception, "Error in job thread");
+                    jobEngineController.setJobStatus(jobId, JobStatus.ERROR);
 
-                    jobEngineController.setJobStatus(job.getId(), JobStatus.ERROR);
                     cancelProcess(job);
 
                     // let the JobWorker know!
-                    job = jobEngineService.getJobById(job.getId());
+                    job = jobEngineService.getJobById(jobId);
                     jobErrorEvent.fire(new JobErrorEvent(job, exception));
                     return;
                 }

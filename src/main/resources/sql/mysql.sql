@@ -21,6 +21,23 @@ CREATE TABLE jobengine_job (
   UNIQUE KEY worker_class_name (worker_class_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+CREATE TABLE jobengine_log (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  job_id bigint(20) NOT NULL,
+  status varchar(32) COLLATE utf8_bin NOT NULL DEFAULT 'QUEUED',
+  change_parameter varchar(128) COLLATE utf8_bin DEFAULT NULL,
+  change_old varchar(1024) COLLATE utf8_bin DEFAULT NULL,
+  change_new varchar(1024) COLLATE utf8_bin DEFAULT NULL,
+  message mediumtext COLLATE utf8_bin DEFAULT NULL,
+  stacktrace mediumtext COLLATE utf8_bin DEFAULT NULL,
+  created_at datetime NOT NULL,
+  updated_at datetime DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY fk_jobengine_job_log_job_idx (job_id),
+  KEY idx_jobengine_job_log__jobid__status (job_id,status),
+  CONSTRAINT fk_jobengine_job_log_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
 CREATE TABLE jobengine_execution (
   id bigint(20) NOT NULL AUTO_INCREMENT,
   job_id bigint(20) NOT NULL,
