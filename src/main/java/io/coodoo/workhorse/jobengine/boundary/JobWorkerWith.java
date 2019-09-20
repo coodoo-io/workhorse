@@ -14,8 +14,8 @@ import javax.inject.Inject;
 
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
 import io.coodoo.workhorse.jobengine.control.BatchHelper;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * Job worker class to define the creation and execution of jobs with parameters. <br>

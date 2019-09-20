@@ -4,9 +4,9 @@ import javax.enterprise.context.RequestScoped;
 
 import org.slf4j.Logger;
 
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * @author coodoo GmbH (coodoo.io)

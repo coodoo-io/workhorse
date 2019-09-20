@@ -29,7 +29,6 @@ import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.MemoryCount;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.statistic.entity.DurationHeatmap;
@@ -38,6 +37,7 @@ import io.coodoo.workhorse.statistic.entity.JobStatisticDay;
 import io.coodoo.workhorse.statistic.entity.JobStatisticHour;
 import io.coodoo.workhorse.statistic.entity.JobStatisticMinute;
 import io.coodoo.workhorse.statistic.entity.MemoryCountData;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * Provides access to statistics data
@@ -46,9 +46,9 @@ import io.coodoo.workhorse.statistic.entity.MemoryCountData;
  */
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
-public class JobStatisticService {
+public class JobEngineStatisticService {
 
-    private final Logger logger = LoggerFactory.getLogger(JobStatisticService.class);
+    private final Logger logger = LoggerFactory.getLogger(JobEngineStatisticService.class);
 
     private static final DateTimeFormatter DURATION_HEATMAP_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

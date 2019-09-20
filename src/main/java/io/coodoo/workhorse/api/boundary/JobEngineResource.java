@@ -3,7 +3,6 @@ package io.coodoo.workhorse.api.boundary;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,19 +30,12 @@ import io.coodoo.workhorse.api.entity.JobCountView;
 import io.coodoo.workhorse.api.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobLogService;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
-import io.coodoo.workhorse.jobengine.entity.JobLog;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
-import io.coodoo.workhorse.statistic.entity.DurationHeatmap;
-import io.coodoo.workhorse.statistic.entity.JobStatisticDay;
-import io.coodoo.workhorse.statistic.entity.JobStatisticHour;
-import io.coodoo.workhorse.statistic.entity.JobStatisticMinute;
-import io.coodoo.workhorse.statistic.entity.MemoryCountData;
+import io.coodoo.workhorse.statistic.boundary.JobEngineStatisticService;
 
 /**
  * Rest interface to the workhorse
@@ -62,10 +54,7 @@ public class JobEngineResource {
     JobEngineService jobEngineService;
 
     @Inject
-    JobStatisticService jobStatisticService;
-
-    @Inject
-    JobLogService jobLogService;
+    JobEngineStatisticService jobEngineStatisticService;
 
     @GET
     @Path("/infos")
@@ -104,12 +93,6 @@ public class JobEngineResource {
     }
 
     @GET
-    @Path("/get-memory-counts/{jobId}")
-    public List<MemoryCountData> getMemoryCounts(@PathParam("jobId") Long jobId) {
-        return jobStatisticService.getMemoryCounts(jobId);
-    }
-
-    @GET
     @Path("/job-status-counts")
     public JobStatusCountsDTO getJobStatusCounts() {
 
@@ -127,7 +110,8 @@ public class JobEngineResource {
     public ListingResult<JobDTO> getJobs(@BeanParam ListingParameters listingParameters) {
 
         ListingResult<Job> jobsListing = jobEngineApiService.listJobs(listingParameters);
-        List<JobDTO> results = jobsListing.getResults().stream().map(job -> new JobDTO(job, getMemoryCounts(job.getId()))).collect(Collectors.toList());
+        List<JobDTO> results = jobsListing.getResults().stream().map(job -> new JobDTO(job, jobEngineStatisticService.getMemoryCounts(job.getId())))
+                        .collect(Collectors.toList());
 
         return new ListingResult<JobDTO>(results, jobsListing.getMetadata());
     }
@@ -295,47 +279,4 @@ public class JobEngineResource {
         return scheduledTimes;
     }
 
-    @GET
-    @Path("/statistics/minutes")
-    public List<JobStatisticMinute> getJobStatisticsMinutes(@BeanParam ListingParameters listingParameters) {
-
-        return jobStatisticService.listJobStatisticMinutes(listingParameters);
-    }
-
-    @GET
-    @Path("/statistics/hours")
-    public List<JobStatisticHour> getJobStatisticsHours(@BeanParam ListingParameters listingParameters) {
-        return jobStatisticService.listJobStatisticHours(listingParameters);
-    }
-
-    @GET
-    @Path("/statistics/days")
-    public List<JobStatisticDay> getJobStatisticsDays(@BeanParam ListingParameters listingParameters) {
-        return jobStatisticService.listJobStatisticDays(listingParameters);
-    }
-
-    @GET
-    @Path("/statistics/duration-heatmap")
-    public List<DurationHeatmap> getDurationHeatmap() {
-        return jobStatisticService.getDurationHeatmap(jobEngineService.getAllJobs().stream().map(Job::getId).collect(Collectors.toList()));
-    }
-
-    @GET
-    @Path("/statistics/duration-heatmap/{jobId}")
-    public List<DurationHeatmap> getDurationHeatmap(@PathParam("jobId") Long jobId) {
-
-        return jobStatisticService.getDurationHeatmap(Arrays.asList(jobId));
-    }
-
-    @GET
-    @Path("/logs")
-    public ListingResult<JobLog> getJobLogs(@BeanParam ListingParameters listingParameters) {
-        return jobLogService.listJobLogs(listingParameters);
-    }
-
-    @POST
-    @Path("/logs/{jobId}/message")
-    public JobLog createJobLogMessage(@PathParam("jobId") Long jobId, String message) {
-        return jobLogService.logMessage(jobId, message);
-    }
 }

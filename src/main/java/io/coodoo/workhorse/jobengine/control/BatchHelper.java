@@ -9,6 +9,7 @@ import javax.ejb.TransactionAttributeType;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * To do this kind of hacks, we need some basic transaction management <br>

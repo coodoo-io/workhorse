@@ -21,8 +21,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JobWorkerWithTest {

@@ -16,6 +16,7 @@ import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * Base worker class to define the creation and execution of jobs.

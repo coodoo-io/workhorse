@@ -1,4 +1,4 @@
-package io.coodoo.workhorse.jobengine.control;
+package io.coodoo.workhorse.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,6 +24,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobWorker;
 import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
+import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
 
 /**
  * @author coodoo GmbH (coodoo.io)

@@ -7,8 +7,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.Query;
 
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 // FIXME: this is plain MySQL syntax!!!
 @Entity

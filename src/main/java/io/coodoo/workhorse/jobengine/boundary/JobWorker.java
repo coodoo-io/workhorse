@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * Job worker class to define the creation and execution of jobs. Your job needs parameters? See {@link JobWorkerWith}!

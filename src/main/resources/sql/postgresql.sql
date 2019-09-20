@@ -40,12 +40,14 @@ CREATE SEQUENCE jobengine_log_id_seq
 
 CREATE TABLE jobengine_log (
   id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_log_id_seq'),
-  job_id bigint NOT NULL,
-  status varchar(32) NOT NULL DEFAULT 'QUEUED',
+  message text,
+  job_id bigint DEFAULT NULL,
+  job_status varchar DEFAULT NULL,
+  by_user boolean NOT NULL DEFAULT FALSE,
   change_parameter varchar(128) DEFAULT NULL,
   change_old varchar(1024) DEFAULT NULL,
   change_new varchar(1024) DEFAULT NULL,
-  message text,
+  host_name varchar(256) DEFAULT NULL,
   stacktrace text,
   created_at timestamp(0) NOT NULL,
   updated_at timestamp(0) DEFAULT NULL,

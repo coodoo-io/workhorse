@@ -24,12 +24,12 @@ import org.slf4j.Logger;
 
 import io.coodoo.workhorse.jobengine.control.JobEngine;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
 import io.coodoo.workhorse.jobengine.entity.AnquGenericMockUtil;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JobEngineServiceTest {

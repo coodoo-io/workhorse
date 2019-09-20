@@ -14,7 +14,7 @@ import javax.persistence.Query;
 import javax.persistence.Table;
 
 import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * <p>

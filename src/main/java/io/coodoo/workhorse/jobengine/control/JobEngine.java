@@ -33,7 +33,6 @@ import org.slf4j.MDC;
 import io.coodoo.workhorse.jobengine.boundary.JobContext;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobLogService;
 import io.coodoo.workhorse.jobengine.control.event.AllJobExecutionsDoneEvent;
 import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
@@ -42,6 +41,7 @@ import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
+import io.coodoo.workhorse.log.boundary.JobEngineLogService;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -64,7 +64,7 @@ public class JobEngine implements Serializable {
     private JobExecutor jobExecutor;
 
     @Inject
-    private JobLogService jobLogService;
+    private JobEngineLogService jobEngineLogService;
 
     @Inject
     private Event<AllJobExecutionsDoneEvent> allJobsDoneEvent;
@@ -316,7 +316,7 @@ public class JobEngine implements Serializable {
                 } catch (Exception exception) {
 
                     logger.error("Error in job thread - Process gets cancelled", exception);
-                    jobLogService.logException(jobId, JobStatus.ERROR, exception, "Error in job thread");
+                    jobEngineLogService.logException(exception, "Error in job thread", jobId, JobStatus.ERROR);
                     jobEngineController.setJobStatus(jobId, JobStatus.ERROR);
 
                     cancelProcess(job);

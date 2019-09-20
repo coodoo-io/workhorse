@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.coodoo.workhorse.statistic.boundary.StatisticsUtil;
 import io.coodoo.workhorse.statistic.entity.JobStatisticMinute;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 public class MemoryCount {
 

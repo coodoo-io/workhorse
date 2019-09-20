@@ -57,22 +57,28 @@ public final class JobEngineConfig {
     public static int DAYS_UNTIL_STATISTIC_HOURS_DELETION = 30;
 
     /**
-     * Log timestamp pattern. Default is <code>[HH:mm:ss.SSS]</code>
+     * Log change pattern. Placeholder <code>%s</code> for changeParameter, changeOld and changeNew in this order <br>
+     * Default is <code>Changed %s from '%s' to '%s'</code>
+     */
+    public static String LOG_CHANGE = "%s changed from '%s' to '%s'";
+
+    /**
+     * Execution log timestamp pattern. Default is <code>[HH:mm:ss.SSS]</code>
      */
     public static DateTimeFormatter LOG_TIME_FORMATTER = DateTimeFormatter.ofPattern("'['HH:mm:ss.SSS']'");
 
     /**
-     * Log info marker. Default is none
+     * Execution log info marker. Default is none
      */
     public static String LOG_INFO_MARKER = null;
 
     /**
-     * Log warn marker. Default is <code>[WARN]</code>
+     * Execution log warn marker. Default is <code>[WARN]</code>
      */
     public static String LOG_WARN_MARKER = "[WARN]";
 
     /**
-     * Log error marker. Default is <code>[ERROR]</code>
+     * Execution log error marker. Default is <code>[ERROR]</code>
      */
     public static String LOG_ERROR_MARKER = "[ERROR]";
 

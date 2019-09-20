@@ -19,7 +19,6 @@ import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
 import io.coodoo.workhorse.jobengine.control.JobEngineController;
-import io.coodoo.workhorse.jobengine.control.JobEngineUtil;
 import io.coodoo.workhorse.jobengine.control.JobQueuePoller;
 import io.coodoo.workhorse.jobengine.control.JobScheduler;
 import io.coodoo.workhorse.jobengine.entity.GroupInfo;
@@ -29,8 +28,10 @@ import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
-import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
+import io.coodoo.workhorse.log.boundary.JobEngineLogService;
+import io.coodoo.workhorse.statistic.boundary.JobEngineStatisticService;
 import io.coodoo.workhorse.util.CronExpression;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * Provides basically CRUD and management functionality
@@ -59,10 +60,10 @@ public class JobEngineService {
     JobEngineController jobEngineController;
 
     @Inject
-    JobStatisticService jobStatisticService;
+    JobEngineStatisticService jobEngineStatisticService;
 
     @Inject
-    JobLogService jobLogService;
+    JobEngineLogService jobEngineLogService;
 
     public void start() {
 
@@ -111,8 +112,9 @@ public class JobEngineService {
     }
 
     private void updateJobStatus(Long jobId, JobStatus status) {
+
         Job job = getJobById(jobId);
-        jobLogService.logChange(jobId, status, "status", job.getStatus().name(), status.name(), null);
+        jobEngineLogService.logChange(jobId, status, "Status", job.getStatus(), status, null);
         job.setStatus(status);
         logger.info("Job status updated to: {}", status);
     }
@@ -162,51 +164,51 @@ public class JobEngineService {
         jobEngine.clearMemoryQueue(job);
 
         if (!Objects.equals(job.getName(), name)) {
-            jobLogService.logChange(jobId, status, "name", job.getName(), name, null);
+            jobEngineLogService.logChange(jobId, status, "Name", job.getName(), name, null);
             job.setName(name);
         }
         if (!Objects.equals(job.getDescription(), description)) {
-            jobLogService.logChange(jobId, status, "description", job.getDescription(), description, null);
+            jobEngineLogService.logChange(jobId, status, "Description", job.getDescription(), description, null);
             job.setDescription(description);
         }
         if (!Objects.equals(job.getTags(), tags)) {
-            jobLogService.logChange(jobId, status, "tags", job.getTags().toString(), tags.toString(), null);
+            jobEngineLogService.logChange(jobId, status, "Tags", job.getTags(), tags, null);
             job.setTags(tags);
         }
         if (!Objects.equals(job.getWorkerClassName(), workerClassName)) {
-            jobLogService.logChange(jobId, status, "workerClassName", job.getWorkerClassName(), workerClassName, null);
+            jobEngineLogService.logChange(jobId, status, "JobWorker class name", job.getWorkerClassName(), workerClassName, null);
             job.setWorkerClassName(workerClassName);
         }
         if (!Objects.equals(job.getSchedule(), schedule)) {
-            jobLogService.logChange(jobId, status, "schedule", job.getSchedule(), schedule, null);
+            jobEngineLogService.logChange(jobId, status, "Schedule", job.getSchedule(), schedule, null);
             job.setSchedule(schedule);
         }
         if (!Objects.equals(job.getStatus(), status)) {
-            jobLogService.logChange(jobId, status, "status", job.getStatus().name(), status.name(), null);
+            jobEngineLogService.logChange(jobId, status, "Status", job.getStatus(), status.name(), null);
             job.setStatus(status);
         }
         if (!Objects.equals(job.getThreads(), threads)) {
-            jobLogService.logChange(jobId, status, "threads", "" + job.getThreads(), "" + threads, null);
+            jobEngineLogService.logChange(jobId, status, "Threads", job.getThreads(), threads, null);
             job.setThreads(threads);
         }
         if (!Objects.equals(job.getMaxPerMinute(), maxPerMinute)) {
-            jobLogService.logChange(jobId, status, "maxPerMinute", "" + job.getMaxPerMinute(), "" + maxPerMinute, null);
+            jobEngineLogService.logChange(jobId, status, "Max executions per minute", job.getMaxPerMinute(), maxPerMinute, null);
             job.setMaxPerMinute(maxPerMinute);
         }
         if (!Objects.equals(job.getFailRetries(), failRetries)) {
-            jobLogService.logChange(jobId, status, "failRetries", "" + job.getFailRetries(), "" + failRetries, null);
+            jobEngineLogService.logChange(jobId, status, "Fail retries", job.getFailRetries(), failRetries, null);
             job.setFailRetries(failRetries);
         }
         if (!Objects.equals(job.getRetryDelay(), retryDelay)) {
-            jobLogService.logChange(jobId, status, "retryDelay", "" + job.getRetryDelay(), "" + retryDelay, null);
+            jobEngineLogService.logChange(jobId, status, "Retry delay", job.getRetryDelay(), retryDelay, null);
             job.setRetryDelay(retryDelay);
         }
         if (!Objects.equals(job.getDaysUntilCleanUp(), daysUntilCleanUp)) {
-            jobLogService.logChange(jobId, status, "daysUntilCleanUp", "" + job.getDaysUntilCleanUp(), "" + daysUntilCleanUp, null);
+            jobEngineLogService.logChange(jobId, status, "Days until cleanup", job.getDaysUntilCleanUp(), daysUntilCleanUp, null);
             job.setDaysUntilCleanUp(daysUntilCleanUp);
         }
         if (!Objects.equals(job.isUniqueInQueue(), uniqueInQueue)) {
-            jobLogService.logChange(jobId, status, "uniqueInQueue", "" + job.isUniqueInQueue(), "" + uniqueInQueue, null);
+            jobEngineLogService.logChange(jobId, status, "Unique in queue", job.isUniqueInQueue(), uniqueInQueue, null);
             job.setUniqueInQueue(uniqueInQueue);
         }
 
@@ -224,11 +226,15 @@ public class JobEngineService {
         jobEngine.clearMemoryQueue(job);
 
         int deletedJobExecutions = JobExecution.deleteAllByJobId(entityManager, jobId);
-        int deletedJobLogs = jobLogService.deleteAllByJobId(jobId);
-        int deletedJobStatisticns = jobStatisticService.deleteAllByJobId(jobId);
+        int deletedJobLogs = jobEngineLogService.deleteAllByJobId(jobId);
+        int deletedJobStatisticns = jobEngineStatisticService.deleteAllByJobId(jobId);
 
         entityManager.remove(job);
-        logger.info("Job removed (including {} executions, {} logs and {} statistics): {}", deletedJobExecutions, deletedJobLogs, deletedJobStatisticns, job);
+
+        String logMessage = String.format("Job removed (including %d executions, %d logs and %d statistics): %s", deletedJobExecutions, deletedJobLogs,
+                        deletedJobStatisticns, job.toString());
+        logger.info(logMessage);
+        jobEngineLogService.logMessage(logMessage, null, true);
     }
 
     public JobExecution getJobExecutionById(Long jobExecutionId) {
@@ -356,7 +362,7 @@ public class JobEngineService {
         jobWorker.onSchedule();
 
         // count this trigger
-        jobStatisticService.recordTrigger(job.getId());
+        jobEngineStatisticService.recordTrigger(job.getId());
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

@@ -139,11 +139,12 @@ public void start() {
    
    ```xml
     <class>io.coodoo.workhorse.jobengine.entity.Job</class>
-    <class>io.coodoo.workhorse.jobengine.entity.JobLog</class>
     <class>io.coodoo.workhorse.jobengine.entity.JobExecution</class>
+    <class>io.coodoo.workhorse.log.entity.Log</class>
 	<class>io.coodoo.workhorse.statistic.entity.JobStatisticMinute</class>
 	<class>io.coodoo.workhorse.statistic.entity.JobStatisticHour</class>
 	<class>io.coodoo.workhorse.statistic.entity.JobStatisticDay</class>
+	<class>io.coodoo.workhorse.api.entity.LogView</class>
 	<class>io.coodoo.workhorse.api.entity.JobExecutionCounts</class>
 	<class>io.coodoo.workhorse.api.entity.JobExecutionView</class>
 	<class>io.coodoo.workhorse.api.entity.JobCountView</class>

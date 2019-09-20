@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobLogService;
 import io.coodoo.workhorse.jobengine.boundary.JobWorkerWith;
 import io.coodoo.workhorse.jobengine.boundary.annotation.InitialJobConfig;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
@@ -27,7 +26,9 @@ import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.StringListConverter;
-import io.coodoo.workhorse.statistic.boundary.JobStatisticService;
+import io.coodoo.workhorse.log.boundary.JobEngineLogService;
+import io.coodoo.workhorse.statistic.boundary.JobEngineStatisticService;
+import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -51,10 +52,10 @@ public class JobEngineController {
     JobEngineService jobEngineService;
 
     @Inject
-    JobStatisticService jobStatisticService;
+    JobEngineStatisticService jobEngineStatisticService;
 
     @Inject
-    JobLogService jobLogService;
+    JobEngineLogService jobLogService;
 
     @Inject
     JobExecutionCleanupWorker jobExecutionCleanupWorker;
@@ -87,8 +88,7 @@ public class JobEngineController {
 
                     setJobStatus(job.getId(), JobStatus.INACTIVE);
                     logger.error("Found JobWorker class and put it in status INACTIVE for {}", job);
-                    jobLogService.logChange(job.getId(), job.getStatus(), "status", JobStatus.NO_WORKER.name(), JobStatus.INACTIVE.name(),
-                                    "Worker class found" + hostNameLogPart());
+                    jobLogService.logChange(job.getId(), job.getStatus(), "Status", JobStatus.NO_WORKER, JobStatus.INACTIVE, "Worker class found");
 
                 } else {
 
@@ -96,8 +96,7 @@ public class JobEngineController {
                     if (!Objects.equals(parametersClassName, job.getParametersClassName())) {
                         logger.warn("Parameters class name of {} changed from {} to {}", job.getWorkerClassName(), job.getParametersClassName(),
                                         parametersClassName);
-                        jobLogService.logChange(job.getId(), job.getStatus(), "parametersClass", job.getParametersClassName(), parametersClassName,
-                                        hostNameLogPart());
+                        jobLogService.logChange(job.getId(), job.getStatus(), "Parameters class", job.getParametersClassName(), parametersClassName, null);
                         job.setParametersClassName(parametersClassName);
                     }
                 }
@@ -105,12 +104,12 @@ public class JobEngineController {
 
                 setJobStatus(job.getId(), JobStatus.NO_WORKER);
                 logger.error("No JobWorker class found for {}", job);
-                jobLogService.logException(job.getId(), job.getStatus(), e, "No JobWorker class found" + hostNameLogPart());
+                jobLogService.logException(e, "No JobWorker class found", job.getId(), job.getStatus());
             } catch (Exception e) {
 
                 setJobStatus(job.getId(), JobStatus.ERROR);
                 logger.error("Can't handle JobWorker class found for {}", job, e);
-                jobLogService.logException(job.getId(), job.getStatus(), e, null);
+                jobLogService.logException(e, null, job.getId(), job.getStatus());
             }
         }
     }
@@ -163,14 +162,9 @@ public class JobEngineController {
 
         entityManager.persist(job);
         logger.info("Set up job {}", job.getName());
-        jobLogService.logMessage(job.getId(), "Job Added" + hostNameLogPart());
+        jobLogService.logMessage("Job Added", job.getId(), false);
 
         return job;
-    }
-
-    private String hostNameLogPart() {
-        String hostName = JobEngineUtil.getHostName();
-        return hostName != null ? (" by " + hostName) : "";
     }
 
     public void syncJobExecutionQueue() {
@@ -209,7 +203,7 @@ public class JobEngineController {
             job = jobEngineService.getJobById(job.getId());
             job.setStatus(JobStatus.NO_WORKER);
 
-            jobLogService.logException(job.getId(), job.getStatus(), exception, "No JobWorker class found" + hostNameLogPart());
+            jobLogService.logException(exception, "No JobWorker class found", job.getId(), job.getStatus());
             throw exception;
 
         } catch (Exception exception) {
@@ -219,7 +213,7 @@ public class JobEngineController {
             job = jobEngineService.getJobById(job.getId());
             job.setStatus(JobStatus.ERROR);
 
-            jobLogService.logException(job.getId(), job.getStatus(), exception, "JobWorker could not be instanciated" + hostNameLogPart());
+            jobLogService.logException(exception, "JobWorker could not be instanciated", job.getId(), job.getStatus());
             throw exception;
         }
     }
@@ -269,7 +263,7 @@ public class JobEngineController {
         } else {
             jobWorker.onRetry(jobExecutionId, retryExecution.getId());
         }
-        jobStatisticService.recordFailed(job.getId(), jobExecutionId, duration);
+        jobEngineStatisticService.recordFailed(job.getId(), jobExecutionId, duration);
         return retryExecution;
     }
 
@@ -313,6 +307,7 @@ public class JobEngineController {
 
                 logger.warn("Zombie found! {}", zombie);
                 JobExecutionStatus cure = JobEngineConfig.ZOMBIE_CURE_STATUS;
+                String logMessage = "Zombie execution found (ID: " + zombie.getId() + "): ";
 
                 // how to cure it?
                 switch (cure) {
@@ -320,16 +315,16 @@ public class JobEngineController {
                         JobExecution retryExecution = createRetryExecution(zombie);
                         zombie.setStatus(JobExecutionStatus.FAILED);
                         logger.info("Zombie killed and risen from the death! Now it is {}", retryExecution);
-                        jobLogService.logMessage(zombie.getJobId(), "Zombie execution found: Marked as failed and queued a clone");
+                        jobLogService.logMessage(logMessage + "Marked as failed and queued a clone", zombie.getJobId(), false);
                         break;
                     case RUNNING:
                         logger.warn("Zombie will still walk free with status {}", cure);
-                        jobLogService.logMessage(zombie.getJobId(), "Zombie execution found: No action is taken");
+                        jobLogService.logMessage(logMessage + "No action is taken", zombie.getJobId(), false);
                         break;
                     default:
                         zombie.setStatus(cure);
                         logger.info("Zombie is cured with status {}", cure);
-                        jobLogService.logMessage(zombie.getJobId(), "Zombie execution found: Put in status " + cure);
+                        jobLogService.logMessage(logMessage + "Put in status " + cure, zombie.getJobId(), false);
                         break;
                 }
             }
@@ -346,7 +341,7 @@ public class JobEngineController {
     public synchronized void setJobExecutionFinished(Job job, Long jobExecutionId, Long duration, String jobExecutionLog) {
 
         JobExecution.updateStatusFinished(entityManager, JobEngineUtil.timestamp(), duration, jobExecutionLog, jobExecutionId);
-        jobStatisticService.recordFinished(job.getId(), jobExecutionId, duration);
+        jobEngineStatisticService.recordFinished(job.getId(), jobExecutionId, duration);
     }
 
     public synchronized JobExecution getNextInChain(Long chainId, Long currentJobExecutionId) {

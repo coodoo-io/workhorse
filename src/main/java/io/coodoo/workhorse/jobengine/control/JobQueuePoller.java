@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
+import io.coodoo.workhorse.log.boundary.JobEngineLogService;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -27,6 +28,9 @@ public class JobQueuePoller {
 
     @Inject
     JobEngineController jobEngineController;
+
+    @Inject
+    JobEngineLogService jobEngineLogService;
 
     @Resource
     protected TimerService timerService;
@@ -63,14 +67,19 @@ public class JobQueuePoller {
         }
         timerService.createCalendarTimer(scheduleExpression, timerConfig);
 
-        logger.info("Job Queue Poller started with a {} seconds interval", JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL);
+        String logMessage = String.format("Job queue poller started with a %s seconds interval", JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL);
+        logger.info(logMessage);
+        jobEngineLogService.logMessage(logMessage, null, true);
     }
 
     public void stop() {
         Timer timer = getPollerTimer();
         if (timer != null) {
             timer.cancel();
-            logger.info("Job Queue Poller stopped");
+
+            String logMessage = "Job queue poller stopped";
+            logger.info(logMessage);
+            jobEngineLogService.logMessage(logMessage, null, true);
         }
     }
 

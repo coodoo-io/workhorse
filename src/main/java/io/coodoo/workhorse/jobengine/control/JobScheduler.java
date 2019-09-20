@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
-import io.coodoo.workhorse.jobengine.boundary.JobLogService;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
+import io.coodoo.workhorse.log.boundary.JobEngineLogService;
 
 /**
  * @author coodoo GmbH (coodoo.io)
@@ -35,7 +35,7 @@ public class JobScheduler {
     JobEngineController jobEngineController;
 
     @Inject
-    JobLogService jobLogService;
+    JobEngineLogService jobEngineLogService;
 
     @Resource
     protected TimerService timerService;
@@ -56,7 +56,7 @@ public class JobScheduler {
             } catch (IllegalArgumentException e) {
                 jobEngineController.setJobStatus(job.getId(), JobStatus.ERROR);
                 logger.error("Invalid schedule found for {}", job, e);
-                jobLogService.logException(job.getId(), JobStatus.ERROR, e, "Invalid schedule: " + job.getSchedule());
+                jobEngineLogService.logException(e, "Invalid schedule: " + job.getSchedule(), job.getId(), JobStatus.ERROR);
             }
         }
     }
