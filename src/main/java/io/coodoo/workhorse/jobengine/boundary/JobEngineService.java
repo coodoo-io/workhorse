@@ -15,6 +15,7 @@ import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.coodoo.workhorse.config.boundary.JobEngineConfigService;
 import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
 import io.coodoo.workhorse.jobengine.control.BaseJobWorker;
 import io.coodoo.workhorse.jobengine.control.JobEngine;
@@ -57,6 +58,9 @@ public class JobEngineService {
     JobScheduler jobScheduler;
 
     @Inject
+    JobEngineConfigService configService;
+
+    @Inject
     JobEngineController jobEngineController;
 
     @Inject
@@ -69,6 +73,7 @@ public class JobEngineService {
 
         logger.info("Starting job engine...");
 
+        configService.initializeStaticConfig();
         jobEngineController.checkJobConfiguration();
         jobEngine.initializeMemoryQueues();
         jobQueuePoller.start();

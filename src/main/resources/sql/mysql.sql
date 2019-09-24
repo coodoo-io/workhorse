@@ -21,25 +21,6 @@ CREATE TABLE jobengine_job (
   UNIQUE KEY worker_class_name (worker_class_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
-CREATE TABLE jobengine_log (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
-  message mediumtext COLLATE utf8_bin DEFAULT NULL,
-  job_id bigint(20) DEFAULT NULL,
-  job_status varchar(32) COLLATE utf8_bin DEFAULT NULL,
-  by_user bit(1) NOT NULL DEFAULT b'0',
-  change_parameter varchar(128) COLLATE utf8_bin DEFAULT NULL,
-  change_old varchar(1024) COLLATE utf8_bin DEFAULT NULL,
-  change_new varchar(1024) COLLATE utf8_bin DEFAULT NULL,
-  host_name varchar(256) COLLATE utf8_bin DEFAULT NULL,
-  stacktrace mediumtext COLLATE utf8_bin DEFAULT NULL,
-  created_at datetime NOT NULL,
-  updated_at datetime DEFAULT NULL,
-  PRIMARY KEY (id),
-  KEY fk_jobengine_job_log_job_idx (job_id),
-  KEY idx_jobengine_job_log__jobid__status (job_id,job_status),
-  CONSTRAINT fk_jobengine_job_log_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
 CREATE TABLE jobengine_execution (
   id bigint(20) NOT NULL AUTO_INCREMENT,
   job_id bigint(20) NOT NULL,
@@ -69,6 +50,45 @@ CREATE TABLE jobengine_execution (
   KEY idx_jobengine_job_execution__batch_id_status (batch_id,status),
   KEY idx_jobengine_job_execution__startet_at_status (started_at,status),
   CONSTRAINT fk_jobengine_job_execution_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+CREATE TABLE jobengine_config (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  time_zone varchar(64) COLLATE utf8_bin DEFAULT NULL,
+  job_queue_poller_interval int(6) NOT NULL,
+  job_queue_max int(6) NOT NULL,
+  job_queue_min int(6) NOT NULL,
+  zombie_recognition_time int(6) NOT NULL,
+  zombie_cure_status varchar(32) COLLATE utf8_bin NOT NULL,
+  days_until_statistic_minutes_deletion int(6) NOT NULL,
+  days_until_statistic_hours_deletion int(6) NOT NULL,
+  log_change varchar(128) COLLATE utf8_bin DEFAULT NULL,
+  log_time_formatter varchar(128) COLLATE utf8_bin NOT NULL,
+  log_info_marker varchar(128) COLLATE utf8_bin DEFAULT NULL,
+  log_warn_marker varchar(128) COLLATE utf8_bin DEFAULT NULL,
+  log_error_marker varchar(128) COLLATE utf8_bin DEFAULT NULL,
+  created_at datetime NOT NULL,
+  updated_at datetime DEFAULT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+CREATE TABLE jobengine_log (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  message mediumtext COLLATE utf8_bin DEFAULT NULL,
+  job_id bigint(20) DEFAULT NULL,
+  job_status varchar(32) COLLATE utf8_bin DEFAULT NULL,
+  by_user bit(1) NOT NULL DEFAULT b'0',
+  change_parameter varchar(128) COLLATE utf8_bin DEFAULT NULL,
+  change_old varchar(1024) COLLATE utf8_bin DEFAULT NULL,
+  change_new varchar(1024) COLLATE utf8_bin DEFAULT NULL,
+  host_name varchar(256) COLLATE utf8_bin DEFAULT NULL,
+  stacktrace mediumtext COLLATE utf8_bin DEFAULT NULL,
+  created_at datetime NOT NULL,
+  updated_at datetime DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY fk_jobengine_job_log_job_idx (job_id),
+  KEY idx_jobengine_job_log__jobid__status (job_id,job_status),
+  CONSTRAINT fk_jobengine_job_log_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 CREATE TABLE jobengine_statistic_minute (

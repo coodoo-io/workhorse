@@ -138,16 +138,17 @@ public void start() {
    You can find SQL snippets to create the tables [here](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql). If you need the insert statements for another SQL database just use this [converter](http://www.sqlines.com/online).
    
    ```xml
-    <class>io.coodoo.workhorse.jobengine.entity.Job</class>
-    <class>io.coodoo.workhorse.jobengine.entity.JobExecution</class>
-    <class>io.coodoo.workhorse.log.entity.Log</class>
-	<class>io.coodoo.workhorse.statistic.entity.JobStatisticMinute</class>
-	<class>io.coodoo.workhorse.statistic.entity.JobStatisticHour</class>
-	<class>io.coodoo.workhorse.statistic.entity.JobStatisticDay</class>
-	<class>io.coodoo.workhorse.api.entity.LogView</class>
-	<class>io.coodoo.workhorse.api.entity.JobExecutionCounts</class>
-	<class>io.coodoo.workhorse.api.entity.JobExecutionView</class>
-	<class>io.coodoo.workhorse.api.entity.JobCountView</class>
+	    <class>io.coodoo.workhorse.jobengine.entity.Job</class>
+	    <class>io.coodoo.workhorse.jobengine.entity.JobExecution</class>
+	    <class>io.coodoo.workhorse.config.entity.Config</class>
+	    <class>io.coodoo.workhorse.log.entity.Log</class>
+		<class>io.coodoo.workhorse.statistic.entity.JobStatisticMinute</class>
+		<class>io.coodoo.workhorse.statistic.entity.JobStatisticHour</class>
+		<class>io.coodoo.workhorse.statistic.entity.JobStatisticDay</class>
+		<class>io.coodoo.workhorse.api.entity.LogView</class>
+		<class>io.coodoo.workhorse.api.entity.JobExecutionCounts</class>
+		<class>io.coodoo.workhorse.api.entity.JobExecutionView</class>
+		<class>io.coodoo.workhorse.api.entity.JobCountView</class>
    ```
 3. To provide the EntityManager you have to implement a `@JobEngineEntityManagerProducer` CDI producer.
 

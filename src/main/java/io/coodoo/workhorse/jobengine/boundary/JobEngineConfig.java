@@ -3,12 +3,11 @@ package io.coodoo.workhorse.jobengine.boundary;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import io.coodoo.workhorse.config.boundary.JobEngineConfigService;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 
 /**
- * Basic configuration that can be changed in the implementation<br>
- * If for example you want to change the error log marker, just call<br>
- * <tt>JobEngineConfig.LOG_ERROR_MARKER = "SCREW-UP:"</tt>
+ * Basic configuration that can be changed via {@link JobEngineConfigService}
  * 
  * @author coodoo GmbH (coodoo.io)
  */
@@ -37,7 +36,7 @@ public final class JobEngineConfig {
     public static int JOB_QUEUE_MIN = 100;
 
     /**
-     * A zombie is an execution that is stuck in status {@link JobExecutionStatus#RUNNING} for this amount of minutes (if set to 0 there the hunt is off)
+     * A zombie is an execution that is stuck in status {@link JobExecutionStatus#RUNNING} for this amount of minutes (if set to 0 the hunt is off)
      */
     public static int ZOMBIE_RECOGNITION_TIME = 120;
 
@@ -47,7 +46,7 @@ public final class JobEngineConfig {
     public static JobExecutionStatus ZOMBIE_CURE_STATUS = JobExecutionStatus.ABORTED;
 
     /**
-     * Days until minute by minute statistic records gets deleted (0 to keep all)
+     * Days until by minute statistic records gets deleted (0 to keep all)
      */
     public static int DAYS_UNTIL_STATISTIC_MINUTES_DELETION = 10;
 

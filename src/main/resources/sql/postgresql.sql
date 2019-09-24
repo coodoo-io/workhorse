@@ -31,33 +31,6 @@ CREATE TABLE jobengine_job (
   CONSTRAINT worker_class_name UNIQUE  (worker_class_name)
 );
 
-CREATE SEQUENCE jobengine_log_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE TABLE jobengine_log (
-  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_log_id_seq'),
-  message text,
-  job_id bigint DEFAULT NULL,
-  job_status varchar DEFAULT NULL,
-  by_user boolean NOT NULL DEFAULT FALSE,
-  change_parameter varchar(128) DEFAULT NULL,
-  change_old varchar(1024) DEFAULT NULL,
-  change_new varchar(1024) DEFAULT NULL,
-  host_name varchar(256) DEFAULT NULL,
-  stacktrace text,
-  created_at timestamp(0) NOT NULL,
-  updated_at timestamp(0) DEFAULT NULL,
-  PRIMARY KEY (id),
- CONSTRAINT fk_jobengine_job_log_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
-);
-
-CREATE INDEX fk_jobengine_job_log_job_idx ON jobengine_log (job_id);
-CREATE INDEX idx_jobengine_job_log_jobid_status ON jobengine_log (job_id,status);
-
 
 CREATE SEQUENCE jobengine_execution_id_seq
     START WITH 1
@@ -97,6 +70,62 @@ CREATE INDEX idx_jobengine_job_execution_poller ON jobengine_execution (job_id,s
 CREATE INDEX idx_jobengine_job_execution__chain_id__chain_prev_exec_id ON jobengine_execution (chain_id,chain_previous_execution_id);
 CREATE INDEX idx_jobengine_job_execution__batch_id_status ON jobengine_execution (batch_id,status);
 CREATE INDEX idx_jobengine_job_execution__startet_at_status ON jobengine_execution (started_at,status);
+
+
+CREATE SEQUENCE jobengine_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE jobengine_log (
+  id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_log_id_seq'),
+  message text,
+  job_id bigint DEFAULT NULL,
+  job_status varchar DEFAULT NULL,
+  by_user boolean NOT NULL DEFAULT FALSE,
+  change_parameter varchar(128) DEFAULT NULL,
+  change_old varchar(1024) DEFAULT NULL,
+  change_new varchar(1024) DEFAULT NULL,
+  host_name varchar(256) DEFAULT NULL,
+  stacktrace text,
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id),
+ CONSTRAINT fk_jobengine_job_log_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+CREATE INDEX fk_jobengine_job_log_job_idx ON jobengine_log (job_id);
+CREATE INDEX idx_jobengine_job_log_jobid_status ON jobengine_log (job_id,status);
+
+
+CREATE SEQUENCE jobengine_config_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE jobengine_config (
+   id bigint NOT NULL DEFAULT NEXTVAL ('jobengine_config_id_seq'),
+  time_zone varchar(64) DEFAULT NULL,
+  job_queue_poller_interval int NOT NULL,
+  job_queue_max int NOT NULL,
+  job_queue_min int NOT NULL,
+  zombie_recognition_time int NOT NULL,
+  zombie_cure_status varchar(32) NOT NULL,
+  days_until_statistic_minutes_deletion int NOT NULL,
+  days_until_statistic_hours_deletion int NOT NULL,
+  log_change varchar(128) DEFAULT NULL,
+  log_time_formatter varchar(128) NOT NULL,
+  log_info_marker varchar(128) DEFAULT NULL,
+  log_warn_marker varchar(128) DEFAULT NULL,
+  log_error_marker varchar(128) DEFAULT NULL,
+  created_at timestamp(0) NOT NULL,
+  updated_at timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id)
+);
 
 
 CREATE TABLE jobengine_statistic_minute (
