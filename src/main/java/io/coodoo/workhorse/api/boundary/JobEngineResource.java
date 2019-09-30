@@ -25,7 +25,6 @@ import io.coodoo.framework.listing.boundary.ListingResult;
 import io.coodoo.workhorse.api.boundary.dto.JobDTO;
 import io.coodoo.workhorse.api.boundary.dto.JobExecutionCountsDTO;
 import io.coodoo.workhorse.api.boundary.dto.JobScheduleExecutionTimeDTO;
-import io.coodoo.workhorse.api.boundary.dto.JobStatusCountsDTO;
 import io.coodoo.workhorse.api.entity.JobCountView;
 import io.coodoo.workhorse.api.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
@@ -34,7 +33,6 @@ import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
-import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.statistic.boundary.JobEngineStatisticService;
 
 /**
@@ -90,19 +88,6 @@ public class JobEngineResource {
     @Path("/is-running")
     public Response isRunning() {
         return Response.ok(jobEngineService.isRunning()).build();
-    }
-
-    @GET
-    @Path("/job-status-counts")
-    public JobStatusCountsDTO getJobStatusCounts() {
-
-        JobStatusCountsDTO counts = new JobStatusCountsDTO();
-        counts.active = jobEngineService.countJobsByStatus(JobStatus.ACTIVE);
-        counts.inactive = jobEngineService.countJobsByStatus(JobStatus.INACTIVE);
-        counts.error = jobEngineService.countJobsByStatus(JobStatus.ERROR);
-        counts.noWorker = jobEngineService.countJobsByStatus(JobStatus.NO_WORKER);
-        counts.total = counts.active + counts.inactive + counts.error + counts.noWorker;
-        return counts;
     }
 
     @GET
