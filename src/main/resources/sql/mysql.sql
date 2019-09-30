@@ -159,13 +159,13 @@ CREATE TABLE jobengine_statistic_day (
   CONSTRAINT fk_jobengine_job_statistic_day_job FOREIGN KEY (job_id) REFERENCES jobengine_job (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
-CREATE  VIEW jobengine_log_view AS
+CREATE VIEW jobengine_log_view AS
 SELECT log.id,
   log.message,
   log.job_id,
   job.name AS job_name,
   job.description AS job_description,
-  job.status AS job_status,
+  log.job_status AS job_status,
   job.fail_retries AS job_fail_retries,
   job.threads AS job_threads,
   log.by_user,
