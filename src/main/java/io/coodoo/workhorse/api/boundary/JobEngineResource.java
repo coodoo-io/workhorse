@@ -33,6 +33,7 @@ import io.coodoo.workhorse.jobengine.entity.GroupInfo;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobEngineInfo;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.statistic.boundary.JobEngineStatisticService;
 
 /**
@@ -197,6 +198,19 @@ public class JobEngineResource {
     @Path("/jobs/{jobId}/executions/{jobExecutionId}")
     public void deleteJobExecution(@PathParam("jobId") Long jobId, @PathParam("jobExecutionId") Long jobExecutionId) {
         jobEngineService.deleteJobExecution(jobExecutionId);
+    }
+
+    /**
+     * You can redo a {@link JobExecution} in status {@link JobExecutionStatus#FINISHED}, {@link JobExecutionStatus#FAILED} and
+     * {@link JobExecutionStatus#ABORTED}, but all the meta data like timestamps and logs of the first execution will be gone!
+     * 
+     * @param jobExecutionId ID of the {@link JobExecution} you wish to redo
+     * @return cleared out {@link JobExecution} in status {@link JobExecutionStatus#QUEUED}
+     */
+    @GET // this is to be able to redo an execution even by browser...
+    @Path("/jobs/{jobId}/executions/{jobExecutionId}/redo")
+    public JobExecution redoJobExecution(@PathParam("jobId") Long jobId, @PathParam("jobExecutionId") Long jobExecutionId) {
+        return jobEngineService.redoJobExecution(jobExecutionId);
     }
 
     @GET

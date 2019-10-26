@@ -361,6 +361,37 @@ public class JobEngineService {
         logger.info("JobExecution removed: {}", jobExecution);
     }
 
+    /**
+     * You can redo an {@link JobExecution} in status {@link JobExecutionStatus#FINISHED}, {@link JobExecutionStatus#FAILED} and
+     * {@link JobExecutionStatus#ABORTED}, but all meta data like timestamps and logs of this execution will be gone!
+     * 
+     * @param jobExecutionId ID of the {@link JobExecution} you wish to redo
+     * @return cleared out {@link JobExecution} in status {@link JobExecutionStatus#QUEUED}
+     */
+    public JobExecution redoJobExecution(Long jobExecutionId) {
+
+        JobExecution jobExecution = getJobExecutionById(jobExecutionId);
+
+        if (JobExecutionStatus.QUEUED == jobExecution.getStatus() || JobExecutionStatus.RUNNING == jobExecution.getStatus()) {
+            logger.warn("Can't redo JobExecution in status {}: {}", jobExecution.getStatus(), jobExecution);
+            return jobExecution;
+        }
+
+        logger.info("Redo {} {}", jobExecution.getStatus(), jobExecution);
+
+        jobExecution.setMaturity(JobEngineUtil.timestamp());
+        jobExecution.setStatus(JobExecutionStatus.QUEUED);
+        jobExecution.setStartedAt(null);
+        jobExecution.setEndedAt(null);
+        jobExecution.setDuration(null);
+        jobExecution.setLog(null);
+        jobExecution.setFailMessage(null);
+        jobExecution.setFailRetry(0);
+        jobExecution.setFailRetryExecutionId(null);
+        jobExecution.setFailStacktrace(null);
+        return jobExecution;
+    }
+
     public void triggerScheduledJobExecutionCreation(Job job) throws Exception {
 
         BaseJobWorker jobWorker = getJobWorker(job);
