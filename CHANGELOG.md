@@ -18,6 +18,7 @@
 * Added the `parameters_class_name` attribute to the job
 * The zombie cure mechanism can be deactivated: `JobEngineConfig.ZOMBIE_RECOGNITION_TIME = 0`
 * You can redo an execution in status `FINISHED`, `FAILED` and `ABORTED`, but all metadata like timestamps and logs of the first execution will be gone!
+* Failed messages combine all messages an exception contains to a joined message
 
 ### BREAKING CHANGES
 

@@ -57,7 +57,8 @@ public class JobEngineLogService {
 
     @Asynchronous
     public void logException(Exception exception, String message, Long jobId, JobStatus jobStatus) {
-        createLog(message != null ? message : exception.getMessage(), jobId, jobStatus, false, null, null, null, JobEngineUtil.stacktraceToString(exception));
+        createLog(message != null ? message : JobEngineUtil.getMessagesFromException(exception), jobId, jobStatus, false, null, null, null,
+                        JobEngineUtil.stacktraceToString(exception));
     }
 
     /**

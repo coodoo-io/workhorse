@@ -252,7 +252,7 @@ public class JobEngineController {
         failedExecution.setEndedAt(JobEngineUtil.timestamp());
         failedExecution.setDuration(duration);
         failedExecution.setLog(jobExecutionLog);
-        failedExecution.setFailMessage(exception.getMessage());
+        failedExecution.setFailMessage(JobEngineUtil.getMessagesFromException(exception));
         failedExecution.setFailStacktrace(JobEngineUtil.stacktraceToString(exception));
 
         if (retryExecution == null) {

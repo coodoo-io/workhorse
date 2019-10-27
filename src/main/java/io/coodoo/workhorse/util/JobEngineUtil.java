@@ -117,21 +117,69 @@ public final class JobEngineUtil {
     /**
      * Parses the stack trace of an exception into as String
      * 
-     * @param exception Exception
+     * @param throwable Exception
      * @return Stack trace as String (using line breaks)
      */
-    public static String stacktraceToString(Exception exception) {
-        String stacktraceString = null;
+    public static String stacktraceToString(Throwable throwable) {
         try (StringWriter stringWriter = new StringWriter(); PrintWriter printWriter = new PrintWriter(stringWriter, true)) {
-            exception.printStackTrace(printWriter);
+            throwable.printStackTrace(printWriter);
             printWriter.flush();
             stringWriter.flush();
-            stacktraceString = stringWriter.toString();
+            return stringWriter.toString();
         } catch (IOException iOException) {
-            stacktraceString = "Couldn't write exception!";
-            logger.error(stacktraceString, exception);
+            logger.error("Couldn't write exception!", throwable);
+            return "Couldn't write exception!";
         }
-        return stacktraceString;
+    }
+
+    /**
+     * Combines all messages an exception contains to a joined message. Equals messages will not repeat themselves and in case there is no message, the root
+     * exception name is the message e.g. "NullPointerException".
+     * 
+     * @param throwable Exception
+     * @return concatenated messages as string
+     */
+    public static String getMessagesFromException(Throwable throwable) {
+        try {
+            List<String> messages = new ArrayList<>();
+            collectMessagesFromException(messages, throwable);
+            String joinedMessage = String.join(" | ", messages);
+
+            if (joinedMessage.length() > 4000) { // avoid exceeding the column width
+                joinedMessage = joinedMessage.substring(0, Math.min(joinedMessage.length(), 3997)) + "...";
+            }
+            return joinedMessage;
+        } catch (Exception e) {
+            logger.error("Couldn't get messages from exception!", throwable);
+            return throwable.toString();
+        }
+    }
+
+    private static void collectMessagesFromException(List<String> messages, Throwable throwable) {
+
+        String message = throwable.toString(); // "class.name" OR "class.name : message"
+        final String className = throwable.getClass().getName();
+        // get rid of the class name
+        if (message.startsWith(className + ": ")) {
+            message = message.replace(className + ": ", "");
+        }
+        // check if it is same as the root cause
+        if (throwable.getCause() != null && message.equals(throwable.getCause().toString())) {
+            collectMessagesFromException(messages, throwable.getCause()); // shortcut
+            return;
+        }
+        // check and add message
+        if (!messages.contains(message) && !message.equals(className)) {
+            messages.add(message);
+        }
+        if (throwable.getCause() != null) {
+            // we need to go deeper
+            collectMessagesFromException(messages, throwable.getCause());
+        }
+        if (messages.isEmpty()) {
+            // at least put the exception name here
+            messages.add(throwable.toString());
+        }
     }
 
     /**
