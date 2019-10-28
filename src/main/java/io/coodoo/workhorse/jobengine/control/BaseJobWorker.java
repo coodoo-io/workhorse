@@ -16,6 +16,7 @@ import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
+import io.coodoo.workhorse.log.boundary.JobEngineLogService;
 import io.coodoo.workhorse.log.entity.Log;
 import io.coodoo.workhorse.util.JobEngineUtil;
 
@@ -28,6 +29,9 @@ public abstract class BaseJobWorker {
 
     @Inject
     protected JobEngineService jobEngineService;
+
+    @Inject
+    protected JobEngineLogService jobEngineLogService;
 
     @Inject
     protected JobContext jobContext;
@@ -186,8 +190,8 @@ public abstract class BaseJobWorker {
      * @param message text to log
      * @return the resulting log entry
      */
-    protected Log logOnJob(String message) {
-        return jobContext.logOnJob(message);
+    public Log logOnJob(String message) {
+        return jobEngineLogService.logMessageInNewTransaction(message, getJobId(), false);
     }
 
     /**
@@ -196,8 +200,8 @@ public abstract class BaseJobWorker {
      * @param message text to log
      * @return the resulting log entry
      */
-    protected Log logGlobally(String message) {
-        return jobContext.logGlobally(message);
+    public Log logGlobally(String message) {
+        return jobEngineLogService.logMessageInNewTransaction(message, null, false);
     }
 
     /**
