@@ -2,8 +2,11 @@ package io.coodoo.workhorse.log.boundary;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.Transaction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +62,19 @@ public class JobEngineLogService {
     public void logException(Exception exception, String message, Long jobId, JobStatus jobStatus) {
         createLog(message != null ? message : JobEngineUtil.getMessagesFromException(exception), jobId, jobStatus, false, null, null, null,
                         JobEngineUtil.stacktraceToString(exception));
+    }
+
+    /**
+     * Logs a text message in an own {@link Transaction}
+     * 
+     * @param message text to log
+     * @param jobId optional: belonging {@link Job}-ID
+     * @param byUser <code>true</code> if author is a user, <code>false</code> if author is the system
+     * @return the resulting log entry
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Log logMessageInNewTransaction(String message, Long jobId, boolean byUser) {
+        return logMessage(message, jobId, byUser);
     }
 
     /**
