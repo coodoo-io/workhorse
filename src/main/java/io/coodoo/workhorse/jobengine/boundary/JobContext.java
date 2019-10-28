@@ -1,11 +1,14 @@
 package io.coodoo.workhorse.jobengine.boundary;
 
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.log.boundary.JobEngineLogService;
+import io.coodoo.workhorse.log.entity.Log;
 import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
@@ -13,6 +16,9 @@ import io.coodoo.workhorse.util.JobEngineUtil;
  */
 @RequestScoped
 public class JobContext {
+
+    @Inject
+    JobEngineLogService jobEngineLogService;
 
     protected Job job;
 
@@ -40,6 +46,26 @@ public class JobContext {
 
     public Long getJobExecutionId() {
         return jobExecution.getId();
+    }
+
+    /**
+     * Logs a text message directly to the job
+     * 
+     * @param message text to log
+     * @return the resulting log entry
+     */
+    public Log logOnJob(String message) {
+        return jobEngineLogService.logMessageInNewTransaction(message, getJobId(), false);
+    }
+
+    /**
+     * Logs a text message to the general workhorse log
+     * 
+     * @param message text to log
+     * @return the resulting log entry
+     */
+    public Log logGlobally(String message) {
+        return jobEngineLogService.logMessageInNewTransaction(message, null, false);
     }
 
     public String getLog() {

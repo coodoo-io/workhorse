@@ -16,6 +16,7 @@ import io.coodoo.workhorse.jobengine.control.event.JobErrorEvent;
 import io.coodoo.workhorse.jobengine.entity.Job;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
+import io.coodoo.workhorse.log.entity.Log;
 import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
@@ -177,6 +178,26 @@ public abstract class BaseJobWorker {
             return null;
         }
         return job.getId();
+    }
+
+    /**
+     * Logs a text message directly to the job
+     * 
+     * @param message text to log
+     * @return the resulting log entry
+     */
+    protected Log logOnJob(String message) {
+        return jobContext.logOnJob(message);
+    }
+
+    /**
+     * Logs a text message to the general workhorse log
+     * 
+     * @param message text to log
+     * @return the resulting log entry
+     */
+    protected Log logGlobally(String message) {
+        return jobContext.logGlobally(message);
     }
 
     /**
