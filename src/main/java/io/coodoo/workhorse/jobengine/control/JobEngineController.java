@@ -162,7 +162,9 @@ public class JobEngineController {
 
         entityManager.persist(job);
         logger.info("Set up job {}", job.getName());
+
         jobLogService.logMessage("Job Added", job.getId(), false);
+        jobEngineStatisticService.initMemoryCount(job.getId());
 
         return job;
     }

@@ -67,8 +67,12 @@ public class JobEngineStatisticService {
     @PostConstruct
     public void init() {
         for (Job job : jobEngineService.getAllJobs()) {
-            memoryCounts.put(job.getId(), new MemoryCount());
+            initMemoryCount(job.getId());
         }
+    }
+
+    public void initMemoryCount(Long jobId) {
+        memoryCounts.put(jobId, new MemoryCount());
     }
 
     @Schedule(hour = "*", minute = "*", persistent = false) // every minute

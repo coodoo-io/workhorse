@@ -6,6 +6,15 @@
 ### BREAKING CHANGES
 -->
 
+<a name="1.4.1"></a>
+
+## 1.4.1 (2019-11-10)
+
+### Bug Fixes
+
+* Newly detected jobs will be initialized in the `memoryCounts`
+
+
 <a name="1.4.0"></a>
 
 ## 1.4.0 (2019-10-30)
