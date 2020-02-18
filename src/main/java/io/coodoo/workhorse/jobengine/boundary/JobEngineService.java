@@ -277,6 +277,16 @@ public class JobEngineService {
         return JobExecution.getBatch(entityManager, batchId);
     }
 
+    /**
+     * Abort all executions of a batch that are in status {@link JobExecutionStatus#QUEUED}
+     * 
+     * @param batchId the ID of the batch executions
+     * @return the amount of executions of that batch that where put in status {@link JobExecutionStatus#ABORTED}
+     */
+    public int abortBatch(Long batchId) {
+        return JobExecution.abortBatch(entityManager, batchId);
+    }
+
     public GroupInfo getJobExecutionChainInfo(Long chainId) {
 
         List<JobExecutionInfo> batchInfo = JobExecution.getChainInfo(entityManager, chainId);
@@ -285,6 +295,16 @@ public class JobEngineService {
 
     public List<JobExecution> getJobExecutionChain(Long chainId) {
         return JobExecution.getChain(entityManager, chainId);
+    }
+
+    /**
+     * Abort all executions of a chain that are in status {@link JobExecutionStatus#QUEUED}
+     * 
+     * @param chainId the ID of the chain executions
+     * @return the amount of executions of that chain that where put in status {@link JobExecutionStatus#ABORTED}
+     */
+    public int abortChain(Long chainId) {
+        return JobExecution.abortChain(entityManager, chainId);
     }
 
     public List<JobExecution> getAllByStatus(JobExecutionStatus jobExecutionStatus) {

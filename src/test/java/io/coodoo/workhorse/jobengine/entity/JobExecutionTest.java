@@ -1239,4 +1239,59 @@ public class JobExecutionTest {
     	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).getResultList();
     }
 
+    /**
+     * Tests that query 'JobExecution.abortBatch' has not changed since this test had been created. If this test fails, you should consider re-generating ALL methods created from that query as they may be out-dated.
+     *
+     */
+    @SuppressWarnings({"unchecked", "rawtypes", "null"})
+    @org.junit.Test 
+    public void testAbortBatchQueryUnchanged()
+    {
+    	List annotations = new ArrayList();
+    	NamedQuery namedQueryAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQuery.class);
+    	if (namedQueryAnnotation == null) {
+    	NamedQueries namedQueriesAnnotation = io.coodoo.workhorse.jobengine.entity.JobExecution.class.getAnnotation(NamedQueries.class);
+    	if (namedQueriesAnnotation != null) {
+    	annotations.addAll(Arrays.asList(namedQueriesAnnotation.value())); }
+    	} else { annotations.add(namedQueryAnnotation); }
+    	NamedQuery queryUnderTest = null;
+    	for (Object obj : annotations) {
+    	NamedQuery query = (NamedQuery) obj;
+    	if (query.name().equals("JobExecution.abortBatch")) {
+    	queryUnderTest = query;
+    	break;
+    	}
+    	}
+    	if (queryUnderTest == null) {
+    	org.junit.Assert.fail("Query JobExecution.abortBatch does not exist anymore.");
+    	}
+    	String queryText = queryUnderTest.query();
+    	// Minor changes with whitespace are ignored
+    	queryText = queryText.trim().replace('\t', ' ').replace('\n', ' ').replace('\r', ' ');
+    	while (queryText.contains("  ")) {
+    	queryText = queryText.replace("  ", " ");
+    	}
+    	org.junit.Assert.assertEquals("There's a change in the query string. Generated methods may not fit to the query anymore. Change from 'UPDATE JobExecution j SET j.status = 'ABORTED' WHERE j.batchId = :batchId AND j.status = 'QUEUED'' to '" + queryText + "'", "UPDATE JobExecution j SET j.status = 'ABORTED' WHERE j.batchId = :batchId AND j.status = 'QUEUED'", queryText);
+    }
+
+    /**
+     * Tests that call and query are consistent for query 'JobExecution.abortBatch'.
+     *
+     */
+    @org.junit.Test 
+    public void testAbortBatch()
+    {
+    	Query query = org.mockito.Mockito.mock(Query.class);
+    	EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
+    	org.mockito.BDDMockito.given(entityManager.createNamedQuery("JobExecution.abortBatch")).willReturn(query);
+    	Object batchId = "0";
+    	org.mockito.BDDMockito.given(query.setParameter("batchId", batchId)).willReturn(query);
+    	// Call
+    	io.coodoo.workhorse.jobengine.entity.JobExecution.abortBatch(entityManager,batchId);
+    	// Verification
+    	org.mockito.BDDMockito.verify(entityManager, org.mockito.Mockito.times(1)).createNamedQuery("JobExecution.abortBatch");
+    	org.mockito.BDDMockito.verify(query, org.mockito.Mockito.times(1)).setParameter("batchId",batchId);
+    	org.mockito.BDDMockito.verify(query, org.mockito.BDDMockito.times(1)).executeUpdate();
+    }
+
 }

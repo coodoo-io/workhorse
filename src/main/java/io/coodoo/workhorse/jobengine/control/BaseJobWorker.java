@@ -165,7 +165,7 @@ public abstract class BaseJobWorker {
      * 
      * @return the Job that belongs to this service
      */
-    protected Job getJob() {
+    public Job getJob() {
         if (job == null) {
             job = jobEngineService.getJobByClassName(getClass().getName());
         }
@@ -182,6 +182,15 @@ public abstract class BaseJobWorker {
             return null;
         }
         return job.getId();
+    }
+
+    /**
+     * Provides access to the {@link JobEngineService}
+     * 
+     * @return instance of JobEngineService
+     */
+    public JobEngineService getJobEngineService() {
+        return jobEngineService;
     }
 
     /**

@@ -8,7 +8,12 @@
 
 <a name="1.4.1"></a>
 
-## 1.4.1 (2019-11-10)
+## 1.4.1 (2020-01-07)
+
+### Features
+
+* The `JobWorker` provides access to the method `getJob()` and provides the `jobEngineService` via `getJobEngineService()`.
+* Batches and Chains can be aborted via `JobEngineService`.
 
 ### Bug Fixes
 

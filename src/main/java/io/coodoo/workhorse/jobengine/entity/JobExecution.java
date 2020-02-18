@@ -45,6 +45,8 @@ import io.coodoo.workhorse.util.JobEngineUtil;
                                 query = "SELECT NEW io.coodoo.workhorse.jobengine.entity.JobExecutionInfo(j.id, j.status, j.startedAt, j.endedAt, j.duration, j.failRetryExecutionId) FROM JobExecution j WHERE j.batchId = :batchId ORDER BY j.createdAt, j.id"),
                 @NamedQuery(name = "JobExecution.countBatchByStatus",
                                 query = "SELECT COUNT(j) FROM JobExecution j WHERE j.batchId = :batchId AND j.status = :status"),
+                @NamedQuery(name = "JobExecution.abortBatch",
+                                query = "UPDATE JobExecution j SET j.status = 'ABORTED' WHERE j.batchId = :batchId AND j.status = 'QUEUED'"),
 
                 // Chained
                 @NamedQuery(name = "JobExecution.getChain", query = "SELECT j FROM JobExecution j WHERE j.chainId = :chainId ORDER BY j.createdAt, j.id"),
@@ -296,13 +298,31 @@ public class JobExecution extends RevisionDatesEntity {
                         + ", failRetry=" + failRetry + ", failRetryExecutionId=" + failRetryExecutionId + ", failMessage=" + failMessage + "]";
     }
 
+    /**
+     * Executes the query 'JobExecution.getAllByJobId' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @return List of result objects
+     */
     @SuppressWarnings("unchecked")
-    public static List<JobExecution> getNextCandidates(EntityManager entityManager, Long jobId, int maxResults) {
-        Query query = entityManager.createNamedQuery("JobExecution.getNextCandidates");
+    public static List<JobExecution> getAllByJobId(EntityManager entityManager, Long jobId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getAllByJobId");
         query = query.setParameter("jobId", jobId);
-        query = query.setParameter("currentTime", JobEngineUtil.timestamp());
-        query = query.setMaxResults(maxResults);
         return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'JobExecution.deleteAllByJobId' returning the number of affected rows.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @return Number of deleted objects
+     */
+    public static int deleteAllByJobId(EntityManager entityManager, Long jobId) {
+        Query query = entityManager.createNamedQuery("JobExecution.deleteAllByJobId");
+        query = query.setParameter("jobId", jobId);
+        return query.executeUpdate();
     }
 
     /**
@@ -317,38 +337,6 @@ public class JobExecution extends RevisionDatesEntity {
         Query query = entityManager.createNamedQuery("JobExecution.getAllByStatus");
         query = query.setParameter("status", status);
         return query.getResultList();
-    }
-
-    /**
-     * Executes the query 'JobExecution.selectDuration' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobExecutionId the jobExecutionId
-     * @return the result
-     */
-    public static Long selectDuration(EntityManager entityManager, Long jobExecutionId) {
-        Query query = entityManager.createNamedQuery("JobExecution.selectDuration");
-        query = query.setParameter("jobExecutionId", jobExecutionId);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (Long) results.get(0);
-    }
-
-    /**
-     * Executes the query 'JobExecution.deleteAllByJobId' returning the number of affected rows.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @return Number of deleted objects
-     */
-    public static int deleteAllByJobId(EntityManager entityManager, Long jobId) {
-        Query query = entityManager.createNamedQuery("JobExecution.deleteAllByJobId");
-        query = query.setParameter("jobId", jobId);
-        return query.executeUpdate();
     }
 
     /**
@@ -367,17 +355,12 @@ public class JobExecution extends RevisionDatesEntity {
         return query.getResultList();
     }
 
-    /**
-     * Executes the query 'JobExecution.getAllByJobId' returning a list of result objects.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @return List of result objects
-     */
     @SuppressWarnings("unchecked")
-    public static List<JobExecution> getAllByJobId(EntityManager entityManager, Long jobId) {
-        Query query = entityManager.createNamedQuery("JobExecution.getAllByJobId");
+    public static List<JobExecution> getNextCandidates(EntityManager entityManager, Long jobId, int maxResults) {
+        Query query = entityManager.createNamedQuery("JobExecution.getNextCandidates");
         query = query.setParameter("jobId", jobId);
+        query = query.setParameter("currentTime", JobEngineUtil.timestamp());
+        query = query.setMaxResults(maxResults);
         return query.getResultList();
     }
 
@@ -391,6 +374,20 @@ public class JobExecution extends RevisionDatesEntity {
     @SuppressWarnings("unchecked")
     public static List<JobExecution> getBatch(EntityManager entityManager, Long batchId) {
         Query query = entityManager.createNamedQuery("JobExecution.getBatch");
+        query = query.setParameter("batchId", batchId);
+        return query.getResultList();
+    }
+
+    /**
+     * Executes the query 'JobExecution.getBatchInfo' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param batchId the batchId
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<JobExecutionInfo> getBatchInfo(EntityManager entityManager, Long batchId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getBatchInfo");
         query = query.setParameter("batchId", batchId);
         return query.getResultList();
     }
@@ -417,6 +414,19 @@ public class JobExecution extends RevisionDatesEntity {
     }
 
     /**
+     * Executes the query 'JobExecution.abortBatch' returning the number of affected rows.
+     *
+     * @param entityManager the entityManager
+     * @param batchId the batchId
+     * @return Number of updated objects
+     */
+    public static int abortBatch(EntityManager entityManager, Object batchId) {
+        Query query = entityManager.createNamedQuery("JobExecution.abortBatch");
+        query = query.setParameter("batchId", batchId);
+        return query.executeUpdate();
+    }
+
+    /**
      * Executes the query 'JobExecution.getChain' returning a list of result objects.
      *
      * @param entityManager the entityManager
@@ -431,52 +441,17 @@ public class JobExecution extends RevisionDatesEntity {
     }
 
     /**
-     * Executes the query 'JobExecution.abortChain' returning the number of affected rows.
+     * Executes the query 'JobExecution.getChainInfo' returning a list of result objects.
      *
      * @param entityManager the entityManager
      * @param chainId the chainId
-     * @return Number of updated objects
+     * @return List of result objects
      */
-    public static int abortChain(EntityManager entityManager, Long chainId) {
-        Query query = entityManager.createNamedQuery("JobExecution.abortChain");
+    @SuppressWarnings("unchecked")
+    public static List<JobExecutionInfo> getChainInfo(EntityManager entityManager, Long chainId) {
+        Query query = entityManager.createNamedQuery("JobExecution.getChainInfo");
         query = query.setParameter("chainId", chainId);
-        return query.executeUpdate();
-    }
-
-    /**
-     * Executes the query 'JobExecution.countByJobIdAndStatus' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param status the status
-     * @return the result
-     */
-    public static Long countByJobIdAndStatus(EntityManager entityManager, Long jobId, JobExecutionStatus status) {
-        Query query = entityManager.createNamedQuery("JobExecution.countByJobIdAndStatus");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("status", status);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (Long) results.get(0);
-    }
-
-    /**
-     * Executes the query 'JobExecution.deleteOlderJobExecutions' returning the number of affected rows.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param preDate the preDate
-     * @return Number of deleted objects
-     */
-    public static int deleteOlderJobExecutions(EntityManager entityManager, Long jobId, LocalDateTime preDate) {
-        Query query = entityManager.createNamedQuery("JobExecution.deleteOlderJobExecutions");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("preDate", preDate);
-        return query.executeUpdate();
+        return query.getResultList();
     }
 
     /**
@@ -498,6 +473,67 @@ public class JobExecution extends RevisionDatesEntity {
             return null;
         }
         return (JobExecution) results.get(0);
+    }
+
+    /**
+     * Executes the query 'JobExecution.abortChain' returning the number of affected rows.
+     *
+     * @param entityManager the entityManager
+     * @param chainId the chainId
+     * @return Number of updated objects
+     */
+    public static int abortChain(EntityManager entityManager, Long chainId) {
+        Query query = entityManager.createNamedQuery("JobExecution.abortChain");
+        query = query.setParameter("chainId", chainId);
+        return query.executeUpdate();
+    }
+
+    /**
+     * Executes the query 'JobExecution.deleteOlderJobExecutions' returning the number of affected rows.
+     *
+     * @param entityManager the entityManager
+     * @param jobId the jobId
+     * @param preDate the preDate
+     * @return Number of deleted objects
+     */
+    public static int deleteOlderJobExecutions(EntityManager entityManager, Long jobId, LocalDateTime preDate) {
+        Query query = entityManager.createNamedQuery("JobExecution.deleteOlderJobExecutions");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("preDate", preDate);
+        return query.executeUpdate();
+    }
+
+    /**
+     * Executes the query 'JobExecution.selectDuration' returning one/the first object or null if nothing has been found.
+     *
+     * @param entityManager the entityManager
+     * @param jobExecutionId the jobExecutionId
+     * @return the result
+     */
+    public static Long selectDuration(EntityManager entityManager, Long jobExecutionId) {
+        Query query = entityManager.createNamedQuery("JobExecution.selectDuration");
+        query = query.setParameter("jobExecutionId", jobExecutionId);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (Long) results.get(0);
+    }
+
+    /**
+     * Executes the query 'JobExecution.findZombies' returning a list of result objects.
+     *
+     * @param entityManager the entityManager
+     * @param time the time
+     * @return List of result objects
+     */
+    @SuppressWarnings("unchecked")
+    public static List<JobExecution> findZombies(EntityManager entityManager, LocalDateTime time) {
+        Query query = entityManager.createNamedQuery("JobExecution.findZombies");
+        query = query.setParameter("time", time);
+        return query.getResultList();
     }
 
     /**
@@ -535,27 +571,6 @@ public class JobExecution extends RevisionDatesEntity {
     }
 
     /**
-     * Executes the query 'JobExecution.countQueudByJobIdAndParamters' returning one/the first object or null if nothing has been found.
-     *
-     * @param entityManager the entityManager
-     * @param jobId the jobId
-     * @param parameters the parameters
-     * @return the result
-     */
-    public static Long countQueudByJobIdAndParamters(EntityManager entityManager, Long jobId, String parameters) {
-        Query query = entityManager.createNamedQuery("JobExecution.countQueudByJobIdAndParamters");
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("parameters", parameters);
-        query = query.setMaxResults(1);
-        @SuppressWarnings("rawtypes")
-        List results = query.getResultList();
-        if (results.isEmpty()) {
-            return null;
-        }
-        return (Long) results.get(0);
-    }
-
-    /**
      * Executes the query 'JobExecution.getFirstCreatedByJobIdAndParameterHash' returning a list of result objects.
      *
      * @param entityManager the entityManager
@@ -578,45 +593,45 @@ public class JobExecution extends RevisionDatesEntity {
     }
 
     /**
-     * Executes the query 'JobExecution.getBatchInfo' returning a list of result objects.
+     * Executes the query 'JobExecution.countQueudByJobIdAndParamters' returning one/the first object or null if nothing has been found.
      *
      * @param entityManager the entityManager
-     * @param batchId the batchId
-     * @return List of result objects
+     * @param jobId the jobId
+     * @param parameters the parameters
+     * @return the result
      */
-    @SuppressWarnings("unchecked")
-    public static List<JobExecutionInfo> getBatchInfo(EntityManager entityManager, Long batchId) {
-        Query query = entityManager.createNamedQuery("JobExecution.getBatchInfo");
-        query = query.setParameter("batchId", batchId);
-        return query.getResultList();
+    public static Long countQueudByJobIdAndParamters(EntityManager entityManager, Long jobId, String parameters) {
+        Query query = entityManager.createNamedQuery("JobExecution.countQueudByJobIdAndParamters");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("parameters", parameters);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (Long) results.get(0);
     }
 
     /**
-     * Executes the query 'JobExecution.getChainInfo' returning a list of result objects.
+     * Executes the query 'JobExecution.countByJobIdAndStatus' returning one/the first object or null if nothing has been found.
      *
      * @param entityManager the entityManager
-     * @param chainId the chainId
-     * @return List of result objects
+     * @param jobId the jobId
+     * @param status the status
+     * @return the result
      */
-    @SuppressWarnings("unchecked")
-    public static List<JobExecutionInfo> getChainInfo(EntityManager entityManager, Long chainId) {
-        Query query = entityManager.createNamedQuery("JobExecution.getChainInfo");
-        query = query.setParameter("chainId", chainId);
-        return query.getResultList();
-    }
-
-    /**
-     * Executes the query 'JobExecution.findZombies' returning a list of result objects.
-     *
-     * @param entityManager the entityManager
-     * @param time the time
-     * @return List of result objects
-     */
-    @SuppressWarnings("unchecked")
-    public static List<JobExecution> findZombies(EntityManager entityManager, LocalDateTime time) {
-        Query query = entityManager.createNamedQuery("JobExecution.findZombies");
-        query = query.setParameter("time", time);
-        return query.getResultList();
+    public static Long countByJobIdAndStatus(EntityManager entityManager, Long jobId, JobExecutionStatus status) {
+        Query query = entityManager.createNamedQuery("JobExecution.countByJobIdAndStatus");
+        query = query.setParameter("jobId", jobId);
+        query = query.setParameter("status", status);
+        query = query.setMaxResults(1);
+        @SuppressWarnings("rawtypes")
+        List results = query.getResultList();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return (Long) results.get(0);
     }
 
 }
