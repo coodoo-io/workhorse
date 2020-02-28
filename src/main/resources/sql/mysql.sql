@@ -207,10 +207,26 @@ LEFT JOIN jobengine_job job ON ex.job_id = job.id;
 
 CREATE VIEW jobengine_job_count_view AS
 SELECT 
-	j.*,
-	COUNT(*) total,
-    SUM(CASE WHEN e.status = 'QUEUED'   THEN 1 ELSE 0 END) queued,
-    SUM(CASE WHEN e.status = 'RUNNING'  THEN 1 ELSE 0 END) running
-FROM jobengine_job j
-LEFT OUTER JOIN jobengine_execution e ON j.id = e.job_id
-GROUP BY j.id;
+  job.id,
+  job.name,
+  job.description,
+  job.tags,
+  job.worker_class_name,
+  job.parameters_class_name,
+  job.schedule,
+  job.status,
+  job.threads,
+  job.max_per_minute,
+  job.fail_retries,
+  job.retry_delay,
+  job.unique_in_queue,
+  job.days_until_clean_up,
+  job.created_at,
+  job.updated_at,
+  job.version,
+  COUNT(*) total,
+  SUM(CASE WHEN ex.status = 'QUEUED'   THEN 1 ELSE 0 END) queued,
+  SUM(CASE WHEN ex.status = 'RUNNING'  THEN 1 ELSE 0 END) running
+FROM jobengine_job job
+LEFT OUTER JOIN jobengine_execution ex ON job.id = ex.job_id
+GROUP BY job.id;
