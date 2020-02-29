@@ -41,7 +41,9 @@ public final class JobEngineUtil {
      * Gets a list of available JobWorkers
      * 
      * @return available {@link BaseJobWorker} implementations, so {@link JobWorker} and {@link JobWorkerWith}
+     * @deprecated doesn't work proper (to be removed in the future!)
      */
+    @Deprecated
     @SuppressWarnings("serial")
     public static List<Class<?>> getAvailableWorkers() {
 

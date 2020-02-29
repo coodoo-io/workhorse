@@ -20,6 +20,10 @@
 
 * Newly detected jobs will be initialized in the `memoryCounts`
 
+### Deprecations
+
+* `JobEngineUtil.getAvailableWorkers()` because doesn't work proper *(will be removed in the future!)*
+
 
 <a name="1.4.0"></a>
 
