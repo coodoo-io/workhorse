@@ -1,7 +1,11 @@
 package io.coodoo.workhorse.api.boundary.dto;
 
-import io.coodoo.workhorse.api.entity.JobExecutionCounts;
-
+/**
+ * @deprecated Got rid of entity <code>JobExecutionCounts</code> for using native MySql syntax and therefore also
+ *             <code>JobEngineApiService.getJobExecutionCounts</code>. To provide this functionality we will use the <em>terms</em> and <em>stats</em> feature
+ *             of coodoo-listing v1.6.0
+ */
+@Deprecated
 public class JobExecutionCountsDTO {
 
     public Long total;
@@ -12,15 +16,4 @@ public class JobExecutionCountsDTO {
     public Long aborted;
     public Long averageDuration;
 
-    public JobExecutionCountsDTO() {}
-
-    public JobExecutionCountsDTO(JobExecutionCounts counts) {
-        this.total = counts.getTotal();
-        this.queued = counts.getQueued();
-        this.running = counts.getRunning();
-        this.finished = counts.getFinished();
-        this.failed = counts.getFailed();
-        this.aborted = counts.getAborted();
-        this.averageDuration = counts.getAverageDuration();
-    }
 }

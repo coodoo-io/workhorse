@@ -1,43 +1,30 @@
 package io.coodoo.workhorse.api.entity;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Query;
 
+import io.coodoo.framework.listing.boundary.Listing;
+import io.coodoo.framework.listing.boundary.ListingParameters;
+import io.coodoo.framework.listing.boundary.ListingPredicate;
+import io.coodoo.framework.listing.boundary.Stats;
+import io.coodoo.framework.listing.boundary.Term;
+import io.coodoo.framework.listing.control.ListingConfig;
+import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.util.JobEngineUtil;
 
-// FIXME: this is plain MySQL syntax!!!
-@Entity
 public class JobExecutionCounts {
 
-    // @formatter:off
-    private static final String QUERY = "SELECT 0 AS id,"
-                                        + " COUNT(e.id) AS total,"
-                                        + " IFNULL(SUM(CASE WHEN e.status = 'QUEUED'   THEN 1 ELSE 0 END),0) AS queued,"
-                                        + " IFNULL(SUM(CASE WHEN e.status = 'RUNNING'  THEN 1 ELSE 0 END),0) AS running,"
-                                        + " IFNULL(SUM(CASE WHEN e.status = 'FINISHED' THEN 1 ELSE 0 END),0) AS finished,"
-                                        + " IFNULL(SUM(CASE WHEN e.status = 'FAILED'   THEN 1 ELSE 0 END),0) AS failed,"
-                                        + " IFNULL(SUM(CASE WHEN e.status = 'ABORTED'  THEN 1 ELSE 0 END),0) AS aborted,"
-                                        + " IFNULL(ROUND(AVG(e.duration),0),0) AS averageDuration"
-                                      + " FROM jobengine_execution e"
-                                      + " WHERE (e.job_id = :jobId OR :jobId IS NULL)"
-                                        + " AND (e.created_at >= :date OR e.started_at >= :date OR e.ended_at >= :date)"
-                                        + " LIMIT 1";
-    // @formatter:on
-
-    @Id // Pseudo-ID to satisfy JPA
-    private Long id;
-    private Long total;
-    private Long queued;
-    private Long running;
-    private Long finished;
-    private Long failed;
-    private Long aborted;
+    private Long total = 0L;
+    private Long queued = 0L;
+    private Long running = 0L;
+    private Long finished = 0L;
+    private Long failed = 0L;
+    private Long aborted = 0L;
     private Long averageDuration;
+    private Long minDuration;
+    private Long maxDuration;
+    private Long sumDuration;
 
     /**
      * Queries the current counts of {@link JobExecution} status for one specific or all jobs
@@ -51,20 +38,58 @@ public class JobExecutionCounts {
     public static JobExecutionCounts query(EntityManager entityManager, Long jobId, Integer consideredLastMinutes) {
 
         int minutes = consideredLastMinutes == null ? 60 : consideredLastMinutes;
-        LocalDateTime date = JobEngineUtil.timestamp().minusMinutes(minutes);
+        String timeFilter = ListingConfig.OPERATOR_GT
+                        + JobEngineUtil.timestamp().minusMinutes(minutes).atZone(JobEngineConfig.TIME_ZONE).toInstant().toEpochMilli();
 
-        Query query = entityManager.createNativeQuery(QUERY, JobExecutionCounts.class);
-        query = query.setParameter("jobId", jobId);
-        query = query.setParameter("date", date);
-        return (JobExecutionCounts) query.getSingleResult();
-    }
+        ListingParameters listingParameters = new ListingParameters();
+        if (jobId != null) {
+            listingParameters.addFilterAttributes("jobId", jobId.toString());
+        }
 
-    public Long getId() {
-        return id;
-    }
+        ListingPredicate filter = new ListingPredicate().or();
+        filter.addPredicate(new ListingPredicate().filter("createdAt", timeFilter));
+        filter.addPredicate(new ListingPredicate().filter("startedAt", timeFilter));
+        filter.addPredicate(new ListingPredicate().filter("endedAt", timeFilter));
 
-    public void setId(Long id) {
-        this.id = id;
+        listingParameters.setPredicate(filter);
+        listingParameters.addTermsAttributes("status", "5"); // there are only five status
+        listingParameters.addStatsAttributes("duration", "all");
+
+        JobExecutionCounts counts = new JobExecutionCounts();
+        for (Term term : Listing.getTerms(entityManager, JobExecution.class, listingParameters).get("status")) {
+            switch ((JobExecutionStatus) term.getValue()) {
+                case QUEUED:
+                    counts.setQueued(term.getCount());
+                    break;
+                case RUNNING:
+                    counts.setRunning(term.getCount());
+                    break;
+                case FINISHED:
+                    counts.setFinished(term.getCount());
+                    break;
+                case FAILED:
+                    counts.setFailed(term.getCount());
+                    break;
+                case ABORTED:
+                    counts.setAborted(term.getCount());
+                    break;
+            }
+        }
+        Stats stats = Listing.getStats(entityManager, JobExecution.class, listingParameters).get("duration");
+        counts.setTotal(stats.getCount());
+        if (stats.getAvg() != null) {
+            counts.setAverageDuration(stats.getAvg().longValue());
+        }
+        if (stats.getMin() != null) {
+            counts.setMinDuration(stats.getMin().longValue());
+        }
+        if (stats.getMax() != null) {
+            counts.setMaxDuration(stats.getMax().longValue());
+        }
+        if (stats.getSum() != null) {
+            counts.setSumDuration(stats.getSum().longValue());
+        }
+        return counts;
     }
 
     public Long getTotal() {
@@ -123,6 +148,30 @@ public class JobExecutionCounts {
         this.averageDuration = averageDuration;
     }
 
+    public Long getMinDuration() {
+        return minDuration;
+    }
+
+    public void setMinDuration(Long minDuration) {
+        this.minDuration = minDuration;
+    }
+
+    public Long getMaxDuration() {
+        return maxDuration;
+    }
+
+    public void setMaxDuration(Long maxDuration) {
+        this.maxDuration = maxDuration;
+    }
+
+    public Long getSumDuration() {
+        return sumDuration;
+    }
+
+    public void setSumDuration(Long sumDuration) {
+        this.sumDuration = sumDuration;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -140,7 +189,14 @@ public class JobExecutionCounts {
         builder.append(aborted);
         builder.append(", averageDuration=");
         builder.append(averageDuration);
+        builder.append(", minDuration=");
+        builder.append(minDuration);
+        builder.append(", maxDuration=");
+        builder.append(maxDuration);
+        builder.append(", sumDuration=");
+        builder.append(sumDuration);
         builder.append("]");
         return builder.toString();
     }
+
 }

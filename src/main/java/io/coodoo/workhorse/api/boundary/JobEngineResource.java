@@ -23,9 +23,9 @@ import javax.ws.rs.core.Response;
 import io.coodoo.framework.listing.boundary.ListingParameters;
 import io.coodoo.framework.listing.boundary.ListingResult;
 import io.coodoo.workhorse.api.boundary.dto.JobDTO;
-import io.coodoo.workhorse.api.boundary.dto.JobExecutionCountsDTO;
 import io.coodoo.workhorse.api.boundary.dto.JobScheduleExecutionTimeDTO;
 import io.coodoo.workhorse.api.entity.JobCountView;
+import io.coodoo.workhorse.api.entity.JobExecutionCounts;
 import io.coodoo.workhorse.api.entity.JobExecutionView;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
@@ -99,7 +99,7 @@ public class JobEngineResource {
         List<JobDTO> results = jobsListing.getResults().stream().map(job -> new JobDTO(job, jobEngineStatisticService.getMemoryCounts(job.getId())))
                         .collect(Collectors.toList());
 
-        return new ListingResult<JobDTO>(results, jobsListing.getMetadata());
+        return new ListingResult<JobDTO>(results, jobsListing.getTerms(), jobsListing.getStats(), jobsListing.getMetadata());
     }
 
     @GET
@@ -130,16 +130,27 @@ public class JobEngineResource {
         return jobEngineService.getJobById(jobId);
     }
 
+    /**
+     * @deprecated Got rid of entity <code>JobExecutionCounts</code> for using native MySql syntax. To provide this functionality in the future we will use the
+     *             <em>terms</em> and <em>stats</em> feature of coodoo-listing v1.6.0
+     */
+    @Deprecated
     @GET
     @Path("/execution-counts/{minutes}")
-    public JobExecutionCountsDTO getJobExecutionCount(@PathParam("minutes") Integer minutes) {
-        return new JobExecutionCountsDTO(jobEngineApiService.getJobExecutionCounts(null, minutes));
+    public JobExecutionCounts getJobExecutionCount(@PathParam("minutes") Integer minutes) {
+
+        return jobEngineApiService.getJobExecutionCounts(null, minutes);
     }
 
+    /**
+     * @deprecated Got rid of entity <code>JobExecutionCounts</code> for using native MySql syntax. To provide this functionality in the future we will use the
+     *             <em>terms</em> and <em>stats</em> feature of coodoo-listing v1.6.0
+     */
+    @Deprecated
     @GET
     @Path("/jobs/{jobId}/execution-counts/{minutes}")
-    public JobExecutionCountsDTO getJobExecutionCountByJob(@PathParam("jobId") Long jobId, @PathParam("minutes") Integer minutes) {
-        return new JobExecutionCountsDTO(jobEngineApiService.getJobExecutionCounts(jobId, minutes));
+    public JobExecutionCounts getJobExecutionCountByJob(@PathParam("jobId") Long jobId, @PathParam("minutes") Integer minutes) {
+        return jobEngineApiService.getJobExecutionCounts(jobId, minutes);
     }
 
     @PUT

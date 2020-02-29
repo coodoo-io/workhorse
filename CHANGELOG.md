@@ -8,13 +8,17 @@
 
 <a name="1.4.1"></a>
 
-## 1.4.1 (2020-03-01)
+## 1.4.1 (2020-02-29)
 
 ### Features
 
 * The `JobWorker` provides access to the method `getJob()` and provides the `jobEngineService` via `getJobEngineService()`.
 * Batches and Chains can be aborted via `JobEngineService`.
 * All execution are now created with an own new transaction.
+
+### BREAKING CHANGES
+
+* Got rid of static method `JobExecutionCounts.query()` for using native MySql syntax. To provide this functionality we will use the *terms* and *stats* feature of [coodoo-listing v1.6.0](https://github.com/coodoo-io/coodoo-listing) 
 
 ### Bug Fixes
 
@@ -23,6 +27,7 @@
 ### Deprecations
 
 * `JobEngineUtil.getAvailableWorkers()` because doesn't work proper *(will be removed in the future!)*
+* `JobEngineResource.getJobExecutionCount()` and `JobEngineResource.getJobExecutionCount()` will soon be gone and of course their GET paths `/workhorse/execution-counts/{minutes}` and `/workhorse/jobs/{jobId}/execution-counts/{minutes}` too.
 
 
 <a name="1.4.0"></a>
