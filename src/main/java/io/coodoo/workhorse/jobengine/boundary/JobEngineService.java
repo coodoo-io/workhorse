@@ -315,6 +315,7 @@ public class JobEngineService {
         return JobExecution.getAllByJobIdAndStatus(entityManager, jobId, jobExecutionStatus);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public JobExecution createJobExecution(Long jobId, String parameters, Boolean priority, LocalDateTime maturity, Long batchId, Long chainId,
                     Long previousJobExecutionId, boolean uniqueInQueue) {
 
