@@ -48,7 +48,7 @@ CREATE TABLE jobengine_execution (
   chain_id bigint DEFAULT NULL,
   chain_previous_execution_id bigint DEFAULT NULL,
   duration bigint DEFAULT NULL,
-  parameters text,
+  parameters json,
   parameters_hash int DEFAULT NULL,
   log text,
   fail_retry int NOT NULL DEFAULT '0',
