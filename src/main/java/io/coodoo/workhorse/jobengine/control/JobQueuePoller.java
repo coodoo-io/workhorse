@@ -1,30 +1,49 @@
 package io.coodoo.workhorse.jobengine.control;
 
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Singleton;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
+import io.coodoo.workhorse.jobengine.boundary.annotation.JobEngineEntityManager;
+import io.coodoo.workhorse.jobengine.entity.Job;
+import io.coodoo.workhorse.jobengine.entity.JobExecution;
+import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.log.boundary.JobEngineLogService;
 
 /**
  * @author coodoo GmbH (coodoo.io)
  */
-@Singleton
+@ApplicationScoped
 public class JobQueuePoller {
 
-    private static final String JOB_QUEUE_POLLER = "JobQueuePoller";
     private static final int ZOMBIE_HUNT_INTERVAL = 300;
 
     private static Logger logger = LoggerFactory.getLogger(JobQueuePoller.class);
+
+    private static ScheduledFuture<?> scheduledFuture;
+
+    private static int zombieWatch = ZOMBIE_HUNT_INTERVAL;
+
+    @Resource
+    ManagedScheduledExecutorService scheduler;
+
+    @Inject
+    @JobEngineEntityManager
+    EntityManager entityManager;
+
+    @Inject
+    JobEngine jobEngine;
 
     @Inject
     JobEngineController jobEngineController;
@@ -32,16 +51,27 @@ public class JobQueuePoller {
     @Inject
     JobEngineLogService jobEngineLogService;
 
-    @Resource
-    protected TimerService timerService;
-
-    // look out for zombies on startup
-    private int zombieWatch = ZOMBIE_HUNT_INTERVAL;
-
-    @Timeout
+    @TransactionAttribute(TransactionAttributeType.NEVER)
     public void poll() {
+        for (Job job : Job.getAllByStatus(entityManager, JobStatus.ACTIVE)) {
+            if (job.getThreads() < 1) {
+                continue;
+            }
+            int numberOfJobExecutionsQueued = jobEngine.getNumberOfJobExecutionsInQueue(job.getId());
+            int addedJobExecutions = 0;
 
-        jobEngineController.syncJobExecutionQueue();
+            if (numberOfJobExecutionsQueued < JobEngineConfig.JOB_QUEUE_MIN) {
+                for (JobExecution jobExecution : JobExecution.getNextCandidates(entityManager, job.getId(), JobEngineConfig.JOB_QUEUE_MAX)) {
+                    if (jobEngine.addJobExecution(jobExecution)) {
+                        addedJobExecutions++;
+                    }
+                }
+                if (addedJobExecutions > 0) {
+                    logger.info("Added {} new to {} existing job executions in memory queue for job {}", addedJobExecutions, numberOfJobExecutionsQueued,
+                                    job.getName());
+                }
+            }
+        }
         huntZombies();
     }
 
@@ -55,17 +85,10 @@ public class JobQueuePoller {
     }
 
     public void start() {
-
-        ScheduleExpression scheduleExpression = new ScheduleExpression().second("*/" + JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL).minute("*").hour("*");
-
-        TimerConfig timerConfig = new TimerConfig();
-        timerConfig.setInfo(JOB_QUEUE_POLLER);
-        timerConfig.setPersistent(false);
-
         if (isRunning()) {
             stop();
         }
-        timerService.createCalendarTimer(scheduleExpression, timerConfig);
+        scheduledFuture = this.scheduler.scheduleAtFixedRate(this::poll, 0, JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL, TimeUnit.SECONDS);
 
         String logMessage = String.format("Job queue poller started with a %s seconds interval", JobEngineConfig.JOB_QUEUE_POLLER_INTERVAL);
         logger.info(logMessage);
@@ -73,27 +96,20 @@ public class JobQueuePoller {
     }
 
     public void stop() {
-        Timer timer = getPollerTimer();
-        if (timer != null) {
-            timer.cancel();
+        if (isRunning()) {
+            scheduledFuture.cancel(false);
+            scheduledFuture = null;
 
             String logMessage = "Job queue poller stopped";
             logger.info(logMessage);
             jobEngineLogService.logMessage(logMessage, null, true);
+        } else {
+            logger.info("Job queue poller cann't be stopped because it's currently not running!");
         }
     }
 
     public boolean isRunning() {
-        return getPollerTimer() != null;
-    }
-
-    private Timer getPollerTimer() {
-        for (Timer timer : timerService.getTimers()) {
-            if (timer.getInfo().toString().equals(JOB_QUEUE_POLLER)) {
-                return timer;
-            }
-        }
-        return null;
+        return scheduledFuture != null;
     }
 
 }

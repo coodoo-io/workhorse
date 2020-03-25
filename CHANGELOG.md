@@ -12,6 +12,7 @@
 
 ### Features
 
+* Reworked the `JobQueuePoller` to be pure CDI, so we got rid of the EJB Timer Service and the pesky transaction when calling `JobEngine.addJobExecution`.
 * The `JobWorker` provides access to the method `getJob()` and provides the `jobEngineService` via `getJobEngineService()`.
 * Batches and Chains can be aborted via `JobEngineService`.
 * All execution are now created with an own new transaction.

@@ -122,7 +122,7 @@ public class JobEngine implements Serializable {
         return keyLock;
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.NEVER)
     public boolean addJobExecution(JobExecution jobExecution) {
 
         if (jobExecution == null || jobExecution.getStatus() != JobExecutionStatus.QUEUED) {
@@ -183,7 +183,6 @@ public class JobEngine implements Serializable {
 
                 final Long jobId = job.getId();
                 try {
-
                     final BaseJobWorker jobWorker = jobEngineController.getJobWorker(job);
 
                     while (true) {

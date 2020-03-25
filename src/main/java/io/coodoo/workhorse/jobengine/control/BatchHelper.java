@@ -2,10 +2,10 @@ package io.coodoo.workhorse.jobengine.control;
 
 import java.time.LocalDateTime;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 
 import io.coodoo.workhorse.jobengine.boundary.JobEngineService;
 import io.coodoo.workhorse.jobengine.entity.JobExecution;
@@ -20,7 +20,7 @@ import io.coodoo.workhorse.util.JobEngineUtil;
 @Stateless
 public class BatchHelper {
 
-    @EJB
+    @Inject
     JobEngineService jobEngineService;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

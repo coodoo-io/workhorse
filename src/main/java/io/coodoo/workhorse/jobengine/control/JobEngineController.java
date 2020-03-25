@@ -169,29 +169,6 @@ public class JobEngineController {
         return job;
     }
 
-    public void syncJobExecutionQueue() {
-
-        for (Job job : Job.getAllByStatus(entityManager, JobStatus.ACTIVE)) {
-            if (job.getThreads() < 1) {
-                continue;
-            }
-            int numberOfJobExecutionsQueued = jobEngine.getNumberOfJobExecutionsInQueue(job.getId());
-            int addedJobExecutions = 0;
-
-            if (numberOfJobExecutionsQueued < JobEngineConfig.JOB_QUEUE_MIN) {
-                for (JobExecution jobExecution : JobExecution.getNextCandidates(entityManager, job.getId(), JobEngineConfig.JOB_QUEUE_MAX)) {
-                    if (jobEngine.addJobExecution(jobExecution)) {
-                        addedJobExecutions++;
-                    }
-                }
-                if (addedJobExecutions > 0) {
-                    logger.info("Added {} new to {} existing job executions in memory queue for job {}", addedJobExecutions, numberOfJobExecutionsQueued,
-                                    job.getName());
-                }
-            }
-        }
-    }
-
     public BaseJobWorker getJobWorker(Job job) throws Exception {
         try {
 
