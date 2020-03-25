@@ -8,7 +8,7 @@
 
 <a name="1.4.1"></a>
 
-## 1.4.1 (2020-02-29)
+## 1.4.1 (2020-03-25)
 
 ### Features
 
@@ -24,6 +24,7 @@
 ### Bug Fixes
 
 * Newly detected jobs will be initialized in the `memoryCounts`
+* Updated com.fasterxml.jackson.core:jackson-databind to version 2.9.10.3 to fix security vulnerabilites
 
 ### Deprecations
 
