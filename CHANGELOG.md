@@ -16,6 +16,9 @@
 * The `JobWorker` provides access to the method `getJob()` and provides the `jobEngineService` via `getJobEngineService()`.
 * Batches and Chains can be aborted via `JobEngineService`.
 * All execution are now created with an own new transaction.
+* Updated dependencies:
+  * [coodoo-listing](https://github.com/coodoo-io/coodoo-listing) to version [1.6.0](https://github.com/coodoo-io/coodoo-listing/releases/tag/1.6.0)
+  * [coodoo-jpa-essentials](https://github.com/coodoo-io/coodoo-jpa-essentials) to version [1.2.0](https://github.com/coodoo-io/coodoo-jpa-essentials/releases/tag/1.2.0)
 
 ### BREAKING CHANGES
 
