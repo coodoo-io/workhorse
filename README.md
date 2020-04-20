@@ -123,13 +123,13 @@ public void start() {
 
 ## Install
 
-1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.4.0%7Cjar))
+1. Add the following dependency to your project ([published on Maven Central](http://search.maven.org/#artifactdetails%7Cio.coodoo%7Cworkhorse%7C1.5.0%7Cjar))
    
    ```xml
    <dependency>
        <groupId>io.coodoo</groupId>
        <artifactId>workhorse</artifactId>
-       <version>1.4.0</version>
+       <version>1.5.0</version>
    </dependency>
    ```
    
