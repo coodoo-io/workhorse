@@ -6,9 +6,9 @@
 ### BREAKING CHANGES
 -->
 
-<a name="1.4.1"></a>
+<a name="1.5.0"></a>
 
-## 1.4.1 (2020-03-25)
+## 1.5.0 (2020-04-20)
 
 ### Features
 
@@ -27,6 +27,7 @@
 ### Bug Fixes
 
 * Newly detected jobs will be initialized in the `memoryCounts`
+* Corrected [database scripts](https://github.com/coodoo-io/workhorse/tree/master/src/main/resources/sql) for initial setup
 * Updated com.fasterxml.jackson.core:jackson-databind to version 2.9.10.3 to fix security vulnerabilites
 * Fixed `JobStatisticSummary` constructor (QueryException: could not instantiate class [io.coodoo.workhorse.statistic.entity.JobStatisticSummary] from tuple)
 
