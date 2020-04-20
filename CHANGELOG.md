@@ -28,6 +28,7 @@
 
 * Newly detected jobs will be initialized in the `memoryCounts`
 * Updated com.fasterxml.jackson.core:jackson-databind to version 2.9.10.3 to fix security vulnerabilites
+* Fixed `JobStatisticSummary` constructor (QueryException: could not instantiate class [io.coodoo.workhorse.statistic.entity.JobStatisticSummary] from tuple)
 
 ### Deprecations
 

@@ -11,7 +11,7 @@ public class DurationHeatmapDetail {
 
     private LocalDateTime date;
 
-    private long value;
+    private long value = 0;
 
     public String getName() {
         return name;

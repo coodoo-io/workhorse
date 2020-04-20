@@ -62,14 +62,14 @@ public class JobStatisticSummary {
     public JobStatisticSummary(Long durationCount, Long durationSum, Long durationMax, Long durationMin, Double durationAvg, Long finished, Long failed,
                     Long schedule) {
 
-        this.durationCount = new Long(durationCount).intValue();
+        this.durationCount = durationCount == null ? 0 : new Long(durationCount).intValue();
         this.durationSum = durationSum;
         this.durationMax = durationMax;
         this.durationMin = durationMin;
         this.durationAvg = StatisticsUtil.doubleToLong(durationAvg);
-        this.finished = new Long(finished).intValue();
-        this.failed = new Long(failed).intValue();
-        this.schedule = new Long(schedule).intValue();
+        this.finished = finished == null ? 0 : new Long(finished).intValue();
+        this.failed = failed == null ? 0 : new Long(failed).intValue();
+        this.schedule = schedule == null ? 0 : new Long(schedule).intValue();
     }
 
     public Integer getDurationCount() {
