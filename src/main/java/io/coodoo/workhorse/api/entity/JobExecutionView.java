@@ -8,7 +8,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdCreatedUpdatedAtEntity;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
@@ -26,7 +26,7 @@ import io.coodoo.workhorse.jobengine.entity.JobStatus;
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "jobengine_execution_view")
-public class JobExecutionView extends RevisionDatesEntity {
+public class JobExecutionView extends AbstractIdCreatedUpdatedAtEntity {
 
     @Column(name = "job_id")
     private Long jobId;

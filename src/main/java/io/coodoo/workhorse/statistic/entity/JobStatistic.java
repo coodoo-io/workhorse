@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdCreatedUpdatedAtEntity;
 
 /**
  * Basic record attributes of job activities
@@ -13,7 +13,7 @@ import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
  * @author coodoo GmbH (coodoo.io)
  */
 @MappedSuperclass
-public abstract class JobStatistic extends RevisionDatesEntity {
+public abstract class JobStatistic extends AbstractIdCreatedUpdatedAtEntity {
 
     private static final long serialVersionUID = 1L;
 

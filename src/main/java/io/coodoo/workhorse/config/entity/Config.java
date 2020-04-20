@@ -12,7 +12,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdCreatedUpdatedAtEntity;
 import io.coodoo.workhorse.jobengine.boundary.JobEngineConfig;
 import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
 
@@ -29,7 +29,7 @@ import io.coodoo.workhorse.jobengine.entity.JobExecutionStatus;
                 @NamedQuery(name = "Config.getConfig", query = "SELECT c FROM Config c")
 
 })
-public class Config extends RevisionDatesEntity {
+public class Config extends AbstractIdCreatedUpdatedAtEntity {
 
     private static final long serialVersionUID = 1L;
 

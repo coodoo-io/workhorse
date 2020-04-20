@@ -14,7 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdOccCreatedUpdatedAtEntity;
 import io.coodoo.framework.listing.boundary.annotation.ListingFilterAsString;
 
 /**
@@ -32,7 +32,7 @@ import io.coodoo.framework.listing.boundary.annotation.ListingFilterAsString;
                 @NamedQuery(name = "Job.getAllScheduled", query = "SELECT job FROM Job job WHERE job.schedule IS NOT NULL")
 
 })
-public class Job extends RevisionDatesOccEntity {
+public class Job extends AbstractIdOccCreatedUpdatedAtEntity {
 
     private static final long serialVersionUID = 1L;
 

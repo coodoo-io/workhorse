@@ -6,7 +6,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdCreatedUpdatedAtEntity;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.log.entity.Log;
 
@@ -18,7 +18,7 @@ import io.coodoo.workhorse.log.entity.Log;
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "jobengine_log_view")
-public class LogView extends RevisionDatesEntity {
+public class LogView extends AbstractIdCreatedUpdatedAtEntity {
 
     /**
      * General log message

@@ -13,7 +13,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdCreatedUpdatedAtEntity;
 import io.coodoo.workhorse.util.JobEngineUtil;
 
 /**
@@ -80,7 +80,7 @@ import io.coodoo.workhorse.util.JobEngineUtil;
 
 })
 
-public class JobExecution extends RevisionDatesEntity {
+public class JobExecution extends AbstractIdCreatedUpdatedAtEntity {
 
     private static final long serialVersionUID = 1L;
 

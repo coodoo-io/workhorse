@@ -10,14 +10,14 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesOccEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdOccCreatedUpdatedAtEntity;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 import io.coodoo.workhorse.jobengine.entity.StringListConverter;
 
 @SuppressWarnings("serial")
 @Entity
 @Table(name = "jobengine_job_count_view")
-public class JobCountView extends RevisionDatesOccEntity {
+public class JobCountView extends AbstractIdOccCreatedUpdatedAtEntity {
 
     @Column(name = "name")
     private String name;

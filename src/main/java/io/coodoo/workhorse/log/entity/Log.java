@@ -10,7 +10,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import io.coodoo.framework.jpa.boundary.entity.RevisionDatesEntity;
+import io.coodoo.framework.jpa.entity.AbstractIdCreatedUpdatedAtEntity;
 import io.coodoo.workhorse.jobengine.entity.JobStatus;
 
 /**
@@ -25,7 +25,7 @@ import io.coodoo.workhorse.jobengine.entity.JobStatus;
                 @NamedQuery(name = "Log.deleteAllByJobId", query = "DELETE FROM Log j WHERE j.jobId = :jobId"),
 
 })
-public class Log extends RevisionDatesEntity {
+public class Log extends AbstractIdCreatedUpdatedAtEntity {
 
     private static final long serialVersionUID = 1L;
 
