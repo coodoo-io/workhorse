@@ -415,8 +415,13 @@ public class JobEngineService {
     public void triggerScheduledJobExecutionCreation(Job job) throws Exception {
 
         BaseJobWorker jobWorker = getJobWorker(job);
-        jobWorker.onSchedule();
 
+        long t1 = System.currentTimeMillis();
+        jobWorker.onSchedule();
+        long t2 = System.currentTimeMillis() - t1;
+        if (t2 >= 5000) {
+            logger.warn("onSchedule() took longer than 5000ms for job {} (ID {}): {}ms", job.getName(), job.getId(), t2);
+        }
         // count this trigger
         jobEngineStatisticService.recordTrigger(job.getId());
     }

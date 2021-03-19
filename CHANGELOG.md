@@ -6,6 +6,16 @@
 ### BREAKING CHANGES
 -->
 
+<a name="1.5.1"></a>
+
+## 1.5.1 (2021-03-19)
+
+
+### Bug Fixes
+
+* Made JobScheduler onSchedule calls nonblocking to avoid `EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on JobScheduler - could not obtain lock within 5000MILLISECONDS`
+
+
 <a name="1.5.0"></a>
 
 ## 1.5.0 (2020-04-20)

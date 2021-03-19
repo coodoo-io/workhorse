@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.coodoo</groupId>
 	<artifactId>workhorse</artifactId>
-	<version>1.5.0</version>
+	<version>1.5.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Workhorse</name>
 	<description>Java EE Job Engine for background jobs and business critical tasks</description>
@@ -11,20 +11,20 @@
 	<inceptionYear>2018</inceptionYear>
 	<organization>
 		<name>coodoo GmbH</name>
-		<url>http://coodoo.io</url>
+		<url>https://coodoo.io</url>
 	</organization>
 	<developers>
 		<developer>
 			<name>Markus Kühle</name>
-			<email>Markus.Kuehle@coodoo.io</email>
+			<email>markus.kuehle@coodoo.de</email>
 			<organization>coodoo GmbH</organization>
-			<organizationUrl>http://coodoo.io</organizationUrl>
+			<organizationUrl>https://coodoo.io</organizationUrl>
 		</developer>
 		<developer>
 			<name>Arend Kühle</name>
-			<email>Arend.Kuehle@coodoo.io</email>
+			<email>arend.kuehle@coodoo.de</email>
 			<organization>coodoo GmbH</organization>
-			<organizationUrl>http://coodoo.io</organizationUrl>
+			<organizationUrl>https://coodoo.io</organizationUrl>
 		</developer>
 	</developers>
 	<licenses>

@@ -1,6 +1,8 @@
 package io.coodoo.workhorse.jobengine.control;
 
 import javax.annotation.Resource;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Timeout;
@@ -24,6 +26,7 @@ import io.coodoo.workhorse.log.boundary.JobEngineLogService;
  * @author coodoo GmbH (coodoo.io)
  */
 @Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class JobScheduler {
 
     private static Logger logger = LoggerFactory.getLogger(JobScheduler.class);
