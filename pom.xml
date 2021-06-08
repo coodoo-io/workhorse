@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.coodoo</groupId>
 	<artifactId>workhorse</artifactId>
-	<version>1.5.1-SNAPSHOT</version>
+	<version>1.5.1</version>
 	<packaging>jar</packaging>
 	<name>Workhorse</name>
 	<description>Java EE Job Engine for background jobs and business critical tasks</description>
